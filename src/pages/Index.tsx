@@ -27,7 +27,7 @@ const mockPosts: Post[] = [
     user: {
       name: "김지윤",
       username: "@jiyoon.kim",
-      avatar: "https://images.unsplash.com/photo-1494790108755-2616b9e0df05?w=100&h=100&fit=crop&crop=face",
+      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
       type: "job_seeker"
     },
     content: "스타트업 프론트엔드 개발직 구직 중입니다! React와 Vue.js 경험 있어요 #리액트 #Vue #프론트엔드",
