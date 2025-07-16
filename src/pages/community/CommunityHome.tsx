@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Search, Users } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import api from "@/lib/api"; // 설정된 axios 인스턴스를 불러옴
 import { useNavigate } from "react-router-dom";
 
 interface Community {
@@ -32,7 +32,7 @@ export default function CommunityHome(): JSX.Element {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get("http://localhost:8081/api/communities")
+    api.get("/api/communities")
       .then((res) => setCommunities(res.data))
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));

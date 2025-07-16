@@ -1,7 +1,7 @@
 // src/pages/Community.tsx
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import axios from "axios";
+import api from "@/lib/api"; // 설정된 axios 인스턴스를 불러옴
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
@@ -25,8 +25,8 @@ const CommunityBoard = () => {
 
   useEffect(() => {
     if (!communityId || !boardId) return;
-    axios
-      .get(`http://localhost:8081/api/communities/${communityId}/boards/${boardId}/posts`)
+    api
+      .get(`/api/communities/${communityId}/boards/${boardId}/posts`)
       .then((res) => setPosts(res.data))
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));

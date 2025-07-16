@@ -1,4 +1,4 @@
-import axios from "axios";
+import api from "@/lib/api"; // 설정된 axios 인스턴스를 불러옴
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 
@@ -18,8 +18,8 @@ const CommunityPage = () => {
 
   useEffect(() => {
     if (!id) return;
-    axios
-      .get(`http://localhost:8081/api/communities/${id}/boards`)
+    api
+      .get(`/api/communities/${id}/boards`)
       .then((res) => setBoards(res.data))
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
