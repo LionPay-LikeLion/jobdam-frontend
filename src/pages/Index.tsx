@@ -168,7 +168,7 @@ const Index = () => {
 </Link>
           </div>
           
-          <Button className="flex items-center gap-2" onClick={() => navigate("/communities")}>
+          <Button className="flex items-center gap-2" onClick={() => navigate("/community")}>
             <LogIn className="h-4 w-4" />
             커뮤니티 목록 이동
           </Button>
