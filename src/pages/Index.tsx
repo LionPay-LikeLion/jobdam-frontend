@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Heart, Bookmark, LogIn } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 type UserType = "job_seeker" | "agent" | "company";
 
@@ -23,6 +24,7 @@ interface Post {
 
 const mockPosts: Post[] = [
   {
+    
     id: "1",
     user: {
       name: "김지윤",
@@ -138,6 +140,7 @@ const userTypeInfo = {
 
 const Index = () => {
   const [activeFilter, setActiveFilter] = useState<UserType | "all">("all");
+  const navigate = useNavigate();
 
   const filteredPosts = activeFilter === "all" 
     ? mockPosts 
@@ -161,9 +164,9 @@ const Index = () => {
             </h1>
           </div>
           
-          <Button className="flex items-center gap-2">
+          <Button className="flex items-center gap-2" onClick={() => navigate("/communities")}>
             <LogIn className="h-4 w-4" />
-            로그인
+            커뮤니티 목록 이동
           </Button>
         </div>
       </header>
