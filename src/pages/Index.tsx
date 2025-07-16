@@ -164,8 +164,8 @@ const Index = () => {
               Job<span className="text-foreground">談</span>
             </h1>
             <Link to="/community" className="text-sm text-muted-foreground hover:underline">
-  커뮤니티
-</Link>
+              커뮤니티
+            </Link>
           </div>
           
           <Button className="flex items-center gap-2" onClick={() => navigate("/community")}>
