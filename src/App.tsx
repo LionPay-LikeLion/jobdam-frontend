@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import CommunityPage from "./pages/CommunityPage";
 import Community from "./pages/Community";
+import CommunityHome from "./pages/community/CommunityHome";
 
 const queryClient = new QueryClient();
 
@@ -19,8 +20,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="/community" element={<CommunityPage />} />
-          <Route path="/community" element={<Community />} />
+          <Route path="/community" element={<CommunityHome />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
