@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Heart, Bookmark, LogIn } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 type UserType = "job_seeker" | "agent" | "company";
 
@@ -162,6 +163,9 @@ const Index = () => {
             <h1 className="text-2xl font-bold text-primary">
               Job<span className="text-foreground">談</span>
             </h1>
+            <Link to="/community" className="text-sm text-muted-foreground hover:underline">
+  커뮤니티
+</Link>
           </div>
           
           <Button className="flex items-center gap-2" onClick={() => navigate("/communities")}>
