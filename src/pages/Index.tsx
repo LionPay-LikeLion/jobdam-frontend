@@ -266,7 +266,7 @@ const Index = () => {
         {/* Footer Info */}
         <div className="text-center py-8 text-muted-foreground">
           <p className="text-sm">
-            <p>JobDam은 취업을 꿈꾸는 사람들을 위한 커뮤니티입니다.</p>
+            <p>Job談:잡담은 취업을 꿈꾸는 사람들을 위한 커뮤니티입니다.</p>
             <p>고객센터: help@jobdam.com | 사업자등록번호: 123-45-67890<br />
                 © 2025 돈내고사자 팀. All rights reserved.</p>
           </p>
