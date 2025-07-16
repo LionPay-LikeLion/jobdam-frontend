@@ -5,9 +5,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
-import Communities from "./pages/Communities";
 import CommunityPage from "./pages/CommunityPage";
-import Community from "./pages/Community";
+import CommunityBoard from "./pages/CommunityBoard";
+import CommunityMain from "./pages/CommunityMain";
 
 const queryClient = new QueryClient();
 
@@ -20,9 +20,9 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="/communities" element={<Communities />} />
-          <Route path="/community" element={<CommunityPage />} />
-          <Route path="/community" element={<Community />} />
+          <Route path="/community" element={<CommunityMain />} />
+          <Route path="/community/:id" element={<CommunityPage />} />
+          <Route path="/community/:communityId/board/:boardId" element={<CommunityBoard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
