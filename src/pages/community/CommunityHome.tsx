@@ -10,9 +10,34 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Search, Users } from "lucide-react";
-import React from "react";
+import React, { useEffect, useState } from "react";
+import api from "@/lib/api"; // 설정된 axios 인스턴스를 불러옴
+import { useNavigate } from "react-router-dom";
 
-export default function GeneratedDesign(): JSX.Element {
+interface Community {
+  communityId: number;
+  name: string;
+  description: string;
+  subscriptionLevelCode: string;
+  ownerNickname: string;
+  maxMember: number;
+  currentMember: number;
+  enterPoint: number;
+}
+
+export default function CommunityHome(): JSX.Element {
+  const [communities, setCommunities] = useState<Community[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    api.get("/api/communities")
+      .then((res) => setCommunities(res.data))
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  }, []);
+
   const navItems = [
     { name: "커뮤니티", active: true },
     { name: "SNS 피드", active: false },
@@ -27,63 +52,6 @@ export default function GeneratedDesign(): JSX.Element {
     { name: "게시판", active: false },
     { name: "멤버 목록", active: false },
     { name: "설정", active: false },
-  ];
-
-  const groups = [
-    {
-      id: 1,
-      name: "취업 준비 개발자 모임",
-      description:
-        "함께 성장하는 개발자들의 취업 준비 커뮤니티입니다. 코딩테스트, 면접 준비, 포트폴리오 리뷰 등을 함께해요.",
-      members: 124,
-      isPublic: true,
-      isJoined: false,
-    },
-    {
-      id: 2,
-      name: "프론트엔드 스터디",
-      description:
-        "React, Vue, Angular 등 최신 프론트엔드 기술을 학습하고 프로젝트를 진행합니다.",
-      members: 89,
-      isPublic: true,
-      isJoined: true,
-    },
-    {
-      id: 3,
-      name: "UI/UX 디자이너 네트워킹",
-      description:
-        "디자이너들의 포트폴리오 공유와 피드백, 취업 정보를 나누는 공간입니다.",
-      members: 67,
-      isPublic: false,
-      isJoined: false,
-    },
-    {
-      id: 4,
-      name: "백엔드 개발자 모임",
-      description:
-        "Java, Python, Node.js 등 백엔드 기술 스택을 다루는 개발자들의 모임입니다.",
-      members: 156,
-      isPublic: true,
-      isJoined: true,
-    },
-    {
-      id: 5,
-      name: "데이터 사이언스 연구회",
-      description:
-        "머신러닝, 딥러닝, 데이터 분석 기술을 연구하고 실무 프로젝트를 진행합니다.",
-      members: 78,
-      isPublic: true,
-      isJoined: false,
-    },
-    {
-      id: 6,
-      name: "스타트업 창업 준비",
-      description:
-        "창업을 꿈꾸는 사람들이 모여 아이디어를 공유하고 팀을 구성하는 공간입니다.",
-      members: 45,
-      isPublic: false,
-      isJoined: false,
-    },
   ];
 
   return (
@@ -172,47 +140,45 @@ export default function GeneratedDesign(): JSX.Element {
 
             {/* Group Cards */}
             <div className="grid grid-cols-2 gap-6">
-              {groups.map((group) => (
+              {loading && <div>로딩 중...</div>}
+              {error && <div className="text-red-500">에러 발생: {error}</div>}
+              {!loading && !error && communities.length === 0 && (
+                <div className="text-gray-500">커뮤니티가 없습니다.</div>
+              )}
+              {!loading && !error && communities.map((community) => (
                 <Card
-                  key={group.id}
+                  key={community.communityId}
                   className="w-full h-[186px] rounded-lg border border-[#0000001a]"
                 >
                   <CardHeader className="pb-0 pt-6 px-6">
                     <div className="flex justify-between items-start">
                       <CardTitle className="font-medium text-black text-xl leading-7">
-                        {group.name}
+                        {community.name}
                       </CardTitle>
                       <Badge
-                        className={`${
-                          group.isPublic
-                            ? "bg-[#0080001a] text-[#008000]"
-                            : "bg-[#ffa5001a] text-[#ffa500]"
-                        } rounded h-6 px-2 py-1 font-normal text-xs`}
+                        className={`bg-[#0080001a] text-[#008000] rounded h-6 px-2 py-1 font-normal text-xs`}
                       >
-                        {group.isPublic ? "공개" : "비공개"}
+                        {community.subscriptionLevelCode}
                       </Badge>
                     </div>
                   </CardHeader>
                   <CardContent className="px-6 py-0">
                     <p className="font-normal text-[#000000b2] text-sm leading-5">
-                      {group.description}
+                      {community.description}
                     </p>
                   </CardContent>
                   <CardFooter className="px-6 pt-4 pb-6 flex justify-between items-center">
                     <div className="flex items-center">
                       <Users className="h-4 w-4 text-gray-500" />
                       <span className="ml-2 font-normal text-[#00000080] text-sm leading-5">
-                        {group.members}명
+                        {community.currentMember} / {community.maxMember}명
                       </span>
                     </div>
                     <Button
-                      className={`w-[58px] h-9 ${
-                        group.isJoined
-                          ? "bg-[#ff00001a] text-[#ff0000] hover:bg-[#ff00002a]"
-                          : "bg-black text-white"
-                      } rounded-md`}
+                      className="bg-black text-white w-[74px] h-9 rounded-md"
+                      onClick={() => navigate(`/community/${community.communityId}`)}
                     >
-                      {group.isJoined ? "탈퇴" : "입장"}
+                      입장
                     </Button>
                   </CardFooter>
                 </Card>
