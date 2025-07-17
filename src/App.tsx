@@ -3,12 +3,16 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
+
 import NotFound from "./pages/NotFound";
-import CommunityPage from "./pages/community/CommunityPage";
-import CommunityBoard from "./pages/community/CommunityBoard";
-import CommunityMain from "./pages/CommunityMain";
-import CommunityHome from "./pages/community/CommunityHome";
+
+import HomePage from "@/pages/HomePage";
+import LoginPage from "@/pages/LoginPage";
+import SignUp from "@/pages/SignUp";
+import FindEmail from "@/pages/FindEmail";
+import FindPassword from "@/pages/FindPassword";
+import CommunityPage from "@/pages/CommunityPage";
+
 
 const queryClient = new QueryClient();
 
@@ -19,12 +23,13 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="/community/:id" element={<CommunityPage />} />
-          <Route path="/community/:communityId/board/:boardId" element={<CommunityBoard />} />
-          <Route path="/community" element={<CommunityHome />} />
           <Route path="*" element={<NotFound />} />
+          <Route path="/" element={<HomePage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/find-email" element={<FindEmail />} />
+          <Route path="/find-password" element={<FindPassword />} />
+          <Route path="/community" element={<CommunityPage />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
