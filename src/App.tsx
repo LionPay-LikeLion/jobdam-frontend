@@ -9,11 +9,14 @@ import LoginPage from "@/pages/LoginPage";
 import SignUp from "@/pages/SignUp";
 import FindEmail from "@/pages/FindEmail";
 import FindPassword from "@/pages/FindPassword";
-import CommunityPage from "@/pages/CommunityPage";
+import SNSFeedLayout from "@/pages/layouts/SNSFeedLayout";
 import SNSFeedHome from "@/pages/SNSFeedHome";
 import SNSFeedPost from "@/pages/SNSFeedPost";
 import SNSFeedMy from "@/pages/SNSFeedMy";
-import SNSFeedLayout from "@/pages/layouts/SNSFeedLayout";
+import SNSMessage from "@/pages/SNSMessage";
+import SNSPostWrite from "@/pages/SNSPostWrite";
+import CommunityPage from "@/pages/CommunityPage";
+import CommunityCreate from "@/pages/CommunityCreate";
 
 import NotFound from "./pages/NotFound";
 
@@ -32,13 +35,17 @@ const App = () => (
           <Route path="/signup" element={<SignUp />} />
           <Route path="/find-email" element={<FindEmail />} />
           <Route path="/find-password" element={<FindPassword />} />
-          <Route path="/community" element={<CommunityPage />} />
           
           <Route path="/" element={<SNSFeedLayout />}> {/* sns-feed side bar layout */}
             <Route index element={<SNSFeedHome />} />          
             <Route path="mine" element={<SNSFeedMy />} />      
             <Route path=":postId" element={<SNSFeedPost />} /> 
+            <Route path="messages" element={<SNSMessage />} />
+            <Route path="sns-post-write" element={<SNSPostWrite />} />
           </Route>
+
+          <Route path="/community" element={<CommunityPage />} />
+          <Route path="/community/create" element={<CommunityCreate />} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>

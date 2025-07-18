@@ -1,0 +1,115 @@
+import {
+  Button,
+  Card,
+  CardContent,
+  CardFooter,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Separator,
+  Textarea,
+} from "@/components/ui";
+import { Image as ImageIcon, Paperclip } from "lucide-react";
+import React from "react";
+
+export default function SNSPostWrite() {
+  const editorButtons = [
+    { label: "B", style: "font-bold" },
+    { label: "I", style: "italic" },
+    { label: "U", style: "underline" },
+    { label: "링크", style: "" },
+    { label: "이미지", style: "" },
+  ];
+
+  return (
+    <div className="w-full bg-white flex justify-center">
+      <div className="w-[914px] max-w-full mt-12">
+        <div className="text-center mb-16">
+          <h1 className="text-[40px] font-bold leading-[48px]">피드 작성</h1>
+          <p className="text-base text-black">새로운 피드를 작성하고 공유해보세요.</p>
+        </div>
+
+        <Card className="border border-[#0000001a] shadow-sm">
+          <CardContent className="p-8">
+            <form>
+              {/* 제목 */}
+              <div className="mb-8">
+                <label className="block text-base font-medium mb-2">제목</label>
+                <Input placeholder="제목을 입력하세요" className="h-[50px]" />
+              </div>
+
+              {/* 공개 범위 & 대표 이미지 */}
+              <div className="flex flex-wrap gap-6 mb-8">
+                <div className="flex-1 min-w-[280px]">
+                  <label className="block text-base font-medium mb-2">공개 범위</label>
+                  <Select defaultValue="public">
+                    <SelectTrigger className="h-[50px] bg-[#d9d9d9]">
+                      <SelectValue placeholder="전체 공개" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="public">전체 공개</SelectItem>
+                      <SelectItem value="friends">친구 공개</SelectItem>
+                      <SelectItem value="private">비공개</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex-1 min-w-[280px]">
+                  <label className="block text-base font-medium mb-2">대표 이미지</label>
+                  <div className="h-[148px] border-2 border-[#0000001a] rounded-md flex flex-col items-center justify-center text-sm text-[#00000080]">
+                    <ImageIcon className="w-10 h-10 text-gray-400 mb-2" />
+                    클릭하여 이미지를 업로드하세요
+                    <p className="text-xs text-[#0000004c] mt-1">JPG, PNG, GIF (최대 10MB)</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* 태그 */}
+              <div className="mb-8">
+                <label className="block text-base font-medium mb-2">태그</label>
+                <Button variant="outline" className="h-[38px] text-sm">+ 태그 추가</Button>
+              </div>
+
+              {/* 내용 */}
+              <div className="mb-8">
+                <label className="block text-base font-medium mb-2">내용</label>
+                <div className="border border-[#0000001a] rounded-md">
+                  <div className="flex h-[53px] items-center bg-[#00000005] border-b border-[#0000001a] px-4">
+                    {editorButtons.slice(0, 3).map((btn, idx) => (
+                      <Button key={idx} variant="ghost" className={`px-3 text-sm ${btn.style}`}>{btn.label}</Button>
+                    ))}
+                    <Separator orientation="vertical" className="h-6 mx-4" />
+                    {editorButtons.slice(3).map((btn, idx) => (
+                      <Button key={idx} variant="ghost" className="px-3 text-sm">{btn.label}</Button>
+                    ))}
+                  </div>
+                  <Textarea placeholder="내용을 입력하세요" className="min-h-[300px] border-none rounded-none p-4" />
+                </div>
+              </div>
+
+              {/* 첨부파일 */}
+              <div className="mb-8">
+                <label className="block text-base font-medium mb-2">첨부파일</label>
+                <div className="border border-[#0000001a] rounded-md h-[88px] p-4 flex items-center">
+                  <Button variant="outline" className="h-[38px] text-sm">
+                    <Paperclip className="w-4 h-4 mr-2" />
+                    첨부파일 추가
+                  </Button>
+                </div>
+              </div>
+            </form>
+          </CardContent>
+
+          <CardFooter className="flex justify-end gap-2 py-6 border-t border-[#0000001a]">
+            <Button variant="outline" className="w-[76px] h-[46px] text-sm">취소</Button>
+            <Button variant="secondary" className="w-[103px] h-[46px] bg-[#f0f0f0] text-sm">임시 저장</Button>
+            <Button className="w-[74px] h-[46px] bg-black text-white text-sm">등록</Button>
+          </CardFooter>
+        </Card>
+      </div>
+    </div>
+  );
+}
