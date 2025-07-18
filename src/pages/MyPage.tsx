@@ -22,14 +22,12 @@ export default function MyPage() {
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [isUpgrading, setIsUpgrading] = useState(false);
 
     const navigate = useNavigate();
 
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                // baseURL이 /api 이면 아래 주소만 "/user/profile"로!
                 const res = await api.get<UserProfile>("/user/profile");
                 setProfile(res.data);
                 setError(null);
@@ -43,22 +41,9 @@ export default function MyPage() {
         fetchProfile();
     }, []);
 
-    // 프리미엄 업그레이드
-    const handleUpgrade = async () => {
-        if (!profile) return;
-        setIsUpgrading(true);
-        try {
-            // 프리미엄 업그레이드 API 호출
-            await api.post("/user/subscription/upgrade", {
-                // 필요하다면 추가 필드(예: code 등) 포함
-            });
-            alert("프리미엄 회원 업그레이드가 완료되었습니다.");
-            // 업그레이드 후 다시 유저정보 새로고침
-            window.location.reload();
-        } catch (err: any) {
-            alert("업그레이드 실패: " + (err?.response?.data?.message || "오류"));
-        }
-        setIsUpgrading(false);
+    // 프리미엄 업그레이드 페이지 이동
+    const goToPremiumUpgrade = () => {
+        navigate("/premium-upgrade");
     };
 
     // 회원타입 전환 신청 페이지로 이동
@@ -84,9 +69,9 @@ export default function MyPage() {
                 profile.subscriptionLevel === "PREMIUM"
                     ? null
                     : {
-                        label: isUpgrading ? "업그레이드 중..." : "프리미엄 회원 업그레이드",
-                        onClick: handleUpgrade,
-                        disabled: isUpgrading,
+                        label: "프리미엄 회원 업그레이드",
+                        onClick: goToPremiumUpgrade,
+                        disabled: false,
                     },
         },
         {
@@ -113,11 +98,10 @@ export default function MyPage() {
                 <header className="flex w-full h-20 items-center justify-center gap-5 p-5 fixed top-0 left-0 right-0 bg-white shadow-[0px_0px_6px_#0000001f] z-10">
                     <div className="flex w-[1440px] items-center justify-between">
                         <div className="flex items-center gap-5">
-                            {/* 로고 클릭하면 /homepage로 이동 */}
                             <img
                                 className="w-[85px] h-20 cursor-pointer"
                                 alt="JobDam Logo"
-                                src="/logo.png" // <- 여기에 진짜 로고 이미지 경로! (public 폴더에 logo.png 있으면 됨)
+                                src="/logo.png"
                                 onClick={() => navigate("/homepage")}
                             />
                             <span className="font-normal text-black text-[28px] cursor-pointer" onClick={() => navigate("/homepage")}>
