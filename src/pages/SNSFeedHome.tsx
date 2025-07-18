@@ -57,7 +57,7 @@ const SNSFeedHome = () => {
         <div className="space-y-6">
           {posts.map((post) => (
             <div key={post.snsPostId} className="flex border rounded-lg shadow p-6 bg-white">
-              <Link to={`/sns-feed/${post.snsPostId}`} className="w-full flex">
+              <Link to={`/${post.snsPostId}`} className="w-full flex">
                 <div className="w-[300px] h-[216px] bg-gray-300 rounded-md">
                   {post.imageUrl && <img src={post.imageUrl} alt="썸네일" className="w-full h-full object-cover rounded-md" />}
                 </div>
