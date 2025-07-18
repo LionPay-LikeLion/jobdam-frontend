@@ -50,7 +50,11 @@ const SNSFeedMy = () => {
         </div>
         <div className="space-y-8">
           {posts.map((post) => (
-            <div key={post.snsPostId} className="w-full bg-white border border-gray-200 rounded-lg shadow-sm p-6 flex gap-6">
+            <div
+              key={post.snsPostId}
+              className="w-full bg-white border border-gray-200 rounded-lg shadow-sm p-6 flex gap-6 cursor-pointer"
+              onClick={() => navigate(`/${post.snsPostId}`)}
+            >
               <div className="w-64 h-48 bg-gray-200 rounded-md">
                 {post.imageUrl && (
                   <img

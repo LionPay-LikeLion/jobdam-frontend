@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { fetchSnsPostDetail } from "@/lib/snsApi";
+import { fetchSnsPostDetail, fetchComments, createComment, updateComment, deleteComment } from "@/lib/snsApi";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -56,14 +56,50 @@ const SNSFeedPost = () => {
   const [post, setPost] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
+  // 댓글 관련 state
+  const [comments, setComments] = useState<any[]>([]);
+  const [commentInput, setCommentInput] = useState("");
+  const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
+  const [editingContent, setEditingContent] = useState("");
+
+  // 게시글 상세
   useEffect(() => {
     if (postId) {
       fetchSnsPostDetail(Number(postId))
-        .then(data => setPost(data))
-        .catch(() => setPost(null))
+        .then(setPost)
         .finally(() => setLoading(false));
     }
   }, [postId]);
+
+  // 댓글 목록
+  useEffect(() => {
+    if (postId) {
+      fetchComments(Number(postId)).then(setComments);
+    }
+  }, [postId]);
+
+  // 댓글 등록
+  const handleCreateComment = async () => {
+    if (!commentInput.trim() || !postId) return;
+    await createComment(Number(postId), commentInput);
+    setCommentInput("");
+    fetchComments(Number(postId)).then(setComments);
+  };
+
+  // 댓글 수정
+  const handleUpdateComment = async (commentId: number) => {
+    if (!editingContent.trim() || !postId) return;
+    await updateComment(commentId, Number(postId), editingContent);
+    setEditingCommentId(null);
+    setEditingContent("");
+    fetchComments(Number(postId)).then(setComments);
+  };
+
+  // 댓글 삭제
+  const handleDeleteComment = async (commentId: number) => {
+    await deleteComment(commentId);
+    fetchComments(Number(postId)).then(setComments);
+  };
 
   if (loading) return <div className="text-center py-10">로딩중...</div>;
   if (!post) return <div className="text-center py-10">게시글을 찾을 수 없습니다.</div>;
@@ -78,16 +114,14 @@ const SNSFeedPost = () => {
 
           <Card className="w-[736px] mx-auto mb-8">
             <CardHeader className="px-8 pt-8 pb-4">
-              <CardTitle className="text-[32px] font-bold">마케터 3년차, 이직 타이밍과 포트폴리오 방향에 대한 고민</CardTitle>
+              <CardTitle className="text-[32px] font-bold">{post.title}</CardTitle>
               <div className="flex items-center mt-6">
                 <Avatar className="h-12 w-12 bg-[#0000001a]" />
                 <div className="ml-4">
                   <div className="flex items-center">
-                    <span className="font-medium text-lg">홍길동</span>
-                    <span className="ml-4 text-sm text-[#00000080]">2024년 1월 15일</span>
-                    <Badge className="ml-4 bg-[#0000000d] text-[#34c759]">전체 공개</Badge>
-                    <Badge className="ml-2 bg-[#0000000d] text-black">게시됨</Badge>
-                    <Badge className="ml-auto bg-[#0000000d] text-black">구직자</Badge>
+                    <span className="font-medium text-lg">{post.nickname}</span>
+                    <span className="ml-4 text-sm text-[#00000080]">{new Date(post.createdAt).toLocaleString()}</span>
+                    {/* 공개범위, 상태 등은 필요시 Badge로 */}
                   </div>
                   <div className="flex mt-4 gap-2">
                     {postTags.map((tag, index) => (
@@ -104,50 +138,45 @@ const SNSFeedPost = () => {
             </CardHeader>
 
             <CardContent className="px-8 space-y-4">
-              <div className="w-full h-[373px] bg-[#d8d8d880] mb-7"></div>
-              <p>안녕하세요, B2C D2C 브랜드 마케팅 업무를 3년 넘게 해오고 있는 마케터입니다. 현재는 이직을 고려 중인데, 막상 포트폴리오를 만들려니 막막하네요.</p>
-              <p>지금까지 담당했던 주요 업무는 다음과 같습니다:</p>
-              <ul className="list-disc list-inside space-y-1">
-                {responsibilities.map((item, index) => (
-                  <li key={`res-${index}`}>{item}</li>
-                ))}
-              </ul>
-              <p>특히 작년에 진행한 신제품 런칭 캠페인에서는 목표 대비 150%의 성과를 달성했고, 브랜드 인지도도 크게 향상시킬 수 있었습니다.</p>
-              <div className="bg-[#f8f9fa] border-l-4 border-[#007aff] p-6 rounded-lg">
-                <h3 className="font-semibold text-lg mb-3">주요 성과</h3>
-                <ul className="space-y-1 text-sm">
-                  {achievements.map((ach, index) => (
-                    <li key={`ach-${index}`}>• {ach}</li>
-                  ))}
-                </ul>
+              {/* 이미지 */}
+              <div className="w-full h-[373px] bg-[#d8d8d880] mb-7 flex items-center justify-center">
+                {post.imageUrl && post.imageUrl !== "string" ? (
+                  <img src={post.imageUrl} alt="썸네일" className="max-h-full max-w-full object-cover rounded-md" />
+                ) : (
+                  <span className="text-gray-400">이미지 없음</span>
+                )}
               </div>
-              <p>하지만 포트폴리오를 정리하면서 고민이 생겼습니다. 어떤 프로젝트를 중심으로 구성해야 할지, 어느 정도의 디테일까지 포함해야 할지 감이 잘 안 잡히네요.</p>
-              <p>혹시 비슷한 경험이 있으신 분들이나 채용 담당자 분들의 조언을 듣고 싶습니다. 특히 다음과 같은 부분에 대해 궁금합니다:</p>
-              <ul className="list-disc list-inside space-y-1">
-                {questions.map((q, index) => (
-                  <li key={`q-${index}`}>{q}</li>
-                ))}
-              </ul>
-              <div className="bg-[#fff3cd] border border-[#ffeaa7] p-4 rounded-lg">
-                <span className="font-bold text-[#856404] text-sm">첨부파일:</span>
-                <span className="ml-2 text-sm text-[#856404]">포트폴리오_초안_v1.pdf (2.3MB)</span>
-              </div>
-              <p>많은 분들의 조언 부탁드립니다. 댓글로 남겨주시거나 개인 메시지로도 괜찮습니다. 감사합니다!</p>
+              {/* 본문 */}
+              <p className="text-lg">{post.content}</p>
+              {/* 첨부파일 */}
+              {post.attachmentUrl && post.attachmentUrl !== "string" && (
+                <div className="bg-[#fff3cd] border border-[#ffeaa7] p-4 rounded-lg">
+                  <span className="font-bold text-[#856404] text-sm">첨부파일:</span>
+                  <a
+                    href={post.attachmentUrl}
+                    className="ml-2 text-sm text-[#856404] underline"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    첨부파일 다운로드
+                  </a>
+                </div>
+              )}
             </CardContent>
 
             <CardFooter className="px-8 pt-4 pb-6 border-t border-[#0000001a]">
               <div className="flex items-center gap-4 w-full">
                 <Button variant="outline" className="bg-[#f0f0f0] h-[43px] gap-2 rounded-md">
-                  <Heart className="h-5 w-5" />
-                  <span className="text-sm font-medium">47</span>
-                </Button>
-                <Button variant="outline" className="bg-[#f0f0f0] h-[43px] gap-2 rounded-md">
-                  <Bookmark className="h-5 w-5" />
-                  <span className="text-sm font-medium">북마크</span>
+                  <Heart className={post.liked ? "text-red-500" : "text-gray-400"} />
+                  <span className="text-sm font-medium">{post.likeCount}</span>
                 </Button>
                 <Button variant="outline" className="bg-[#f0f0f0] h-[43px] gap-2 rounded-md">
                   <MessageSquare className="h-5 w-5" />
-                  <span className="text-sm font-medium">12</span>
+                  <span className="text-sm font-medium">{post.commentCount}</span>
+                </Button>
+                <Button variant="outline" className="bg-[#f0f0f0] h-[43px] gap-2 rounded-md">
+                  <Bookmark className={post.bookmarked ? "text-blue-500" : "text-gray-400"} />
+                  <span className="text-sm font-medium">북마크</span>
                 </Button>
                 <div className="ml-auto flex gap-2">
                   <Button variant="outline" className="bg-[#f0f0f0] h-[37px] rounded-md">수정</Button>
@@ -168,23 +197,46 @@ const SNSFeedPost = () => {
     <Input
       className="h-[55px] px-4 py-4 text-sm flex-1"
       placeholder="댓글을 입력하세요"
+      value={commentInput}
+      onChange={e => setCommentInput(e.target.value)}
+      onKeyDown={e => { if (e.key === "Enter") handleCreateComment(); }}
     />
-    <Button className="h-[55px] px-6 rounded-md bg-blue-500 text-white text-sm font-medium">
+    <Button className="h-[55px] px-6 rounded-md bg-blue-500 text-white text-sm font-medium" onClick={handleCreateComment}>
       등록
     </Button>
   </div>
 
   <div className="space-y-4">
-    {comments.map((comment, index) => (
-      <Card key={`comment-${index}`} className="p-6">
+    {comments.map((comment) => (
+      <Card key={comment.commentId} className="p-6">
         <div className="flex">
           <Avatar className="h-10 w-10 bg-[#0000001a]" />
-          <div className="ml-4">
+          <div className="ml-4 flex-1">
             <div className="flex items-center">
-              <span className="font-medium text-base">{comment.name}</span>
-              <span className="ml-4 text-sm text-[#00000080]">{comment.time}</span>
+              <span className="font-medium text-base">{comment.nickname}</span>
+              <span className="ml-4 text-sm text-[#00000080]">{new Date(comment.createdAt).toLocaleString()}</span>
             </div>
-            <p className="mt-2 text-sm text-black">{comment.content}</p>
+            {editingCommentId === comment.commentId ? (
+              <div className="flex gap-2 mt-2">
+                <Input
+                  value={editingContent}
+                  onChange={e => setEditingContent(e.target.value)}
+                  className="flex-1"
+                />
+                <Button size="sm" onClick={() => handleUpdateComment(comment.commentId)}>저장</Button>
+                <Button size="sm" variant="outline" onClick={() => setEditingCommentId(null)}>취소</Button>
+              </div>
+            ) : (
+              <p className="mt-2 text-sm text-black">{comment.content}</p>
+            )}
+            {/* 수정/삭제 버튼 */}
+            <div className="flex gap-2 mt-2">
+              <Button size="sm" variant="outline" onClick={() => {
+                setEditingCommentId(comment.commentId);
+                setEditingContent(comment.content);
+              }}>수정</Button>
+              <Button size="sm" variant="destructive" onClick={() => handleDeleteComment(comment.commentId)}>삭제</Button>
+            </div>
           </div>
         </div>
       </Card>
