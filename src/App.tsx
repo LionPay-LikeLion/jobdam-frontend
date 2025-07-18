@@ -21,6 +21,7 @@ import PointPurchase from "@/pages/PointPurchase";
 
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from "./contexts/AuthContext";
+import PaymentSuccess from "@/pages/PaymentSuccess.tsx";
 
 
 const queryClient = new QueryClient();
@@ -56,7 +57,9 @@ const App = () => (
             </Route>
             <Route path="/community" element={<CommunityPage />} />
             <Route path="/community/create" element={<CommunityCreate />} />
-            <Route path="*" element={<NotFound />} />
+              <Route path="/payment-success" element={<PaymentSuccess />} />
+
+              <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
