@@ -1,12 +1,12 @@
 import api from "./api";
 
 export const fetchSnsPosts = async () => {
-  const response = await api.get("/api/sns/posts");
+  const response = await api.get("/sns/posts");
   return response.data;
 };
 
 export const fetchMySnsPosts = async () => {
-  const response = await api.get("/api/sns/posts/my");
+  const response = await api.get("/sns/posts/my");
   return response.data;
 };
 
