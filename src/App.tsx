@@ -33,6 +33,9 @@ import NotFound from "./pages/NotFound";
 import { AuthProvider } from "./contexts/AuthContext";
 import PaymentSuccess from "@/pages/PaymentSuccess.tsx";
 import MembershipTypeRequest from "@/pages/MembershipTypeRequest";
+import MyPageLayout from "@/pages/MyPageLayout";
+import PaymentHistoryPage from "@/pages/PaymentHistoryPage";
+import PointHistoryPage from "@/pages/PointHistoryPage";
 
 const queryClient = new QueryClient();
 
@@ -82,6 +85,9 @@ const App = () => (
               {/* 결제 성공 */}
               <Route path="/payment-success" element={<PaymentSuccess />} />
               <Route path="/membership-type-request" element={<MembershipTypeRequest />} />
+
+              <Route path="/mypage/payments" element={<PaymentHistoryPage />} />
+              <Route path="/mypage/points" element={<PointHistoryPage />} />
 
               {/* 404 */}
               <Route path="*" element={<NotFound />} />

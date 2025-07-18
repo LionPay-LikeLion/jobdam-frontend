@@ -22,74 +22,78 @@ export default function TopBar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-white">
-      <div className="container flex h-20 items-center justify-between px-4">
-        <div
-          className="flex items-center gap-2 cursor-pointer"
-          onClick={() => navigate("/")}
-        >
-          <img
-            className="w-[85px] h-20 object-contain"
-            alt="JobDam Logo"
-            src="/images/logo.png"
-          />
-        </div>
-
-
-        <div className="flex items-center gap-10">
-          <Button
-            variant="ghost"
-            className="font-normal text-base"
-            onClick={() => navigate("/sns")}
+      <header className="sticky top-0 z-50 w-full border-b bg-white">
+        <div className="container flex h-20 items-center justify-between px-4">
+          <div
+              className="flex items-center gap-2 cursor-pointer"
+              onClick={() => navigate("/")}
           >
-            SNS 피드
-          </Button>
-          <Button
-            variant="ghost"
-            className="font-normal text-base"
-            onClick={() => navigate("/community")}
-          >
-            커뮤니티
-          </Button>
-          {["포인트", "마이페이지"].map((item, index) => (
+            <img
+                className="w-[85px] h-20 object-contain"
+                alt="JobDam Logo"
+                src="/images/logo.png"
+            />
+          </div>
+
+          <div className="flex items-center gap-10">
             <Button
-              key={index}
-              variant="ghost"
-              className="font-normal text-base"
-            >
-              {item}
-            </Button>
-          ))}
-
-          {isAuthenticated ? (
-            <div className="flex items-center gap-4">
-              <Button
                 variant="ghost"
                 className="font-normal text-base"
-                onClick={handleLogout}
-              >
-                로그아웃
-              </Button>
-            </div>
-          ) : (
-            <Button
-              variant="ghost"
-              className="font-normal text-base"
-              onClick={() => navigate("/login")}
+                onClick={() => navigate("/homepage")}
             >
-              로그인/회원가입
+              소개
             </Button>
-          )}
+            <Button
+                variant="ghost"
+                className="font-normal text-base"
+                onClick={() => navigate("/community")}
+            >
+              커뮤니티
+            </Button>
+            <Button
+                variant="ghost"
+                className="font-normal text-base"
+                onClick={() => navigate("/point-purchase")}
+            >
+              포인트
+            </Button>
+            <Button
+                variant="ghost"
+                className="font-normal text-base"
+                onClick={() => navigate("/mypage")}
+            >
+              마이페이지
+            </Button>
 
-          <div className="flex items-center w-[200px] border border-[#0000001a] rounded-md">
-            <Input
-              className="border-0 text-[#00000080] text-sm"
-              placeholder="Search in site"
-            />
-            <Search className="w-5 h-5 mr-2 text-gray-400" />
+            {isAuthenticated ? (
+                <div className="flex items-center gap-4">
+                  <Button
+                      variant="ghost"
+                      className="font-normal text-base"
+                      onClick={handleLogout}
+                  >
+                    로그아웃
+                  </Button>
+                </div>
+            ) : (
+                <Button
+                    variant="ghost"
+                    className="font-normal text-base"
+                    onClick={() => navigate("/login")}
+                >
+                  로그인/회원가입
+                </Button>
+            )}
+
+            <div className="flex items-center w-[200px] border border-[#0000001a] rounded-md">
+              <Input
+                  className="border-0 text-[#00000080] text-sm"
+                  placeholder="Search in site"
+              />
+              <Search className="w-5 h-5 mr-2 text-gray-400" />
+            </div>
           </div>
         </div>
-      </div>
-    </header >
+      </header>
   );
 }
