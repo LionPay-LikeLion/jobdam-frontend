@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { FiUser } from "react-icons/fi";
 import TopBar from "../components/TopBar";
+import { useNavigate } from "react-router-dom";
 
 const dummyCommunities = [
   {
@@ -77,7 +78,15 @@ const dummyCommunities = [
   },
 ];
 
+
+
 const CommunityPage = () => {
+  const navigate = useNavigate();
+
+  const handleCreateCommunity = () => { 
+    navigate("/community/create");
+  };
+
   const [selectedTab, setSelectedTab] = useState<"전체" | "가입한 커뮤니티">("전체");
 
   const filteredCommunities =
@@ -109,7 +118,10 @@ const CommunityPage = () => {
             </select>
           </div>
 
-          <button className="flex items-center gap-2 px-4 py-2 bg-black text-white text-sm rounded-md">
+          <button
+            onClick={handleCreateCommunity}
+            className="flex items-center gap-2 px-4 py-2 bg-black text-white text-sm rounded-md"
+          >
             + 커뮤니티 생성
           </button>
         </div>
