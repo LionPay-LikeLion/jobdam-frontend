@@ -16,31 +16,31 @@ export const createSnsPost = async (data: {
   imageUrl?: string;
   attachmentUrl?: string;
 }) => {
-  const response = await api.post("/api/sns/posts", data);
+  const response = await api.post("/sns/posts", data);
   return response.data;
 };
 
 export const fetchSnsPostDetail = async (postId: number) => {
-  const response = await api.get(`/api/sns/posts/${postId}`);
+  const response = await api.get(`/sns/posts/${postId}`);
   return response.data;
 };
 
 export const fetchComments = async (snsPostId: number) => {
-  const res = await api.get(`/api/sns/comments/${snsPostId}`, { params: { snsPostId } });
+  const res = await api.get(`/sns/comments/${snsPostId}`, { params: { snsPostId } });
   return res.data;
 };
 
 export const createComment = async (snsPostId: number, content: string) => {
-  const res = await api.post(`/api/sns/comments`, { snsPostId, content });
+  const res = await api.post(`/sns/comments`, { snsPostId, content });
   return res.data;
 };
 
 export const updateComment = async (commentId: number, snsPostId: number, content: string) => {
-  const res = await api.put(`/api/sns/comments/${commentId}`, { snsPostId, content });
+  const res = await api.put(`/sns/comments/${commentId}`, { snsPostId, content });
   return res.data;
 };
 
 export const deleteComment = async (commentId: number) => {
-  const res = await api.delete(`/api/sns/comments/${commentId}`);
+  const res = await api.delete(`/sns/comments/${commentId}`);
   return res.data;
 }; 

@@ -1,16 +1,16 @@
 import api from "./api";
 
 export const fetchMessageBoxes = async () => {
-  const res = await api.get("/api/messages/boxes");
+  const res = await api.get("/messages/boxes");
   return res.data;
 };
 
 export const fetchConversation = async (userId: number) => {
-  const res = await api.get("/api/messages/conversation", { params: { userId } });
+  const res = await api.get("/messages/conversation", { params: { userId } });
   return res.data;
 };
 
 export const sendMessage = async (receiverId: number, content: string) => {
-  const res = await api.post("/api/messages", { receiverId, content });
+  const res = await api.post("/messages", { receiverId, content });
   return res.data;
 };
