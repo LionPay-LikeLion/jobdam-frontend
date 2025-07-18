@@ -33,8 +33,8 @@ export default function TopBar() {
             alt="JobDam Logo"
             src="/images/logo.png"
           />
-
         </div>
+
 
         <div className="flex items-center gap-10">
           <Button
@@ -60,7 +60,7 @@ export default function TopBar() {
               {item}
             </Button>
           ))}
-          
+
           {isAuthenticated ? (
             <div className="flex items-center gap-4">
               <Button
@@ -80,7 +80,7 @@ export default function TopBar() {
               로그인/회원가입
             </Button>
           )}
-          
+
           <div className="flex items-center w-[200px] border border-[#0000001a] rounded-md">
             <Input
               className="border-0 text-[#00000080] text-sm"
@@ -90,6 +90,6 @@ export default function TopBar() {
           </div>
         </div>
       </div>
-    </header>
+    </header >
   );
 }

@@ -162,8 +162,11 @@ const CommunityPage = () => {
                   <span>{community.participants}명 참여 중</span>
                 </div>
               </div>
-              <button className="absolute bottom-4 right-4 px-4 py-2 bg-black text-white text-sm rounded-md">
-                가입하기
+              <button
+                onClick={() => navigate(`/community/${community.id}`)}
+                className="absolute bottom-4 right-4 px-4 py-2 bg-black text-white text-sm rounded-md"
+              >
+                입장
               </button>
             </div>
           ))}
