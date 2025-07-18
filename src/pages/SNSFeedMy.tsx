@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { FaRegThumbsUp, FaRegCommentDots } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const SNSFeedMy = () => {
+  const navigate = useNavigate();
   const [selectedMenu, setSelectedMenu] = useState("내 피드");
 
   const feedPosts = [
@@ -72,8 +74,10 @@ const SNSFeedMy = () => {
   };
 
   const handleNewPost = () => {
-    console.log("새 글 작성");
+    navigate("/sns-post-write");
   };
+
+  
 
   return (
 
