@@ -1,0 +1,228 @@
+import React, { useState, useEffect } from "react";
+import axios, { AxiosError } from "axios";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import TopBar from "@/components/TopBar";
+
+// 결제 옵션
+const chargeOptions = [
+    { value: "BASIC_10000", display: "1만원 충전 (1만P)", amount: 10000, point: 10000 },
+    { value: "BONUS_20000", display: "2만원 충전 (2.2만P)", amount: 22000, point: 20000 },
+    { value: "BONUS_30000", display: "3만원 충전 (3만P)", amount: 33000, point: 30000 },
+    { value: "BONUS_40000", display: "4만원 충전 (4만P)", amount: 45000, point: 40000 },
+    { value: "PROMO_50000", display: "5만원 충전 (6만P)", amount: 60000, point: 50000 },
+];
+
+const paymentTypeCodeId = 1;
+const method = "CARD";
+
+// 안내문 멘트
+const usageGuidelines = [
+    "결제는 안전한 이니시스를 통해 처리됩니다.",
+    "충전된 포인트는 미사용시 환불 가능합니다.",
+    "결제 관련 문의는 고객센터로 연락해 주세요.",
+];
+
+// 아임포트 타입 선언
+declare global {
+    interface Window {
+        IMP?: {
+            init: (code: string) => void;
+            request_pay: (
+                param: {
+                    pg: string;
+                    pay_method: string;
+                    merchant_uid: string;
+                    name: string;
+                    amount: number;
+                    buyer_email: string;
+                    buyer_name: string;
+                },
+                cb: (rsp: IamportResponse) => void
+            ) => void;
+        };
+    }
+}
+
+interface IamportResponse {
+    success: boolean;
+    merchant_uid: string;
+    imp_uid?: string;
+    paid_amount?: number;
+    error_msg?: string;
+}
+
+interface PaymentCreateResponse {
+    merchantUid: string;
+    amount: number;
+}
+
+interface PaymentConfirmResponse {
+    status: string;
+    point: number;
+    // 기타 필요한 필드
+}
+
+const IMP_CODE = "imp00213017"; // 실제 본인 imp 코드로 수정!
+
+export default function PointPurchase(): JSX.Element {
+    const [selectedOption, setSelectedOption] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [result, setResult] = useState<string | null>(null);
+
+    // 아임포트 스크립트 동적 삽입 (최초 1회만)
+    useEffect(() => {
+        if (!window.IMP) {
+            const script = document.createElement("script");
+            script.src = "https://cdn.iamport.kr/js/iamport.payment-1.2.0.js";
+            script.async = true;
+            document.body.appendChild(script);
+        }
+    }, []);
+
+    // 결제 로직 (userId 없이!)
+    const handlePurchase = async () => {
+        if (!selectedOption) return;
+        setLoading(true);
+        setResult(null);
+
+        let created: PaymentCreateResponse;
+        try {
+            // userId X, chargeOption, method, paymentTypeCodeId만 전송
+            const res = await axios.post<PaymentCreateResponse>("/api/payments", {
+                chargeOption: selectedOption,
+                method,
+                paymentTypeCodeId,
+            });
+            created = res.data;
+        } catch (e) {
+            const err = e as AxiosError<{ message?: string }>;
+            setResult(`[주문생성 에러] ${err.response?.data?.message || err.message}`);
+            setLoading(false);
+            return;
+        }
+
+        if (!window.IMP) {
+            alert("아임포트 스크립트 미로딩!");
+            setLoading(false);
+            return;
+        }
+        const IMP = window.IMP;
+        IMP.init(IMP_CODE);
+
+        IMP.request_pay(
+            {
+                pg: "html5_inicis",
+                pay_method: "card",
+                merchant_uid: created.merchantUid,
+                name: "포인트 충전",
+                amount: created.amount,
+                buyer_email: "user@email.com",
+                buyer_name: "테스트고객",
+            },
+            async (rsp: IamportResponse) => {
+                setLoading(false);
+
+                if (rsp.success && rsp.imp_uid) {
+                    try {
+                        const confirmRes = await axios.post<PaymentConfirmResponse>(
+                            "/api/payments/confirm",
+                            null,
+                            {
+                                params: {
+                                    merchantUid: created.merchantUid,
+                                    impUid: rsp.imp_uid,
+                                    amount: rsp.paid_amount,
+                                },
+                            }
+                        );
+                        setResult(`✅ 결제 성공!\n${JSON.stringify(confirmRes.data, null, 2)}`);
+                    } catch (error) {
+                        const err = error as AxiosError<{ message?: string }>;
+                        setResult(`[결제확인 에러] ${err.response?.data?.message || err.message}`);
+                    }
+                } else {
+                    setResult(`[결제실패] ${rsp.error_msg}`);
+                }
+            }
+        );
+    };
+
+    return (
+        <div className="min-h-screen flex flex-col bg-white font-korean">
+            {/* 상단 네비게이션 */}
+            <TopBar />
+
+            {/* 본문 */}
+            <main className="flex-1 flex justify-center items-start py-24 bg-white">
+                <div className="w-[900px] px-10 py-12 shadow-md border rounded-xl bg-white relative">
+                    <h1 className="text-4xl font-bold text-black mb-2 text-center">포인트 충전</h1>
+                    <p className="text-base text-black mb-8 text-center">
+                        충전된 포인트는 유료 콘텐츠 이용에 사용됩니다.
+                    </p>
+
+                    {/* 금액 선택 */}
+                    <section>
+                        <h2 className="text-lg font-medium mb-4">충전할 금액을 선택하세요</h2>
+                        <div className="flex flex-wrap gap-6 mb-4">
+                            {chargeOptions.map((option) => (
+                                <Card
+                                    key={option.value}
+                                    className={`w-[250px] h-14 cursor-pointer ${selectedOption === option.value ? "border-primary" : "border-[#0000001a]"}`}
+                                    onClick={() => setSelectedOption(option.value)}
+                                >
+                                    <CardContent className="flex items-center justify-center h-full p-0">
+                    <span className="font-medium text-black text-base text-center">
+                      {option.display}
+                    </span>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </div>
+                    </section>
+
+                    {/* 결제 버튼 */}
+                    <Button
+                        className="w-full h-14 mt-8 bg-[#0000001a] text-[#00000080] rounded-lg font-medium text-base text-center"
+                        disabled={!selectedOption || loading}
+                        onClick={handlePurchase}
+                    >
+                        {loading ? "결제 중..." : "결제하기"}
+                    </Button>
+
+                    {/* 결제 결과 */}
+                    {result && (
+                        <div
+                            className="w-full mt-4 p-4 border border-[#eee] rounded-lg text-[15px] whitespace-pre-wrap"
+                            style={{ background: "#f9fafd", color: result.startsWith("✅") ? "#2f80ed" : "#e62b29" }}
+                        >
+                            {result}
+                        </div>
+                    )}
+
+                    {/* 안내 */}
+                    <Card className="w-full h-[180px] mt-8 bg-[#00000005] rounded-lg">
+                        <CardContent className="p-5">
+                            <h3 className="font-medium text-black text-base mb-2">이용 안내</h3>
+                            <ul className="space-y-4">
+                                {usageGuidelines.map((guideline, index) => (
+                                    <li
+                                        key={index}
+                                        className="font-normal text-[#000000b2] text-sm"
+                                    >
+                                        • {guideline}
+                                    </li>
+                                ))}
+                            </ul>
+                        </CardContent>
+                    </Card>
+                </div>
+            </main>
+
+            {/* Footer */}
+            <footer className="bg-gray-50 py-6 text-center text-sm text-gray-500">
+                © 2025 돈내고사자 팀. All rights reserved.
+            </footer>
+        </div>
+    );
+}
