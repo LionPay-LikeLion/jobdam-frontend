@@ -17,6 +17,7 @@ import SNSMessage from "@/pages/SNSMessage";
 import SNSPostWrite from "@/pages/SNSPostWrite";
 import CommunityPage from "@/pages/CommunityPage";
 import CommunityCreate from "@/pages/CommunityCreate";
+import PointPurchase from "@/pages/PointPurchase";
 
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -40,6 +41,7 @@ const App = () => (
               <Route path="sns-post-write" element={<SNSPostWrite />} />
             </Route>
             <Route path="/homepage" element={<HomePage />} />
+              <Route path="/point-purchase" element={<PointPurchase />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/find-email" element={<FindEmail />} />
