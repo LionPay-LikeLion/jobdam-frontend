@@ -45,14 +45,6 @@ const App = () => (
             <Route path="/find-email" element={<FindEmail />} />
             <Route path="/find-password" element={<FindPassword />} />
             <Route path="/community" element={<CommunityPage />} />
-            <Route path="/sns-feed" element={<SNSFeedLayout />}> {/* sns-feed side bar layout */}
-              <Route index element={<SNSFeedHome />} />          
-              <Route path="mine" element={<SNSFeedMy />} />      
-              <Route path=":postId" element={<SNSFeedPost />} />
-              <Route path="messages" element={<SNSMessage />} />
-              <Route path="sns-post-write" element={<SNSPostWrite />} />
-            </Route>
-            <Route path="/community" element={<CommunityPage />} />
             <Route path="/community/create" element={<CommunityCreate />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
