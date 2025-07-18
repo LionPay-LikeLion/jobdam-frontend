@@ -97,7 +97,7 @@ export default function PointPurchase(): JSX.Element {
         let created: PaymentCreateResponse;
         try {
             // 반드시 api 인스턴스를 사용!
-            const res = await api.post<PaymentCreateResponse>("/api/payment/create", {
+            const res = await api.post<PaymentCreateResponse>("/payment/create", {
                 chargeOption: selectedOption,
                 method,
                 paymentTypeCodeId,
@@ -137,7 +137,7 @@ export default function PointPurchase(): JSX.Element {
                     try {
                         // confirm도 반드시 api 인스턴스 사용!
                         const confirmRes = await api.post<PaymentConfirmResponse>(
-                            "/api/payment/confirm",
+                            "/payment/confirm",
                             null,
                             {
                                 params: {
