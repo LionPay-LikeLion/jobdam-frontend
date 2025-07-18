@@ -3,8 +3,8 @@ import api from "@/lib/api";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import TopBar from "@/components/TopBar"; // ★ 이 부분만 추가
+// Input, Search는 탑바에서만 필요하면 아래에서 삭제해도 무방
 
 interface UserProfile {
     email: string;
@@ -94,33 +94,8 @@ export default function MyPage() {
     return (
         <div className="bg-white flex flex-row justify-center w-full min-h-screen">
             <div className="bg-white w-[1440px] relative min-h-screen">
-                {/* 네비게이션 */}
-                <header className="flex w-full h-20 items-center justify-center gap-5 p-5 fixed top-0 left-0 right-0 bg-white shadow-[0px_0px_6px_#0000001f] z-10">
-                    <div className="flex w-[1440px] items-center justify-between">
-                        <div className="flex items-center gap-5">
-                            <img
-                                className="w-[85px] h-20 cursor-pointer"
-                                alt="JobDam Logo"
-                                src="/logo.png"
-                                onClick={() => navigate("/homepage")}
-                            />
-                            <span className="font-normal text-black text-[28px] cursor-pointer" onClick={() => navigate("/homepage")}>
-                                JobDam
-                            </span>
-                        </div>
-                        <div className="flex items-center gap-10">
-                            <a href="#" className="font-normal text-black text-base">소개</a>
-                            <a href="#" className="font-normal text-black text-base">커뮤니티</a>
-                            <a href="#" className="font-normal text-black text-base">포인트</a>
-                            <a href="/mypage" className="font-medium text-black text-base">마이페이지</a>
-                            <a href="#" className="font-normal text-black text-base">로그아웃</a>
-                            <div className="flex items-center border border-solid border-[#0000001a] rounded-md px-2 py-2 w-[200px]">
-                                <Input className="border-0 shadow-none h-5 text-sm text-[#00000080] focus-visible:ring-0" placeholder="Search in site" />
-                                <Search className="h-5 w-5 text-gray-400" />
-                            </div>
-                        </div>
-                    </div>
-                </header>
+                {/* TopBar로 네비게이션 대체 */}
+                <TopBar />
                 <h1 className="text-center font-bold text-black text-[40px] mt-[119px]">마이페이지</h1>
                 {/* 프로필 카드 */}
                 <Card className="w-[1320px] h-[186px] mx-auto mt-8 shadow-[0px_2px_8px_#00000014]">
