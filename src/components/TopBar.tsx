@@ -13,19 +13,24 @@ export default function TopBar() {
       <div className="container flex h-20 items-center justify-between px-4">
         <div
           className="flex items-center gap-2 cursor-pointer"
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/sns-feed")}
         >
           <img
             className="w-[85px] h-20 object-contain"
             alt="JobDam Logo"
             src="/images/logo.png"
           />
-          <span className="font-normal text-black text-[28px] leading-9">
-            JobDam
-          </span>
+
         </div>
 
         <div className="flex items-center gap-10">
+          <Button
+            variant="ghost"
+            className="font-normal text-base"
+            onClick={() => navigate("/")}
+          >
+            소개
+          </Button>
           <Button
             variant="ghost"
             className="font-normal text-base"
@@ -33,7 +38,7 @@ export default function TopBar() {
           >
             커뮤니티
           </Button>
-          {["SNS 피드", "포인트", "마이페이지"].map((item, index) => (
+          {["포인트", "마이페이지"].map((item, index) => (
             <Button
               key={index}
               variant="ghost"
