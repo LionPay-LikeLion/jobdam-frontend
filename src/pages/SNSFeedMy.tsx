@@ -1,6 +1,4 @@
 import React, { useState } from "react";
-import TopBar from "@/components/TopBar";
-import SNS_SideBar from "@/components/SNS_SideBar";
 import { FaRegThumbsUp, FaRegCommentDots } from "react-icons/fa";
 
 const SNSFeedMy = () => {
