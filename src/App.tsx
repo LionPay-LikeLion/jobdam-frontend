@@ -27,57 +27,64 @@ import CommunityMessenger from "@/pages/CommunityMessenger";
 import CommunityManagement from "@/pages/CommunityManagement";
 import CommunityBoardCreate from "@/pages/CommunityBoardCreate";
 import PointPurchase from "@/pages/PointPurchase";
-
+import MyPage from "@/pages/MyPage"; // <<== 마이페이지 import
 
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from "./contexts/AuthContext";
 import PaymentSuccess from "@/pages/PaymentSuccess.tsx";
 
-
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<SNSFeedLayout />}> {/* sns-feed side bar layout */}
-              <Route index element={<SNSFeedHome />} />
-              <Route path="mine" element={<SNSFeedMy />} />
-              <Route path=":postId" element={<SNSFeedPost />} />
-              <Route path="messages" element={<SNSMessage />} />
-              <Route path="sns-post-write" element={<SNSPostWrite />} />
-            </Route>
-            <Route path="/homepage" element={<HomePage />} />
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              {/* SNS Feed (사이드바 Layout) */}
+              <Route path="/" element={<SNSFeedLayout />}>
+                <Route index element={<SNSFeedHome />} />
+                <Route path="mine" element={<SNSFeedMy />} />
+                <Route path=":postId" element={<SNSFeedPost />} />
+                <Route path="messages" element={<SNSMessage />} />
+                <Route path="sns-post-write" element={<SNSPostWrite />} />
+              </Route>
+
+              {/* 단일 페이지 */}
+              <Route path="/homepage" element={<HomePage />} />
+              <Route path="/mypage" element={<MyPage />} />
               <Route path="/point-purchase" element={<PointPurchase />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/signup" element={<SignUp />} />
-            <Route path="/find-email" element={<FindEmail />} />
-            <Route path="/find-password" element={<FindPassword />
-            <Route path="/community" element={<CommunityPage />} />
-            <Route path="/community/create" element={<CommunityCreate />} />
-            <Route path="/community/:id" element={<CommunityLayout />}> {/* community side bar layout */}
-              <Route index element={<CommunityHome />} />
-              <Route path="board" element={<CommunityBoardList />} />
-              <Route path="board/:boardId" element={<CommunityBoardMain />} />
-              <Route path="board/detail/:postId" element={<CommunityBoardPostDetail />} />
-              <Route path="members" element={<CommunityMemberList />} />
-              <Route path="messenger" element={<CommunityMessenger />} />
-              <Route path="management" element={<CommunityManagement />} />
-              <Route path="board/create" element={<CommunityBoardCreate />} />
-            </Route>
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/signup" element={<SignUp />} />
+              <Route path="/find-email" element={<FindEmail />} />
+              <Route path="/find-password" element={<FindPassword />} />
+
+              {/* Community (사이드바 Layout) */}
+              <Route path="/community" element={<CommunityPage />} />
+              <Route path="/community/create" element={<CommunityCreate />} />
+              <Route path="/community/:id" element={<CommunityLayout />}>
+                <Route index element={<CommunityHome />} />
+                <Route path="board" element={<CommunityBoardList />} />
+                <Route path="board/:boardId" element={<CommunityBoardMain />} />
+                <Route path="board/detail/:postId" element={<CommunityBoardPostDetail />} />
+                <Route path="members" element={<CommunityMemberList />} />
+                <Route path="messenger" element={<CommunityMessenger />} />
+                <Route path="management" element={<CommunityManagement />} />
+                <Route path="board/create" element={<CommunityBoardCreate />} />
+              </Route>
+
+              {/* 결제 성공 */}
               <Route path="/payment-success" element={<PaymentSuccess />} />
 
+              {/* 404 */}
               <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
-  </QueryClientProvider>
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
+    </QueryClientProvider>
 );
 
 export default App;
-
