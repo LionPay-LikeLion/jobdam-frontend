@@ -12,10 +12,14 @@ import {
   Separator,
   Textarea,
 } from "@/components/ui";
+import { createSnsPost } from "@/lib/snsApi";
 import { Image as ImageIcon, Paperclip } from "lucide-react";
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function SNSPostWrite() {
+  const navigate = useNavigate();
+
   const editorButtons = [
     { label: "B", style: "font-bold" },
     { label: "I", style: "italic" },
@@ -23,6 +27,32 @@ export default function SNSPostWrite() {
     { label: "링크", style: "" },
     { label: "이미지", style: "" },
   ];
+
+  const [title, setTitle] = React.useState("");
+  const [content, setContent] = React.useState("");
+
+  // 등록 핸들러
+  const handleTestSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await createSnsPost({
+        title,
+        content,
+        imageUrl: "",
+        attachmentUrl: ""
+      });
+      alert("등록 성공!");
+      navigate("/");
+    } catch (e) {
+      alert("등록 실패");
+      console.error(e);
+    }
+  };
+
+  // 취소 핸들러
+  const handleCancel = () => {
+    navigate("/");
+  };
 
   return (
     <div className="w-full bg-white flex justify-center">
@@ -34,11 +64,16 @@ export default function SNSPostWrite() {
 
         <Card className="border border-[#0000001a] shadow-sm">
           <CardContent className="p-8">
-            <form>
+            <form onSubmit={handleTestSubmit}>
               {/* 제목 */}
               <div className="mb-8">
                 <label className="block text-base font-medium mb-2">제목</label>
-                <Input placeholder="제목을 입력하세요" className="h-[50px]" />
+                <Input
+                  placeholder="제목을 입력하세요"
+                  className="h-[50px]"
+                  value={title}
+                  onChange={e => setTitle(e.target.value)}
+                />
               </div>
 
               {/* 공개 범위 & 대표 이미지 */}
@@ -86,7 +121,12 @@ export default function SNSPostWrite() {
                       <Button key={idx} variant="ghost" className="px-3 text-sm">{btn.label}</Button>
                     ))}
                   </div>
-                  <Textarea placeholder="내용을 입력하세요" className="min-h-[300px] border-none rounded-none p-4" />
+                  <Textarea
+                    placeholder="내용을 입력하세요"
+                    className="min-h-[300px] border-none rounded-none p-4"
+                    value={content}
+                    onChange={e => setContent(e.target.value)}
+                  />
                 </div>
               </div>
 
@@ -104,9 +144,8 @@ export default function SNSPostWrite() {
           </CardContent>
 
           <CardFooter className="flex justify-end gap-2 py-6 border-t border-[#0000001a]">
-            <Button variant="outline" className="w-[76px] h-[46px] text-sm">취소</Button>
-            <Button variant="secondary" className="w-[103px] h-[46px] bg-[#f0f0f0] text-sm">임시 저장</Button>
-            <Button className="w-[74px] h-[46px] bg-black text-white text-sm">등록</Button>
+            <Button variant="outline" className="w-[76px] h-[46px] text-sm" onClick={handleCancel}>취소</Button>
+            <Button type="submit" className="w-[74px] h-[46px] bg-black text-white text-sm" onClick={handleTestSubmit}>등록</Button>
           </CardFooter>
         </Card>
       </div>
