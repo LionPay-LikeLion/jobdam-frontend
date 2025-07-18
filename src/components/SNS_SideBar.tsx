@@ -1,6 +1,6 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import clsx from "clsx";
+import clsx from "clsx"; // tailwind에서 조건부 클래스 조합할 때 편함
 
 const SNS_SideBar = () => {
   const location = useLocation();
@@ -8,8 +8,8 @@ const SNS_SideBar = () => {
 
   const menuItems = [
     { label: "피드 보기", path: "/" },
-    { label: "내 피드", path: "/sns/mine" },
-    { label: "메시지함", path: "/sns/messages" },
+    { label: "내 피드", path: "/mine" },
+    { label: "메시지함", path: "/messages" },
     { label: "통계", path: "/stats" },
     { label: "설정", path: "/settings" },
   ];
