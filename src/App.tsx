@@ -44,15 +44,15 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<SNSFeedLayout />}> {/* sns-feed side bar layout */}
-              <Route index element={<SNSFeedHome />} />
-              <Route path="mine" element={<SNSFeedMy />} />
+            <Route path="/" element={<HomePage />} />
+            <Route path="/sns" element={<SNSFeedLayout />}> {/* sns-feed side bar layout */}
+              <Route index element={<SNSFeedHome />} />          
+              <Route path="mine" element={<SNSFeedMy />} />      
               <Route path=":postId" element={<SNSFeedPost />} />
               <Route path="messages" element={<SNSMessage />} />
               <Route path="sns-post-write" element={<SNSPostWrite />} />
             </Route>
-            <Route path="/homepage" element={<HomePage />} />
-              <Route path="/point-purchase" element={<PointPurchase />} />
+            <Route path="/point-purchase" element={<PointPurchase />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/find-email" element={<FindEmail />} />
