@@ -1,0 +1,202 @@
+import React, { useEffect, useState } from "react";
+import api from "@/lib/api";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
+
+interface UserProfile {
+    email: string;
+    nickname: string;
+    remainingPoints: number;
+    subscriptionLevel: string;
+    role: string;
+    phone: string;
+    profileImageUrl: string | null;
+    memberTypeCode: string;
+    createdAt: string;
+}
+
+export default function MyPage() {
+    const [profile, setProfile] = useState<UserProfile | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [isUpgrading, setIsUpgrading] = useState(false);
+
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const fetchProfile = async () => {
+            try {
+                // baseURL이 /api 이면 아래 주소만 "/user/profile"로!
+                const res = await api.get<UserProfile>("/user/profile");
+                setProfile(res.data);
+                setError(null);
+            } catch (err: any) {
+                setError("유저 정보를 불러오지 못했습니다.");
+                setProfile(null);
+                console.error("[MY PAGE] 유저정보 에러:", err);
+            }
+            setLoading(false);
+        };
+        fetchProfile();
+    }, []);
+
+    // 프리미엄 업그레이드
+    const handleUpgrade = async () => {
+        if (!profile) return;
+        setIsUpgrading(true);
+        try {
+            // 프리미엄 업그레이드 API 호출
+            await api.post("/user/subscription/upgrade", {
+                // 필요하다면 추가 필드(예: code 등) 포함
+            });
+            alert("프리미엄 회원 업그레이드가 완료되었습니다.");
+            // 업그레이드 후 다시 유저정보 새로고침
+            window.location.reload();
+        } catch (err: any) {
+            alert("업그레이드 실패: " + (err?.response?.data?.message || "오류"));
+        }
+        setIsUpgrading(false);
+    };
+
+    // 회원타입 전환 신청 페이지로 이동
+    const goToMembershipTypeRequest = () => {
+        navigate("/membership-type-request");
+    };
+
+    const formatDate = (isoDate: string) => {
+        if (!isoDate) return "";
+        const date = new Date(isoDate);
+        return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
+    };
+
+    // 계정 정보 필드
+    const accountInfo = profile && [
+        { label: "닉네임", value: profile.nickname },
+        { label: "이메일 주소", value: profile.email },
+        { label: "가입일", value: formatDate(profile.createdAt) },
+        {
+            label: "회원등급",
+            value: profile.subscriptionLevel === "PREMIUM" ? "프리미엄" : "베이직",
+            action:
+                profile.subscriptionLevel === "PREMIUM"
+                    ? null
+                    : {
+                        label: isUpgrading ? "업그레이드 중..." : "프리미엄 회원 업그레이드",
+                        onClick: handleUpgrade,
+                        disabled: isUpgrading,
+                    },
+        },
+        {
+            label: "회원타입",
+            value: profile.memberTypeCode === "GENERAL" ? "구직자" : profile.memberTypeCode,
+            action: {
+                label: "회원타입 전환 신청",
+                onClick: goToMembershipTypeRequest,
+                disabled: false,
+            },
+        },
+        {
+            label: "남은 포인트",
+            value: profile.remainingPoints != null ? `${profile.remainingPoints.toLocaleString()} P` : "-",
+            action: null,
+        },
+        { label: "연락처", value: profile.phone, action: null },
+    ];
+
+    return (
+        <div className="bg-white flex flex-row justify-center w-full min-h-screen">
+            <div className="bg-white w-[1440px] relative min-h-screen">
+                {/* 네비게이션 */}
+                <header className="flex w-full h-20 items-center justify-center gap-5 p-5 fixed top-0 left-0 right-0 bg-white shadow-[0px_0px_6px_#0000001f] z-10">
+                    <div className="flex w-[1440px] items-center justify-between">
+                        <div className="flex items-center gap-5">
+                            {/* 로고 클릭하면 /homepage로 이동 */}
+                            <img
+                                className="w-[85px] h-20 cursor-pointer"
+                                alt="JobDam Logo"
+                                src="/logo.png" // <- 여기에 진짜 로고 이미지 경로! (public 폴더에 logo.png 있으면 됨)
+                                onClick={() => navigate("/homepage")}
+                            />
+                            <span className="font-normal text-black text-[28px] cursor-pointer" onClick={() => navigate("/homepage")}>
+                                JobDam
+                            </span>
+                        </div>
+                        <div className="flex items-center gap-10">
+                            <a href="#" className="font-normal text-black text-base">소개</a>
+                            <a href="#" className="font-normal text-black text-base">커뮤니티</a>
+                            <a href="#" className="font-normal text-black text-base">포인트</a>
+                            <a href="/mypage" className="font-medium text-black text-base">마이페이지</a>
+                            <a href="#" className="font-normal text-black text-base">로그아웃</a>
+                            <div className="flex items-center border border-solid border-[#0000001a] rounded-md px-2 py-2 w-[200px]">
+                                <Input className="border-0 shadow-none h-5 text-sm text-[#00000080] focus-visible:ring-0" placeholder="Search in site" />
+                                <Search className="h-5 w-5 text-gray-400" />
+                            </div>
+                        </div>
+                    </div>
+                </header>
+                <h1 className="text-center font-bold text-black text-[40px] mt-[119px]">마이페이지</h1>
+                {/* 프로필 카드 */}
+                <Card className="w-[1320px] h-[186px] mx-auto mt-8 shadow-[0px_2px_8px_#00000014]">
+                    <CardContent className="p-0 h-full relative">
+                        {profile?.profileImageUrl ? (
+                            <img className="absolute w-[120px] h-[120px] top-8 left-8 rounded-full object-cover" src={profile.profileImageUrl} alt="Profile" />
+                        ) : (
+                            <div className="absolute w-[120px] h-[120px] top-8 left-8 rounded-full bg-gray-200 flex items-center justify-center text-2xl text-gray-500">Profile</div>
+                        )}
+                        <Button className="absolute h-11 top-[71px] left-[177px] bg-black hover:bg-black/90 text-white rounded-md" disabled>
+                            프로필 이미지 변경
+                        </Button>
+                    </CardContent>
+                </Card>
+                <div className="flex gap-6 mt-8 px-[60px]">
+                    {/* 사이드바 */}
+                    <Card className="w-[246px] h-[230px]">
+                        <CardContent className="p-0 h-full relative">
+                            <a href="#" className="block px-6 py-3 mt-[9px] mx-[9px] bg-black text-white rounded-md font-normal text-base">내 계정 정보</a>
+                            <a href="#" className="block px-6 py-3 text-black font-normal text-base">포인트 관리</a>
+                            <a href="#" className="block px-6 py-3 text-black font-normal text-base">활동 내역</a>
+                        </CardContent>
+                    </Card>
+                    {/* 메인 - 계정정보 */}
+                    <Card className="flex-1 shadow-[0px_2px_8px_#00000014]">
+                        <CardContent className="p-8">
+                            <h2 className="font-medium text-black text-[28px] mb-8">계정 정보</h2>
+                            {loading && <div>로딩중...</div>}
+                            {error && <div className="text-red-600">{error}</div>}
+                            {!loading && !error && profile && accountInfo && accountInfo.map((info, idx) => (
+                                <div key={idx} className="border-b border-[#0000001a] py-4 flex items-center">
+                                    <span className="font-normal text-black text-sm w-[120px]">{info.label}</span>
+                                    <span className="font-normal text-black text-base">{info.value}</span>
+                                    {info.action && (
+                                        <div className="ml-auto">
+                                            <Button
+                                                variant="outline"
+                                                className="h-[50px] text-[#000000b2] text-base"
+                                                onClick={info.action.onClick}
+                                                disabled={info.action.disabled}
+                                            >
+                                                {info.action.label}
+                                            </Button>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                            {/* 하단 버튼 */}
+                            <div className="flex gap-4 mt-12">
+                                <Button className="h-[50px] bg-black hover:bg-black/90 text-white font-normal text-base" disabled onClick={() => {}}>
+                                    비밀번호 변경
+                                </Button>
+                                <Button variant="outline" className="h-[50px] border-red-600 text-red-600 hover:bg-red-50 font-normal text-base" disabled onClick={() => {}}>
+                                    회원 탈퇴 요청
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
+        </div>
+    );
+}
