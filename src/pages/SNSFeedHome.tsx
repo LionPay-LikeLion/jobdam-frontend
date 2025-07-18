@@ -107,7 +107,7 @@ const SNSFeedHome = () => {
             <div className="space-y-6">
               {posts.map((post) => (
                 <div key={post.id} className="flex border rounded-lg shadow p-6 bg-white">
-                  <Link to={`/${post.id}`} className="w-full flex">
+                  <Link to={`/sns-feed/${post.id}`} className="w-full flex">
                     <div className="w-[300px] h-[216px] bg-gray-300 rounded-md"></div>
                     <div className="ml-6 flex flex-col justify-between w-full">
                       <div className="flex justify-between items-center">
