@@ -1,7 +1,5 @@
 import React from "react";
 import TopBar from "@/components/TopBar";
-import chatgptImage2025717024042RemovebgPreview1 from "@/assets/chatgpt-image-2025-7-17-02-40-42-removebg-preview-1.png";
-import shape from "@/assets/shape.svg";
 import { Link } from "react-router-dom";
 
 const FindEmail = () => {
