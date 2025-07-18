@@ -40,7 +40,7 @@ export default function TopBar() {
           <Button
             variant="ghost"
             className="font-normal text-base"
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/homepage")}
           >
             소개
           </Button>
