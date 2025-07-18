@@ -27,14 +27,14 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          <Route path="/info" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/find-email" element={<FindEmail />} />
           <Route path="/find-password" element={<FindPassword />} />
           <Route path="/community" element={<CommunityPage />} />
           
-          <Route path="/sns-feed" element={<SNSFeedLayout />}> {/* sns-feed side bar layout */}
+          <Route path="/" element={<SNSFeedLayout />}> {/* sns-feed side bar layout */}
             <Route index element={<SNSFeedHome />} />          
             <Route path="mine" element={<SNSFeedMy />} />      
             <Route path=":postId" element={<SNSFeedPost />} /> 
