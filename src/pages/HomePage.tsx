@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import TopBar from "@/components/TopBar";
 import {
   Users,
   MessageSquare,
@@ -97,61 +98,7 @@ const HomePage = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-white font-korean">
-      {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b bg-white">
-        <div className="container flex h-20 items-center justify-between px-4">
-          <div
-            className="flex items-center gap-2 cursor-pointer"
-            onClick={() => navigate("/sns-feed")}
-          >
-            <img
-              className="w-[85px] h-20 object-contain"
-              alt="JobDam Logo"
-              src="/images/logo.png"
-            />
-          </div>
-
-          <div className="flex items-center gap-10">
-            <Button
-            variant="ghost"
-            className="font-normal text-base"
-            onClick={() => navigate("/")}
-          >
-            소개
-          </Button>
-          <Button
-            variant="ghost"
-            className="font-normal text-base"
-            onClick={() => navigate("/community")}
-          >
-            커뮤니티
-          </Button>
-          {["포인트", "마이페이지"].map((item, index) => (
-              <Button
-                key={index}
-                variant="ghost"
-                className="font-normal text-base"
-              >
-                {item}
-              </Button>
-            ))}
-            <Button
-              variant="ghost"
-              className="font-normal text-base"
-              onClick={() => navigate("/login")}
-            >
-              로그인/회원가입
-            </Button>
-            <div className="flex items-center w-[200px] border border-[#0000001a] rounded-md">
-              <Input
-                className="border-0 text-[#00000080] text-sm"
-                placeholder="Search in site"
-              />
-              <Search className="w-5 h-5 mr-2 text-gray-400" />
-            </div>
-          </div>
-        </div>
-      </header>
+      <TopBar />
 
       {/* Main */}
       <main className="flex-1">
@@ -248,19 +195,30 @@ const HomePage = () => {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {popularCommunities.map((community, index) => (
-                <div key={index} className="rounded-xl shadow-md overflow-hidden border">
-                  <div className={`h-40 flex items-center justify-center text-white text-2xl font-bold ${community.color}`}>
-                    {community.title}
+                <div
+                  key={index}
+                  className="border border-[#00000014] shadow-[0px_2px_8px_#00000014] rounded-xl p-6"
+                >
+                  <div className="flex items-center gap-4 mb-4">
+                    <div
+                      className={`w-12 h-12 ${community.color} rounded-lg flex items-center justify-center`}
+                    >
+                      <span className="text-white font-semibold">
+                        {community.title.charAt(0)}
+                      </span>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold text-black">
+                        {community.title}
+                      </h3>
+                      <p className="text-sm text-[#000000b2]">
+                        {community.count}
+                      </p>
+                    </div>
                   </div>
-                  <div className="p-4">
-                    <h3 className="font-semibold text-sm text-black mb-1">
-                      {community.title} 개발자
-                    </h3>
-                    <p className="text-sm text-[#000000b2] mb-2">
-                      {community.description}
-                    </p>
-                    <p className="text-xs text-gray-500">👥 {community.count}</p>
-                  </div>
+                  <p className="text-sm text-[#000000b2] leading-[21px]">
+                    {community.description}
+                  </p>
                 </div>
               ))}
             </div>
