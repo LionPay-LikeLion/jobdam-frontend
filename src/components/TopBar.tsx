@@ -4,16 +4,29 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 export default function TopBar() {
   const navigate = useNavigate();
+  const { isAuthenticated, user, logout } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      toast.success("로그아웃되었습니다.");
+      navigate("/");
+    } catch (error) {
+      toast.error("로그아웃 중 오류가 발생했습니다.");
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white">
       <div className="container flex h-20 items-center justify-between px-4">
         <div
           className="flex items-center gap-2 cursor-pointer"
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/sns-feed")}
         >
           <img
             className="w-[85px] h-20 object-contain"
@@ -27,7 +40,7 @@ export default function TopBar() {
           <Button
             variant="ghost"
             className="font-normal text-base"
-            onClick={() => navigate("/info")}
+            onClick={() => navigate("/")}
           >
             소개
           </Button>
@@ -48,13 +61,26 @@ export default function TopBar() {
             </Button>
           ))}
           
-          <Button
-            variant="ghost"
-            className="font-normal text-base"
-            onClick={() => navigate("/login")}
-          >
-            로그인/회원가입
-          </Button>
+          {isAuthenticated ? (
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                className="font-normal text-base"
+                onClick={handleLogout}
+              >
+                로그아웃
+              </Button>
+            </div>
+          ) : (
+            <Button
+              variant="ghost"
+              className="font-normal text-base"
+              onClick={() => navigate("/login")}
+            >
+              로그인/회원가입
+            </Button>
+          )}
+          
           <div className="flex items-center w-[200px] border border-[#0000001a] rounded-md">
             <Input
               className="border-0 text-[#00000080] text-sm"
