@@ -27,11 +27,12 @@ import CommunityMessenger from "@/pages/CommunityMessenger";
 import CommunityManagement from "@/pages/CommunityManagement";
 import CommunityBoardCreate from "@/pages/CommunityBoardCreate";
 import PointPurchase from "@/pages/PointPurchase";
-import MyPage from "@/pages/MyPage"; // <<== 마이페이지 import
-
+import MyPage from "@/pages/MyPage";
+import PremiumUpgrade from "@/pages/PremiumUpgrade"; // << 추가
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from "./contexts/AuthContext";
 import PaymentSuccess from "@/pages/PaymentSuccess.tsx";
+import MembershipTypeRequest from "@/pages/MembershipTypeRequest";
 
 const queryClient = new QueryClient();
 
@@ -61,6 +62,9 @@ const App = () => (
               <Route path="/find-email" element={<FindEmail />} />
               <Route path="/find-password" element={<FindPassword />} />
 
+              {/* 프리미엄 회원 업그레이드 페이지 라우트 추가 */}
+              <Route path="/premium-upgrade" element={<PremiumUpgrade />} />
+
               {/* Community (사이드바 Layout) */}
               <Route path="/community" element={<CommunityPage />} />
               <Route path="/community/create" element={<CommunityCreate />} />
@@ -77,6 +81,7 @@ const App = () => (
 
               {/* 결제 성공 */}
               <Route path="/payment-success" element={<PaymentSuccess />} />
+              <Route path="/membership-type-request" element={<MembershipTypeRequest />} />
 
               {/* 404 */}
               <Route path="*" element={<NotFound />} />
