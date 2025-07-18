@@ -17,9 +17,11 @@ import SNSMessage from "@/pages/SNSMessage";
 import SNSPostWrite from "@/pages/SNSPostWrite";
 import CommunityPage from "@/pages/CommunityPage";
 import CommunityCreate from "@/pages/CommunityCreate";
+import PointPurchase from "@/pages/PointPurchase";
 
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from "./contexts/AuthContext";
+import PaymentSuccess from "@/pages/PaymentSuccess.tsx";
 
 
 const queryClient = new QueryClient();
@@ -40,6 +42,7 @@ const App = () => (
               <Route path="sns-post-write" element={<SNSPostWrite />} />
             </Route>
             <Route path="/homepage" element={<HomePage />} />
+              <Route path="/point-purchase" element={<PointPurchase />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/find-email" element={<FindEmail />} />
@@ -54,7 +57,9 @@ const App = () => (
             </Route>
             <Route path="/community" element={<CommunityPage />} />
             <Route path="/community/create" element={<CommunityCreate />} />
-            <Route path="*" element={<NotFound />} />
+              <Route path="/payment-success" element={<PaymentSuccess />} />
+
+              <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
