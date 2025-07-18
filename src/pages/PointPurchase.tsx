@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
-import axios, { AxiosError } from "axios";
+import { AxiosError } from "axios";
+import api from "@/lib/api"; // 반드시 api 인스턴스 import!
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import TopBar from "@/components/TopBar";
+import { useNavigate } from "react-router-dom";
 
 // 결제 옵션
 const chargeOptions = [
@@ -69,6 +72,8 @@ export default function PointPurchase(): JSX.Element {
     const [selectedOption, setSelectedOption] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState<string | null>(null);
+    const { user } = useAuth();
+    const navigate = useNavigate();
 
     // 아임포트 스크립트 동적 삽입 (최초 1회만)
     useEffect(() => {
@@ -80,19 +85,24 @@ export default function PointPurchase(): JSX.Element {
         }
     }, []);
 
-    // 결제 로직 (userId 없이!)
+    // 결제 로직 (userId, email, name 포함)
     const handlePurchase = async () => {
-        if (!selectedOption) return;
+        if (!selectedOption || !user) {
+            setResult("로그인이 필요합니다.");
+            return;
+        }
         setLoading(true);
         setResult(null);
 
         let created: PaymentCreateResponse;
         try {
-            // userId X, chargeOption, method, paymentTypeCodeId만 전송
-            const res = await axios.post<PaymentCreateResponse>("/api/payments", {
+            // 반드시 api 인스턴스를 사용!
+            const res = await api.post<PaymentCreateResponse>("/api/payment/create", {
                 chargeOption: selectedOption,
                 method,
                 paymentTypeCodeId,
+                buyerEmail: user.email,
+                buyerName: user.name,
             });
             created = res.data;
         } catch (e) {
@@ -117,16 +127,17 @@ export default function PointPurchase(): JSX.Element {
                 merchant_uid: created.merchantUid,
                 name: "포인트 충전",
                 amount: created.amount,
-                buyer_email: "user@email.com",
-                buyer_name: "테스트고객",
+                buyer_email: user.email,
+                buyer_name: user.name,
             },
             async (rsp: IamportResponse) => {
                 setLoading(false);
 
                 if (rsp.success && rsp.imp_uid) {
                     try {
-                        const confirmRes = await axios.post<PaymentConfirmResponse>(
-                            "/api/payments/confirm",
+                        // confirm도 반드시 api 인스턴스 사용!
+                        const confirmRes = await api.post<PaymentConfirmResponse>(
+                            "/api/payment/confirm",
                             null,
                             {
                                 params: {
@@ -136,7 +147,8 @@ export default function PointPurchase(): JSX.Element {
                                 },
                             }
                         );
-                        setResult(`✅ 결제 성공!\n${JSON.stringify(confirmRes.data, null, 2)}`);
+                        // 결제 성공시 -> 결제성공 페이지로 이동
+                        navigate("/payment-success");
                     } catch (error) {
                         const err = error as AxiosError<{ message?: string }>;
                         setResult(`[결제확인 에러] ${err.response?.data?.message || err.message}`);
@@ -150,17 +162,13 @@ export default function PointPurchase(): JSX.Element {
 
     return (
         <div className="min-h-screen flex flex-col bg-white font-korean">
-            {/* 상단 네비게이션 */}
             <TopBar />
-
-            {/* 본문 */}
             <main className="flex-1 flex justify-center items-start py-24 bg-white">
                 <div className="w-[900px] px-10 py-12 shadow-md border rounded-xl bg-white relative">
                     <h1 className="text-4xl font-bold text-black mb-2 text-center">포인트 충전</h1>
                     <p className="text-base text-black mb-8 text-center">
                         충전된 포인트는 유료 콘텐츠 이용에 사용됩니다.
                     </p>
-
                     {/* 금액 선택 */}
                     <section>
                         <h2 className="text-lg font-medium mb-4">충전할 금액을 선택하세요</h2>
@@ -172,15 +180,14 @@ export default function PointPurchase(): JSX.Element {
                                     onClick={() => setSelectedOption(option.value)}
                                 >
                                     <CardContent className="flex items-center justify-center h-full p-0">
-                    <span className="font-medium text-black text-base text-center">
-                      {option.display}
-                    </span>
+                                        <span className="font-medium text-black text-base text-center">
+                                            {option.display}
+                                        </span>
                                     </CardContent>
                                 </Card>
                             ))}
                         </div>
                     </section>
-
                     {/* 결제 버튼 */}
                     <Button
                         className="w-full h-14 mt-8 bg-[#0000001a] text-[#00000080] rounded-lg font-medium text-base text-center"
@@ -189,7 +196,6 @@ export default function PointPurchase(): JSX.Element {
                     >
                         {loading ? "결제 중..." : "결제하기"}
                     </Button>
-
                     {/* 결제 결과 */}
                     {result && (
                         <div
@@ -199,7 +205,6 @@ export default function PointPurchase(): JSX.Element {
                             {result}
                         </div>
                     )}
-
                     {/* 안내 */}
                     <Card className="w-full h-[180px] mt-8 bg-[#00000005] rounded-lg">
                         <CardContent className="p-5">
@@ -218,8 +223,6 @@ export default function PointPurchase(): JSX.Element {
                     </Card>
                 </div>
             </main>
-
-            {/* Footer */}
             <footer className="bg-gray-50 py-6 text-center text-sm text-gray-500">
                 © 2025 돈내고사자 팀. All rights reserved.
             </footer>
