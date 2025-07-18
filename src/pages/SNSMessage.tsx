@@ -4,39 +4,48 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { fetchMessageBoxes, fetchConversation, sendMessage } from "@/lib/messageApi";
 
 export default function SNSMessage(): JSX.Element {
-  const messages = [
-    {
-      id: 1,
-      sender: "김민수",
-      avatar: "",
-      preview:
-        "안녕하세요! 오늘 올리신 게시글 정말 유용했어요. 혹시 더 자세한 정보를 얻을 수 있을까요?",
-      time: "2024년",
-      unread: true,
-      fullMessage:
-        "안녕하세요! 오늘 올리신 게시글 정말 유용했어요. 혹시 더 자세한 정보를 얻을 수 있을까요? 특히 면접 준비 부분에서 말씀해주신 팁들이 정말 도움이 될 것 같습니다. 시간 되실 때 답변 부탁드려요!",
-      date: "2024년 1월 15일 오후 2:30",
-    },
-    {
-      id: 2,
-      sender: "박지영",
-      avatar: "",
-      preview: "포트폴리오 리뷰 요청드립니다.",
-      time: "2024년",
-      unread: false,
-    },
-    {
-      id: 3,
-      sender: "이준호",
-      avatar: "",
-      preview: "스터디 그룹 참여 문의",
-      time: "2024년",
-      unread: false,
-    },
-  ];
+  const [boxes, setBoxes] = useState<any[]>([]); // 쪽지함 목록
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null); // 선택된 상대방
+  const [conversation, setConversation] = useState<any[]>([]); // 대화 내역
+  const [message, setMessage] = useState(""); // 입력 메시지
+  const [loading, setLoading] = useState(true);
+  const [opponentInfo, setOpponentInfo] = useState<{ nickname: string; profileImageUrl: string } | null>(null);
+
+  // 쪽지함 목록 불러오기
+  useEffect(() => {
+    fetchMessageBoxes().then(data => {
+      setBoxes(data);
+      if (data.length > 0) setSelectedUserId(data[0].opponentUserId);
+      setLoading(false);
+    });
+  }, []);
+
+  // 대화 내역 및 상대방 정보 불러오기
+  useEffect(() => {
+    if (selectedUserId) {
+      fetchConversation(selectedUserId).then(setConversation);
+      // 상대방 정보 찾기
+      const box = boxes.find(b => b.opponentUserId === selectedUserId);
+      if (box) {
+        setOpponentInfo({ nickname: box.opponentNickname, profileImageUrl: box.opponentProfileImageUrl });
+      }
+    }
+  }, [selectedUserId, boxes]);
+
+  // 메시지 전송
+  const handleSend = async () => {
+    if (selectedUserId && message.trim()) {
+      await sendMessage(selectedUserId, message);
+      setMessage("");
+      fetchConversation(selectedUserId).then(setConversation);
+    }
+  };
+
+  if (loading) return <div className="text-center py-10">로딩중...</div>;
 
   return (
     <div className="flex border border-[#0000001a] rounded-xl overflow-hidden w-full max-w-5xl mx-auto bg-white">
@@ -49,13 +58,7 @@ export default function SNSMessage(): JSX.Element {
                 value="received"
                 className="data-[state=active]:bg-[#0000000d] data-[state=active]:shadow-none px-4 py-2 rounded-md"
               >
-                받은 메시지
-              </TabsTrigger>
-              <TabsTrigger
-                value="sent"
-                className="data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[#00000099]"
-              >
-                보낸 메시지
+                나의 메시지
               </TabsTrigger>
             </TabsList>
           </Tabs>
@@ -65,31 +68,28 @@ export default function SNSMessage(): JSX.Element {
         </div>
 
         <div className="flex-1 overflow-auto">
-          {messages.map((message, index) => (
+          {boxes.length === 0 && (
+            <div className="text-center text-gray-400 py-10">쪽지함이 비어 있습니다.</div>
+          )}
+          {boxes.map((box) => (
             <div
-              key={index}
-              className={`h-[95px] border-b border-[#0000000d] p-4 flex items-start ${
-                index === 0 ? "bg-[#0000000d]" : ""
-              }`}
+              key={box.opponentUserId}
+              className={`h-[95px] border-b border-[#0000000d] p-4 flex items-start cursor-pointer ${selectedUserId === box.opponentUserId ? "bg-[#0000000d]" : ""}`}
+              onClick={() => setSelectedUserId(box.opponentUserId)}
             >
               <Avatar className="w-10 h-10 mr-4">
-                <AvatarImage src={message.avatar} alt={message.sender} />
-                <AvatarFallback>{message.sender[0]}</AvatarFallback>
+                <AvatarImage src={box.opponentProfileImageUrl} alt={box.opponentNickname} />
+                <AvatarFallback>{box.opponentNickname[0]}</AvatarFallback>
               </Avatar>
               <div className="flex-1">
                 <div className="flex justify-between">
-                  <h3 className="text-sm font-medium leading-5">
-                    {message.sender}
-                  </h3>
-                  {message.unread && (
-                    <Badge className="w-2 h-2 rounded-full bg-[#ff4444] p-0" />
-                  )}
+                  <h3 className="text-sm font-medium leading-5">{box.opponentNickname}</h3>
                 </div>
                 <p className="text-[13px] leading-[18px] text-[#00000099] mt-1">
-                  {message.preview}
+                  {box.lastMessageContent}
                 </p>
                 <p className="text-xs leading-4 text-[#00000066] mt-1">
-                  {message.time}
+                  {box.lastMessageCreatedAt}
                 </p>
               </div>
             </div>
@@ -99,39 +99,53 @@ export default function SNSMessage(): JSX.Element {
 
       {/* Right Message Detail */}
       <div className="flex-1 p-8">
-        <Card className="w-full shadow-sm border border-[#0000001a] rounded-xl">
-          <CardHeader className="p-0">
-            <div className="px-6 py-4 border-b border-[#0000001a] flex items-center">
-              <Avatar className="w-12 h-12 mr-4">
-                <AvatarImage src="" alt="김민수" />
-                <AvatarFallback>김</AvatarFallback>
-              </Avatar>
-              <div className="flex-1">
-                <h3 className="text-lg font-medium leading-6">김민수</h3>
-                <p className="text-sm text-[#00000099] leading-5">
-                  {messages[0].date}
-                </p>
+        {selectedUserId && conversation.length > 0 && opponentInfo ? (
+          <Card className="w-full shadow-sm border border-[#0000001a] rounded-xl">
+            <CardHeader className="p-0">
+              <div className="px-6 py-4 border-b border-[#0000001a] flex items-center">
+                <Avatar className="w-12 h-12 mr-4">
+                  <AvatarImage src={opponentInfo.profileImageUrl} alt={opponentInfo.nickname} />
+                  <AvatarFallback>{opponentInfo.nickname[0]}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <h3 className="text-lg font-medium leading-6">{opponentInfo.nickname}</h3>
+                </div>
               </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="secondary"
-                  className="h-8 px-3 bg-[#0000000d] hover:bg-[#0000001a]"
-                >
-                  답장
-                </Button>
-                <Button
-                  variant="secondary"
-                  className="h-8 px-3 bg-[#0000000d] hover:bg-[#0000001a]"
-                >
-                  삭제
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="space-y-4">
+                {conversation.map((msg) => (
+                  <div key={msg.messageId} className="mb-2">
+                    <div className="flex items-center gap-2">
+                      <Avatar className="w-8 h-8">
+                        <AvatarImage src={msg.senderProfileImageUrl} alt={msg.senderNickname} />
+                        <AvatarFallback>{msg.senderNickname[0]}</AvatarFallback>
+                      </Avatar>
+                      <span className="font-medium text-sm">{msg.senderNickname}</span>
+                      <span className="text-xs text-gray-400">{msg.createdAt}</span>
+                    </div>
+                    <div className="ml-10 text-base text-black mt-1">{msg.content}</div>
+                  </div>
+                ))}
+              </div>
+              {/* 메시지 입력창 */}
+              <div className="flex items-center gap-2 mt-6">
+                <input
+                  className="flex-1 border rounded px-3 py-2 text-sm"
+                  placeholder="메시지를 입력하세요"
+                  value={message}
+                  onChange={e => setMessage(e.target.value)}
+                  onKeyDown={e => { if (e.key === "Enter") handleSend(); }}
+                />
+                <Button className="h-10 px-6 bg-blue-500 text-white text-sm font-medium" onClick={handleSend}>
+                  전송
                 </Button>
               </div>
-            </div>
-          </CardHeader>
-          <CardContent className="p-6">
-            <p className="text-base leading-6">{messages[0].fullMessage}</p>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="text-center text-gray-400 py-20">대화할 메시지를 선택하세요.</div>
+        )}
       </div>
     </div>
   );
