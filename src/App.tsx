@@ -17,6 +17,15 @@ import SNSMessage from "@/pages/SNSMessage";
 import SNSPostWrite from "@/pages/SNSPostWrite";
 import CommunityPage from "@/pages/CommunityPage";
 import CommunityCreate from "@/pages/CommunityCreate";
+import CommunityLayout from "@/pages/layouts/CommunityLayout";
+import CommunityHome from "@/pages/CommunityHome";
+import CommunityBoardList from "@/pages/CommunityBoardList";
+import CommunityBoardMain from "@/pages/CommunityBoardMain";
+import CommunityBoardPostDetail from "@/pages/CommunityBoardPostDetail";
+import CommunityMemberList from "@/pages/CommunityMemberList";
+import CommunityMessenger from "@/pages/CommunityMessenger";
+import CommunityManagement from "@/pages/CommunityManagement";
+import CommunityBoardCreate from "@/pages/CommunityBoardCreate";
 
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -32,9 +41,9 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-          <Route path="/" element={<SNSFeedLayout />}> {/* sns-feed side bar layout */}
-              <Route index element={<SNSFeedHome />} />          
-              <Route path="mine" element={<SNSFeedMy />} />      
+            <Route path="/" element={<SNSFeedLayout />}> {/* sns-feed side bar layout */}
+              <Route index element={<SNSFeedHome />} />
+              <Route path="mine" element={<SNSFeedMy />} />
               <Route path=":postId" element={<SNSFeedPost />} />
               <Route path="messages" element={<SNSMessage />} />
               <Route path="sns-post-write" element={<SNSPostWrite />} />
@@ -44,16 +53,28 @@ const App = () => (
             <Route path="/signup" element={<SignUp />} />
             <Route path="/find-email" element={<FindEmail />} />
             <Route path="/find-password" element={<FindPassword />} />
-            <Route path="/community" element={<CommunityPage />} />
+
             <Route path="/sns-feed" element={<SNSFeedLayout />}> {/* sns-feed side bar layout */}
-              <Route index element={<SNSFeedHome />} />          
-              <Route path="mine" element={<SNSFeedMy />} />      
+              <Route index element={<SNSFeedHome />} />
+              <Route path="mine" element={<SNSFeedMy />} />
               <Route path=":postId" element={<SNSFeedPost />} />
               <Route path="messages" element={<SNSMessage />} />
               <Route path="sns-post-write" element={<SNSPostWrite />} />
             </Route>
+
             <Route path="/community" element={<CommunityPage />} />
             <Route path="/community/create" element={<CommunityCreate />} />
+            <Route path="/community/:id" element={<CommunityLayout />}> {/* community side bar layout */}
+              <Route index element={<CommunityHome />} />
+              <Route path="board" element={<CommunityBoardList />} />
+              <Route path="board/:boardId" element={<CommunityBoardMain />} />
+              <Route path="board/detail/:postId" element={<CommunityBoardPostDetail />} />
+              <Route path="members" element={<CommunityMemberList />} />
+              <Route path="messenger" element={<CommunityMessenger />} />
+              <Route path="management" element={<CommunityManagement />} />
+              <Route path="board/create" element={<CommunityBoardCreate />} />
+            </Route>
+
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

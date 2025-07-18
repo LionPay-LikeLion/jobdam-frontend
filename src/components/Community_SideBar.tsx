@@ -1,17 +1,20 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import clsx from "clsx";
+import { useParams } from "react-router-dom";
 
-const SNS_SideBar = () => {
+const Community_SideBar = () => {
+
+  const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
 
   const menuItems = [
-    { label: "피드 보기", path: "/" },
-    { label: "내 피드", path: "/mine" },
-    { label: "메시지함", path: "/messages" },
-    { label: "통계", path: "/stats" },
-    { label: "설정", path: "/settings" },
+    { label: "커뮤니티 홈", path: `/community/${id}` },
+    { label: "게시판", path: `/community/${id}/board` },
+    { label: "멤버 목록", path: `/community/${id}/members` },
+    { label: "메신저", path: `/community/${id}/messenger` },
+    { label: "관리", path: `/community/${id}/management` },
   ];
 
   const getIsActive = (path: string) => {
@@ -20,7 +23,7 @@ const SNS_SideBar = () => {
 
   return (
     <aside className="w-[291px] border-r border-gray-200 px-6 pt-6">
-      <h2 className="text-2xl font-medium mb-6">SNS 피드</h2>
+      <h2 className="text-2xl font-medium mb-6">커뮤니티</h2>
       <nav className="space-y-2">
         {menuItems.map((item) => (
           <button
@@ -41,4 +44,4 @@ const SNS_SideBar = () => {
   );
 };
 
-export default SNS_SideBar;
+export default Community_SideBar;
