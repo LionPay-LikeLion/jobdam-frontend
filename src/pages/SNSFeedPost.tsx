@@ -1,4 +1,6 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { fetchSnsPostDetail } from "@/lib/snsApi";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -49,7 +51,23 @@ const comments = [
   },
 ];
 
-const SnsFeedPost = () => {
+const SNSFeedPost = () => {
+  const { postId } = useParams();
+  const [post, setPost] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (postId) {
+      fetchSnsPostDetail(Number(postId))
+        .then(data => setPost(data))
+        .catch(() => setPost(null))
+        .finally(() => setLoading(false));
+    }
+  }, [postId]);
+
+  if (loading) return <div className="text-center py-10">로딩중...</div>;
+  if (!post) return <div className="text-center py-10">게시글을 찾을 수 없습니다.</div>;
+
   return (
     
         <main className="flex-1 px-8 py-8">
@@ -178,4 +196,4 @@ const SnsFeedPost = () => {
   );
 };
 
-export default SnsFeedPost;
+export default SNSFeedPost;
