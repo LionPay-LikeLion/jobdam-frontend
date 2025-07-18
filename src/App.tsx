@@ -26,9 +26,12 @@ import CommunityMemberList from "@/pages/CommunityMemberList";
 import CommunityMessenger from "@/pages/CommunityMessenger";
 import CommunityManagement from "@/pages/CommunityManagement";
 import CommunityBoardCreate from "@/pages/CommunityBoardCreate";
+import PointPurchase from "@/pages/PointPurchase";
+
 
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from "./contexts/AuthContext";
+import PaymentSuccess from "@/pages/PaymentSuccess.tsx";
 
 
 const queryClient = new QueryClient();
@@ -49,19 +52,11 @@ const App = () => (
               <Route path="sns-post-write" element={<SNSPostWrite />} />
             </Route>
             <Route path="/homepage" element={<HomePage />} />
+              <Route path="/point-purchase" element={<PointPurchase />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/find-email" element={<FindEmail />} />
-            <Route path="/find-password" element={<FindPassword />} />
-
-            <Route path="/sns-feed" element={<SNSFeedLayout />}> {/* sns-feed side bar layout */}
-              <Route index element={<SNSFeedHome />} />
-              <Route path="mine" element={<SNSFeedMy />} />
-              <Route path=":postId" element={<SNSFeedPost />} />
-              <Route path="messages" element={<SNSMessage />} />
-              <Route path="sns-post-write" element={<SNSPostWrite />} />
-            </Route>
-
+            <Route path="/find-password" element={<FindPassword />
             <Route path="/community" element={<CommunityPage />} />
             <Route path="/community/create" element={<CommunityCreate />} />
             <Route path="/community/:id" element={<CommunityLayout />}> {/* community side bar layout */}
@@ -74,8 +69,9 @@ const App = () => (
               <Route path="management" element={<CommunityManagement />} />
               <Route path="board/create" element={<CommunityBoardCreate />} />
             </Route>
+              <Route path="/payment-success" element={<PaymentSuccess />} />
 
-            <Route path="*" element={<NotFound />} />
+              <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>

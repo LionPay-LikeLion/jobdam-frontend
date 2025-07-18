@@ -23,8 +23,11 @@ export default function TopBar() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white">
-      <div className="w-full flex h-20 items-center justify-between px-4">
-        <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/sns-feed")}>
+      <div className="container flex h-20 items-center justify-between px-4">
+        <div
+          className="flex items-center gap-2 cursor-pointer"
+          onClick={() => navigate("/")}
+        >
           <img
             className="w-[85px] h-20 object-contain"
             alt="JobDam Logo"

@@ -38,7 +38,7 @@ export interface RegisterResponse {
 // 로그인 API
 export const login = async (credentials: LoginRequest): Promise<LoginResponse> => {
   try {
-    const response = await api.post<any>('/api/auth/login', credentials);
+    const response = await api.post<any>('/auth/login', credentials);
     console.log('Login response:', response.data); // 디버깅용
     
     // 백엔드 응답 형식에 따라 토큰 추출
@@ -95,7 +95,7 @@ export const login = async (credentials: LoginRequest): Promise<LoginResponse> =
 // 회원가입 API
 export const register = async (userData: RegisterRequest): Promise<RegisterResponse> => {
   try {
-    const response = await api.post<RegisterResponse>('/api/auth/register', userData);
+    const response = await api.post<RegisterResponse>('/auth/register', userData);
     return response.data;
   } catch (error) {
     throw error;
@@ -105,7 +105,7 @@ export const register = async (userData: RegisterRequest): Promise<RegisterRespo
 // 이메일 중복 확인 (GET 요청, query parameter)
 export const checkEmail = async (email: string): Promise<boolean> => {
   try {
-    const response = await api.get<boolean>('/api/auth/check-email', {
+    const response = await api.get<boolean>('/auth/check-email', {
       params: { email }
     });
     console.log('Email check response:', response.data);
@@ -119,7 +119,7 @@ export const checkEmail = async (email: string): Promise<boolean> => {
 // 닉네임 중복 확인 (GET 요청, query parameter)
 export const checkNickname = async (nickname: string): Promise<boolean> => {
   try {
-    const response = await api.get<boolean>('/api/auth/check-id', {
+    const response = await api.get<boolean>('/auth/check-id', {
       params: { nickname }
     });
     console.log('Nickname check response:', response.data);
@@ -133,7 +133,7 @@ export const checkNickname = async (nickname: string): Promise<boolean> => {
 // 로그아웃 API
 export const logout = async (): Promise<void> => {
   try {
-    await api.post('/api/auth/logout');
+    await api.post('/auth/logout');
   } catch (error) {
     // 에러가 발생해도 클라이언트에서는 토큰을 삭제
     console.error('Logout error:', error);
@@ -143,7 +143,7 @@ export const logout = async (): Promise<void> => {
 // 사용자 정보 가져오기
 export const getCurrentUser = async () => {
   try {
-    const response = await api.get('/api/auth/me');
+    const response = await api.get('/auth/me');
     return response.data;
   } catch (error) {
     throw error;
@@ -153,7 +153,7 @@ export const getCurrentUser = async () => {
 // 토큰 갱신
 export const refreshToken = async (): Promise<AuthTokens> => {
   try {
-    const response = await api.post<AuthTokens>('/api/auth/refresh');
+    const response = await api.post<AuthTokens>('/auth/refresh');
     setTokens(response.data);
     return response.data;
   } catch (error) {
