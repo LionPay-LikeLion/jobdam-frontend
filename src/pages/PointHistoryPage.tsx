@@ -2,20 +2,43 @@
 import React, { useEffect, useState } from "react";
 import api from "@/lib/api";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import MyPageLayout from "./MyPageLayout";
+import { useNavigate } from "react-router-dom";
 
 interface PointHistoryItem {
-    createdAt: string;
+    paymentId: number;
     point: number;
-    paymentStatus: "SUCCESS" | "CANCELLED" | string;
-    merchantUid?: string;
-    description?: string;
+    amount: number;
+    paymentTypeCodeId: number;
+    paymentStatusCodeId: number;
+    paymentStatus: string;
+    method: string;
+    createdAt: string;
+    impUid: string;
+    merchantUid: string;
+    cumulativePoint: number;
+    statusColor: string;
+    statusLabel: string;
 }
+
+// 결제 타입 코드에 따른 한글 이름
+const getPaymentTypeName = (paymentTypeCodeId: number): string => {
+    switch (paymentTypeCodeId) {
+        case 1: return "포인트 충전";
+        case 2: return "커뮤니티 구독";
+        case 3: return "유저 등급 업그레이드";
+        case 4: return "커뮤니티 등급 업그레이드";
+        case 5: return "환불";
+        default: return "기타";
+    }
+};
 
 export default function PointHistoryPage() {
     const [list, setList] = useState<PointHistoryItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [currentPoint, setCurrentPoint] = useState<number>(0);
+    const navigate = useNavigate();
 
     useEffect(() => {
         api.get("/user/profile").then(res => setCurrentPoint(res.data.remainingPoints));
@@ -27,79 +50,52 @@ export default function PointHistoryPage() {
     // 최신순 정렬
     const sorted = [...list].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
-    // 누적포인트 로직 (과거부터 합산)
-    let cumulative = 0;
-    // 누적 리스트는 인덱스 기준 최신순
-    const cumulativeArr: number[] = Array(sorted.length).fill(0);
-    for (let i = sorted.length - 1; i >= 0; i--) {
-        const item = sorted[i];
-        if (item.paymentStatus === "CANCELLED") {
-            // 환불건은 변동 X, 누적 변화 없음
-        } else if (item.point && item.point !== 0 && item.paymentStatus !== "FAILED") {
-            cumulative += item.point;
-        }
-        cumulativeArr[i] = cumulative;
-    }
-
-    // 렌더할 행 생성
-    const rows: JSX.Element[] = [];
-    sorted.forEach((item, idx) => {
-        const bgClass = idx % 2 === 0 ? "bg-white" : "bg-gray-50";
-
-        // 1. 환불건
-        if (item.paymentStatus === "CANCELLED") {
-            rows.push(
-                <tr key={`refund-${idx}`} className={bgClass}>
-                    <td className="py-2 px-2 font-bold text-gray-400">환불처리</td>
-                    <td className="py-2 px-2">0</td>
-                    <td className="py-2 px-2">{cumulativeArr[idx].toLocaleString()}P</td>
-                    <td className="py-2 px-2">
-                        <span className="text-red-600 font-bold">환불</span>
-                    </td>
-                    <td className="py-2 px-2">{item.description || "-"}</td>
-                </tr>
-            );
-            return;
-        }
-        // 2. 결제 실패/변동 0(환불 제외)은 렌더 X
-        if (item.paymentStatus === "FAILED" || !item.point || item.point === 0) return;
-
-        // 3. 적립/차감(일반건)
-        let statusEl = null;
-        if (item.point > 0) {
-            statusEl = <span className="text-green-600 font-bold">적립</span>;
-        } else if (item.point < 0) {
-            statusEl = <span className="text-orange-500 font-bold">차감</span>;
-        }
-
-        rows.push(
-            <tr key={idx} className={bgClass}>
-                <td className="py-2 px-2">{formatDate(item.createdAt)}</td>
-                <td className="py-2 px-2">{item.point > 0 ? "+" : "-"}{Math.abs(item.point).toLocaleString()}P</td>
-                <td className="py-2 px-2">{cumulativeArr[idx].toLocaleString()}P</td>
-                <td className="py-2 px-2">{statusEl}</td>
-                <td className="py-2 px-2">{item.description || "-"}</td>
-            </tr>
-        );
-    });
-
     function formatDate(iso: string) {
         if (!iso) return "-";
         const d = new Date(iso);
-        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
     }
-    function pad(n: number) { return n < 10 ? "0" + n : n; }
+    
+    function pad(n: number) { 
+        return n < 10 ? "0" + n : n; 
+    }
+
+    const handleChargePoints = () => {
+        navigate("/point-purchase");
+    };
 
     return (
         <MyPageLayout>
             <Card className="shadow-[0px_2px_8px_#00000014]">
                 <CardContent className="p-8">
                     <h2 className="font-medium text-black text-[28px] mb-8">포인트 관리</h2>
-                    <div className="mb-6">
-                        <span className="font-bold text-[#ff6b35] text-lg">
-                            현재 보유 포인트: {currentPoint?.toLocaleString() || 0} P
-                        </span>
+                    
+                    {/* 현재 포인트 섹션 */}
+                    <div className="mb-8">
+                        <div className="text-black text-lg mb-2">보유 포인트</div>
+                        <div className="text-[#ff6b35] text-3xl font-bold mb-2">
+                            {currentPoint?.toLocaleString() || 0} P
+                        </div>
+                        <div className="text-black text-sm">
+                            현재 사용 가능한 포인트입니다
+                        </div>
                     </div>
+
+                    {/* 포인트 충전하기 버튼 */}
+                    <div className="mb-8">
+                        <Button 
+                            className="h-12 bg-black hover:bg-black/90 text-white font-normal text-base px-8"
+                            onClick={handleChargePoints}
+                        >
+                            포인트 충전하기
+                        </Button>
+                    </div>
+
+                    {/* 포인트 사용 내역 */}
+                    <div className="mb-6">
+                        <h3 className="font-medium text-black text-lg mb-4">포인트 사용 내역</h3>
+                    </div>
+                    
                     {loading ? (
                         <div>로딩중...</div>
                     ) : (
@@ -107,19 +103,32 @@ export default function PointHistoryPage() {
                             <table className="min-w-full border rounded-xl text-center">
                                 <thead>
                                 <tr className="bg-gray-100">
-                                    <th className="py-3 px-2">일자/구분</th>
-                                    <th className="py-3 px-2">포인트변동</th>
-                                    <th className="py-3 px-2">누적포인트</th>
-                                    <th className="py-3 px-2">상태</th>
-                                    <th className="py-3 px-2">비고</th>
+                                    <th className="py-3 px-4">일자</th>
+                                    <th className="py-3 px-4">포인트변동</th>
+                                    <th className="py-3 px-4">내역</th>
                                 </tr>
                                 </thead>
                                 <tbody>
-                                {rows.length === 0 ? (
+                                {sorted.length === 0 ? (
                                     <tr>
-                                        <td colSpan={5} className="text-gray-400 py-10">내역 없음</td>
+                                        <td colSpan={3} className="text-gray-400 py-10">내역 없음</td>
                                     </tr>
-                                ) : rows}
+                                ) : (
+                                    sorted.map((item, idx) => {
+                                        const bgClass = idx % 2 === 0 ? "bg-white" : "bg-gray-50";
+                                        const pointColor = item.point > 0 ? "text-green-600" : item.point < 0 ? "text-red-600" : "text-gray-500";
+                                        
+                                        return (
+                                            <tr key={item.paymentId} className={bgClass}>
+                                                <td className="py-3 px-4">{formatDate(item.createdAt)}</td>
+                                                <td className={`py-3 px-4 font-medium ${pointColor}`}>
+                                                    {item.point > 0 ? "+" : ""}{item.point.toLocaleString()} P
+                                                </td>
+                                                <td className="py-3 px-4">{getPaymentTypeName(item.paymentTypeCodeId)}</td>
+                                            </tr>
+                                        );
+                                    })
+                                )}
                                 </tbody>
                             </table>
                         </div>

@@ -1,0 +1,40 @@
+[33m6572005[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeature/login[m[33m)[m HEAD@{0}: pull origin develop: Merge made by the 'ort' strategy.
+[33m153b20f[m[33m ([m[1;31morigin/feature/login[m[33m)[m HEAD@{1}: commit: feature 커뮤니티 리스트,멤버 조회/ 유저 프로필
+[33m6966dc0[m HEAD@{2}: commit: 123
+[33mf9e8670[m HEAD@{3}: pull origin develop: Fast-forward
+[33m89c85b1[m HEAD@{4}: commit: home fix
+[33m95b44ad[m HEAD@{5}: commit: 123
+[33m7b7688a[m HEAD@{6}: commit: 123
+[33m098b099[m HEAD@{7}: commit: 123
+[33m4e32cf2[m HEAD@{8}: commit: 123
+[33m8054c75[m HEAD@{9}: commit (merge): 123
+[33m7c30f57[m HEAD@{10}: commit: SNS 연결 구현
+[33m0c24477[m HEAD@{11}: checkout: moving from develop to feature/login
+[33m59523cf[m[33m ([m[1;32mdevelop[m[33m)[m HEAD@{12}: pull origin develop: Fast-forward
+[33m3c6329a[m HEAD@{13}: checkout: moving from feature/login to develop
+[33m0c24477[m HEAD@{14}: commit: 123
+[33m1f96bf7[m HEAD@{15}: commit: 123
+[33m04fdd6c[m HEAD@{16}: pull origin develop: Merge made by the 'ort' strategy.
+[33mf805fcb[m HEAD@{17}: commit: 123
+[33m3c6329a[m HEAD@{18}: pull origin develop: Fast-forward
+[33mda35934[m HEAD@{19}: checkout: moving from develop to feature/login
+[33m3c6329a[m HEAD@{20}: pull origin develop: Fast-forward
+[33m8e8704a[m HEAD@{21}: checkout: moving from feature/login to develop
+[33mda35934[m HEAD@{22}: commit: 123
+[33m3bb153e[m HEAD@{23}: commit: 123
+[33m6907cdc[m HEAD@{24}: pull origin develop: Fast-forward
+[33m9ab449f[m HEAD@{25}: commit: login
+[33m8e8704a[m HEAD@{26}: checkout: moving from develop to feature/login
+[33m8e8704a[m HEAD@{27}: pull --tags origin develop: Fast-forward
+[33me82f722[m HEAD@{28}: checkout: moving from develop to develop
+[33me82f722[m HEAD@{29}: pull origin develop: Merge made by the 'ort' strategy.
+[33m12dda25[m HEAD@{30}: commit (merge): 커뮤니티 메인 페이지
+[33me4be13a[m HEAD@{31}: commit: test bonyub
+[33mbcba4c1[m HEAD@{32}: commit (merge): Fix
+[33m6dee531[m HEAD@{33}: commit: test
+[33mcef26cf[m HEAD@{34}: checkout: moving from develop to develop
+[33mcef26cf[m HEAD@{35}: checkout: moving from develop to develop
+[33mcef26cf[m HEAD@{36}: checkout: moving from develop to develop
+[33mcef26cf[m HEAD@{37}: checkout: moving from develop to develop
+[33mcef26cf[m HEAD@{38}: checkout: moving from main to develop
+[33md0fa516[m[33m ([m[1;32mmain[m[33m)[m HEAD@{39}: clone: from https://github.com/LionPay-LikeLion/jobdam-frontend.git

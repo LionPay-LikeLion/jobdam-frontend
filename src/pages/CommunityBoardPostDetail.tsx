@@ -1,9 +1,156 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { FiUser, FiDownload, FiEdit, FiTrash2, FiMessageCircle, FiSearch } from "react-icons/fi";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import api from "@/lib/api";
+
+interface CommunityPostDetail {
+  postId: number;
+  boardId: number;
+  title: string;
+  content: string;
+  userNickname: string;
+  createdAt: string;
+  commentCount: number;
+  viewCount: number;
+  postTypeCode: string;
+  userProfileImageUrl: string;
+}
+
+interface CommunityComment {
+  commentId: number;
+  content: string;
+  userNickname: string;
+  createdAt: string;
+  userProfileImageUrl?: string;
+}
 
 export default function CommunityBoardPostDetail(): JSX.Element {
   const navigate = useNavigate();
+  const { id, boardId, postId } = useParams();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  
+  const [post, setPost] = useState<CommunityPostDetail | null>(null);
+  const [comments, setComments] = useState<CommunityComment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [newComment, setNewComment] = useState("");
+  const [submittingComment, setSubmittingComment] = useState(false);
+
+  useEffect(() => {
+    fetchPostDetail();
+    fetchComments();
+  }, [postId]);
+
+  const fetchPostDetail = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get<CommunityPostDetail>(`/communities/${id}/boards/${boardId}/posts/${postId}`);
+      setPost(response.data);
+    } catch (error) {
+      console.error('게시글 상세 조회 실패:', error);
+      toast({
+        title: "오류",
+        description: "게시글을 불러오는데 실패했습니다.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchComments = async () => {
+    try {
+      const response = await api.get<CommunityComment[]>(`/communities/${id}/boards/${boardId}/posts/${postId}/comments`);
+      setComments(response.data);
+    } catch (error) {
+      console.error('댓글 조회 실패:', error);
+    }
+  };
+
+  const handleSubmitComment = async () => {
+    if (!newComment.trim()) {
+      toast({
+        title: "입력 오류",
+        description: "댓글 내용을 입력해주세요.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setSubmittingComment(true);
+      await api.post(`/communities/${id}/boards/${boardId}/posts/${postId}/comments`, {
+        content: newComment.trim()
+      });
+      
+      setNewComment("");
+      fetchComments(); // 댓글 목록 새로고침
+      
+      toast({
+        title: "성공",
+        description: "댓글이 등록되었습니다.",
+      });
+    } catch (error) {
+      console.error('댓글 등록 실패:', error);
+      toast({
+        title: "오류",
+        description: "댓글 등록에 실패했습니다.",
+        variant: "destructive",
+      });
+    } finally {
+      setSubmittingComment(false);
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+  };
+
+  const getPostTypeDisplay = (postTypeCode: string) => {
+    switch (postTypeCode) {
+      case "NOTICE": return "공지";
+      case "NORMAL": return "일반";
+      case "QNA": return "문답";
+      default: return postTypeCode;
+    }
+  };
+
+  const getPostTypeColor = (postTypeCode: string) => {
+    switch (postTypeCode) {
+      case "NOTICE": return "bg-red-500 text-white";
+      case "QNA": return "bg-sky-400 text-white";
+      case "NORMAL": return "bg-teal-400 text-white";
+      default: return "bg-gray-400 text-white";
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="w-full flex justify-center bg-white min-h-screen">
+        <div className="w-full max-w-[1000px] px-4 py-10">
+          <div className="text-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
+            <p className="text-gray-600">게시글을 불러오는 중...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!post) {
+    return (
+      <div className="w-full flex justify-center bg-white min-h-screen">
+        <div className="w-full max-w-[1000px] px-4 py-10">
+          <div className="text-center py-20">
+            <p className="text-gray-600">게시글을 찾을 수 없습니다.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full flex justify-center bg-white min-h-screen">
@@ -16,93 +163,59 @@ export default function CommunityBoardPostDetail(): JSX.Element {
           </div>
 
           {/* 게시글 제목 */}
-          <h2 className="text-[32px] font-medium mb-4">React 개발 환경 설정 가이드</h2>
+          <h2 className="text-[32px] font-medium mb-4">{post.title}</h2>
 
           {/* 작성자 정보 */}
           <div className="flex items-center text-sm text-gray-600 mb-2 gap-4">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-                <FiUser className="text-gray-600" />
+              <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                {post.userProfileImageUrl ? (
+                  <img src={post.userProfileImageUrl} alt={post.userNickname} className="w-full h-full object-cover" />
+                ) : (
+                  <FiUser className="text-gray-600" />
+                )}
               </div>
-              <span className="text-base text-black font-medium">집가고싶다</span>
+              <span className="text-base text-black font-medium">{post.userNickname}</span>
             </div>
-            <span>2024.01.15 10:30</span>
-            <span>조회 247</span>
+            <span>{formatDate(post.createdAt)}</span>
+            <span>조회 {post.viewCount}</span>
           </div>
 
           {/* 카테고리 */}
-          <div className="inline-block px-3 py-1 bg-violet-100 text-violet-600 rounded text-sm mb-6">
-            자유게시판
+          <div className={`inline-block px-3 py-1 rounded text-sm mb-6 ${getPostTypeColor(post.postTypeCode)}`}>
+            {getPostTypeDisplay(post.postTypeCode)}
           </div>
 
           {/* 본문 */}
-          <div className="space-y-4 text-base text-black leading-6">
-            <p>
-              안녕하세요! 오늘은 React 개발 환경을 처음부터 설정하는 방법에 대해 자세히 알아보겠습니다.
-            </p>
-            <p>
-              React는 Facebook에서 개발한 JavaScript 라이브러리로, 사용자 인터페이스를 구축하는 데 매우 유용합니다.
-              특히 컴포넌트 기반 아키텍처를 통해 재사용 가능한 UI 요소를 만들 수 있어 개발 효율성이 높습니다.
-            </p>
-            <div className="w-full h-[200px] bg-gray-100 rounded-lg flex items-center justify-center text-sm text-gray-500">
-              이미지: React 개발환경 스크린샷
-            </div>
-            <div>
-              <p>개발 환경 설정 단계:</p>
-              <ul className="list-disc ml-5 mt-2 space-y-1">
-                <li>Node.js 설치</li>
-                <li>Create React App 설치</li>
-                <li>프로젝트 생성 및 실행</li>
-                <li>개발 도구 설정</li>
-              </ul>
-            </div>
-            <p>
-              각 단계별로 자세한 설명과 함께 실제 코드 예제도 포함되어 있으니 차근차근 따라해보시기 바랍니다.
-              궁금한 점이 있으시면 언제든 댓글로 문의해주세요!
-            </p>
-          </div>
-
-          {/* 첨부파일 */}
-          <div className="mt-10">
-            <h3 className="font-medium mb-2">첨부파일</h3>
-            <div className="flex items-center justify-between border rounded-lg p-4 w-full max-w-[1000px]">
-              <div className="flex items-start gap-3">
-                <FiDownload className="text-gray-500 mt-1" />
-                <div>
-                  <div className="text-sm font-medium text-black">React_개발환경_가이드.pdf</div>
-                  <div className="text-xs text-gray-500">2.3MB</div>
-                </div>
-              </div>
-              <button className="px-4 py-2 bg-violet-600 text-white text-sm rounded-md">다운로드</button>
-            </div>
+          <div className="space-y-4 text-base text-black leading-6 whitespace-pre-wrap">
+            {post.content}
           </div>
 
           {/* 댓글 */}
           <div className="mt-12 space-y-6">
             <div className="flex items-center gap-2 text-base font-medium">
               <FiMessageCircle />
-              <span>댓글 2</span>
+              <span>댓글 {post.commentCount}</span>
             </div>
 
             {/* 댓글 리스트 */}
             <div className="space-y-4">
-              <div className="border rounded-lg p-4 w-full max-w-[1000px]">
-                <div className="flex items-center text-sm text-gray-600 mb-1">
-                  <FiUser className="mr-2" />
-                  <span className="text-black font-medium mr-2">김철수</span>
-                  <span>2024.01.15 14:30</span>
+              {comments.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  첫 번째 댓글을 남겨보세요!
                 </div>
-                <div className="text-sm text-black">좋은 정보 감사합니다!</div>
-              </div>
-
-              <div className="border rounded-lg p-4 w-full max-w-[1000px]">
-                <div className="flex items-center text-sm text-gray-600 mb-1">
-                  <FiUser className="mr-2" />
-                  <span className="text-black font-medium mr-2">이영희</span>
-                  <span>2024.01.15 15:45</span>
-                </div>
-                <div className="text-sm text-black">저도 같은 경험이 있어서 공감됩니다.</div>
-              </div>
+              ) : (
+                comments.map((comment) => (
+                  <div key={comment.commentId} className="border rounded-lg p-4 w-full max-w-[1000px]">
+                    <div className="flex items-center text-sm text-gray-600 mb-1">
+                      <FiUser className="mr-2" />
+                      <span className="text-black font-medium mr-2">{comment.userNickname}</span>
+                      <span>{formatDate(comment.createdAt)}</span>
+                    </div>
+                    <div className="text-sm text-black">{comment.content}</div>
+                  </div>
+                ))
+              )}
             </div>
 
             {/* 댓글 입력창 */}
@@ -110,23 +223,37 @@ export default function CommunityBoardPostDetail(): JSX.Element {
               <input
                 type="text"
                 placeholder="댓글을 입력하세요"
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSubmitComment()}
                 className="flex-1 px-4 py-2 border rounded-md text-sm"
+                disabled={submittingComment}
               />
-              <button className="px-4 py-2 bg-black text-white rounded-md text-sm">등록</button>
+              <button 
+                className="px-4 py-2 bg-black text-white rounded-md text-sm disabled:bg-gray-400"
+                onClick={handleSubmitComment}
+                disabled={submittingComment}
+              >
+                {submittingComment ? "등록 중..." : "등록"}
+              </button>
             </div>
           </div>
 
           {/* 하단 버튼 */}
           <div className="flex justify-between items-center border-t pt-6 mt-12 max-w-[1000px]">
             <div className="flex gap-4">
-              <button className="px-4 py-2 border rounded-md text-sm flex items-center gap-1">
-                <FiEdit />
-                수정
-              </button>
-              <button className="px-4 py-2 border rounded-md text-sm flex items-center gap-1">
-                <FiTrash2 />
-                삭제
-              </button>
+              {user?.nickname === post.userNickname && (
+                <>
+                  <button className="px-4 py-2 border rounded-md text-sm flex items-center gap-1">
+                    <FiEdit />
+                    수정
+                  </button>
+                  <button className="px-4 py-2 border rounded-md text-sm flex items-center gap-1">
+                    <FiTrash2 />
+                    삭제
+                  </button>
+                </>
+              )}
             </div>
             <button
               onClick={() => navigate(-1)}

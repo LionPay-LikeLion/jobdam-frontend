@@ -9,7 +9,7 @@ interface User {
   nickname?: string;
   memberTypeCode?: string;  // memberType -> memberTypeCode로 변경
   subscriptionLevel?: string;
-  point?: number;
+  remainingPoints?: number;
   role?: string;
   phone?: string;
   profileImageUrl?: string;
