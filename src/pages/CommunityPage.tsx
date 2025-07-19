@@ -1,176 +1,180 @@
-import React, { useState } from "react";
-import { FiUser } from "react-icons/fi";
-import TopBar from "../components/TopBar";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { FiUser, FiPlus } from "react-icons/fi";
+import { fetchCommunities, fetchMyCommunities } from "@/lib/communityApi";
 
-const dummyCommunities = [
-  {
-    id: 1,
-    title: "취업 준비 개발자 모임",
-    description:
-      "함께 성장하는 개발자들의 취업 준비 커뮤니티입니다. 코딩테스트, 면접 준비, 포트폴리오 리뷰 등을 함께해요.",
-    participants: 124,
-    imageUrl: "https://placehold.co/120x120",
-    joined: true,
-  },
-  {
-    id: 2,
-    title: "프론트엔드 스터디",
-    description:
-      "React, Vue, Angular 등 최신 프론트엔드 기술을 학습하고 프로젝트를 진행합니다.",
-    participants: 89,
-    imageUrl: "https://placehold.co/120x120",
-    joined: true,
-  },
-  {
-    id: 3,
-    title: "UI/UX 디자이너 네트워킹",
-    description:
-      "디자이너들의 포트폴리오 공유와 피드백, 취업 정보를 나누는 공간입니다.",
-    participants: 67,
-    imageUrl: "https://placehold.co/120x120",
-    joined: true,
-  },
-  {
-    id: 4,
-    title: "백엔드 개발자 모임",
-    description:
-      "Java, Python, Node.js 등 백엔드 기술 스택을 다루는 개발자들의 모임입니다.",
-    participants: 156,
-    imageUrl: "https://placehold.co/120x120",
-    joined: false,
-  },
-  {
-    id: 5,
-    title: "데이터 사이언스 연구회",
-    description:
-      "머신러닝, 딥러닝, 데이터 분석 기술을 연구하고 실무 프로젝트를 진행합니다.",
-    participants: 78,
-    imageUrl: "https://placehold.co/120x120",
-    joined: false,
-  },
-  {
-    id: 6,
-    title: "스타트업 창업 준비",
-    description:
-      "창업을 꿈꾸는 사람들이 모여 아이디어를 공유하고 팀을 구성하는 공간입니다.",
-    participants: 45,
-    imageUrl: "https://placehold.co/120x120",
-    joined: false,
-  },
-  {
-    id: 7,
-    title: "모바일 앱 개발자",
-    description:
-      "iOS, Android 네이티브 및 크로스플랫폼 앱 개발 기술을 공유합니다.",
-    participants: 92,
-    imageUrl: "https://placehold.co/120x120",
-    joined: true,
-  },
-  {
-    id: 8,
-    title: "웹 퍼블리셔 모임",
-    description:
-      "HTML, CSS, JavaScript를 활용한 웹 퍼블리싱 기술과 노하우를 나눕니다.",
-    participants: 63,
-    imageUrl: "https://placehold.co/120x120",
-    joined: false,
-  },
-];
-
-
+interface Community {
+  communityId: number;
+  name: string;
+  description: string;
+  subscriptionLevelCode: string;
+  ownerNickname: string;
+  maxMember: number;
+  currentMember: number;
+  enterPoint: number;
+  profileImageUrl?: string; // 커뮤니티 이미지 URL 추가
+}
 
 const CommunityPage = () => {
   const navigate = useNavigate();
+  const [communities, setCommunities] = useState<Community[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedTab, setSelectedTab] = useState<"전체" | "가입한 커뮤니티">("전체");
+
+  const fetchData = async (tab: "전체" | "가입한 커뮤니티") => {
+    setLoading(true);
+    try {
+      let data;
+      if (tab === "가입한 커뮤니티") {
+        data = await fetchMyCommunities();
+      } else {
+        data = await fetchCommunities();
+      }
+      setCommunities(data);
+    } catch (error) {
+      console.error('커뮤니티 데이터 로딩 실패:', error);
+      // 임시 데이터로 폴백
+      setCommunities([
+        {
+          communityId: 1,
+          name: "React 개발자 커뮤니티",
+          description: "React 개발자들을 위한 커뮤니티입니다",
+          subscriptionLevelCode: "PREMIUM",
+          ownerNickname: "김개발",
+          maxMember: 100,
+          currentMember: 85,
+          enterPoint: 1000
+        },
+        {
+          communityId: 2,
+          name: "백엔드 개발자 커뮤니티",
+          description: "백엔드 개발자들을 위한 커뮤니티입니다",
+          subscriptionLevelCode: "BASIC",
+          ownerNickname: "박서버",
+          maxMember: 50,
+          currentMember: 32,
+          enterPoint: 500
+        }
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData(selectedTab);
+  }, [selectedTab]);
+
+  const handleTabChange = (tab: "전체" | "가입한 커뮤니티") => {
+    setSelectedTab(tab);
+  };
 
   const handleCreateCommunity = () => { 
     navigate("/community/create");
   };
 
-  const [selectedTab, setSelectedTab] = useState<"전체" | "가입한 커뮤니티">("전체");
-
-  const filteredCommunities =
-    selectedTab === "전체"
-      ? dummyCommunities
-      : dummyCommunities.filter((c) => c.joined);
+  if (loading) {
+    return (
+      <div className="w-full max-w-[1440px] mx-auto px-6 py-10">
+        <div className="text-center">로딩중...</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-white font-korean">
-      <TopBar />
-      <div className="max-w-[1440px] mx-auto px-6 py-12">
-        <h1 className="text-4xl font-bold text-center mb-2">커뮤니티 소개</h1>
-        <p className="text-center text-base text-gray-700 mb-10">
-          커뮤니티는 멤버들에게 다양한 정보와 소통 공간을 제공합니다. <br />
-          가입 후 게시판 열람 및 글쓰기가 가능합니다.
-        </p>
+    <div className="w-full max-w-[1440px] mx-auto px-6 py-10">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-[32px] font-bold leading-10">커뮤니티</h1>
+        <button
+          onClick={handleCreateCommunity}
+          className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800 transition-colors"
+        >
+          <FiPlus className="w-4 h-4" />
+          커뮤니티 생성
+        </button>
+      </div>
 
-        {/* 검색 및 상단 필터 */}
-        <div className="flex flex-wrap items-center justify-between mb-6 gap-4">
-          <div className="flex items-center gap-3 flex-wrap">
-            <input
-              type="text"
-              placeholder="커뮤니티 검색"
-              className="w-[280px] h-[42px] border border-gray-300 rounded-md px-4 text-sm"
-            />
-            <select className="h-[42px] border border-gray-300 rounded-md px-3 text-sm">
-              <option>최신순</option>
-              <option>인기순</option>
-            </select>
-          </div>
+      {/* Tab Navigation */}
+      <div className="flex gap-4 mb-8">
+        <button
+          onClick={() => handleTabChange("전체")}
+          className={`px-4 py-2 rounded-md transition-colors ${
+            selectedTab === "전체"
+              ? "bg-black text-white"
+              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+          }`}
+        >
+          전체
+        </button>
+        <button
+          onClick={() => handleTabChange("가입한 커뮤니티")}
+          className={`px-4 py-2 rounded-md transition-colors ${
+            selectedTab === "가입한 커뮤니티"
+              ? "bg-black text-white"
+              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+          }`}
+        >
+          가입한 커뮤니티
+        </button>
+      </div>
 
-          <button
-            onClick={handleCreateCommunity}
-            className="flex items-center gap-2 px-4 py-2 bg-black text-white text-sm rounded-md"
+      {/* 커뮤니티 카드 리스트 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {communities.map((community) => (
+          <div
+            key={community.communityId}
+            className="flex gap-4 border rounded-lg p-4 items-start bg-white shadow-sm relative"
           >
-            + 커뮤니티 생성
-          </button>
-        </div>
-
-        {/* 탭 */}
-        <div className="flex gap-4 text-sm font-medium mb-8">
-          <button
-            className={`pb-1 ${selectedTab === "전체" ? "border-b-2 border-black text-black" : "text-gray-400"}`}
-            onClick={() => setSelectedTab("전체")}
-          >
-            전체
-          </button>
-          <button
-            className={`pb-1 ${selectedTab === "가입한 커뮤니티" ? "border-b-2 border-black text-black" : "text-gray-400"}`}
-            onClick={() => setSelectedTab("가입한 커뮤니티")}
-          >
-            내가 가입한 커뮤니티
-          </button>
-        </div>
-
-        {/* 커뮤니티 카드 리스트 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {filteredCommunities.map((community) => (
-            <div
-              key={community.id}
-              className="flex gap-4 border rounded-lg p-4 items-start bg-white shadow-sm relative"
-            >
-              <img
-                src={community.imageUrl}
-                alt="커뮤니티 이미지"
-                className="w-[120px] h-[120px] object-cover rounded"
-              />
-              <div className="flex-1 pr-24">
-                <h2 className="text-xl font-semibold">{community.title}</h2>
-                <p className="text-sm text-gray-600 mt-1 leading-5">{community.description}</p>
-                <div className="flex items-center gap-1 mt-4 text-sm text-gray-500">
-                  <FiUser size={16} />
-                  <span>{community.participants}명 참여 중</span>
-                </div>
+            <div className="w-[120px] h-[120px] bg-gray-200 rounded flex items-center justify-center overflow-hidden">
+              {community.profileImageUrl ? (
+                <img 
+                  src={community.profileImageUrl} 
+                  alt={community.name}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    // 이미지 로드 실패 시 기본 이미지 표시
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    target.nextElementSibling?.classList.remove('hidden');
+                  }}
+                />
+              ) : null}
+              <div className={`absolute inset-0 flex items-center justify-center ${community.profileImageUrl ? 'hidden' : ''}`}>
+                <span className="text-gray-500 text-sm">이미지</span>
               </div>
-              <button
-                onClick={() => navigate(`/community/${community.id}`)}
-                className="absolute bottom-4 right-4 px-4 py-2 bg-black text-white text-sm rounded-md"
-              >
-                입장
-              </button>
             </div>
-          ))}
-        </div>
+            <div className="flex-1 pr-24">
+              <div className="flex items-center gap-2 mb-2">
+                <h2 className="text-xl font-semibold">{community.name}</h2>
+                <span className={`px-2 py-1 rounded text-xs font-medium ${
+                  community.subscriptionLevelCode === 'PREMIUM' 
+                    ? 'bg-yellow-100 text-yellow-800' 
+                    : 'bg-gray-100 text-gray-800'
+                }`}>
+                  {community.subscriptionLevelCode}
+                </span>
+              </div>
+              <p className="text-sm text-gray-600 mt-1 leading-5 mb-4">{community.description}</p>
+              <div className="flex items-center gap-4 text-sm text-gray-500">
+                <div className="flex items-center gap-1">
+                  <FiUser size={16} />
+                  <span>{community.currentMember}/{community.maxMember}명 참여 중</span>
+                </div>
+                <span>입장 포인트: {community.enterPoint.toLocaleString()}P</span>
+              </div>
+              <div className="text-xs text-gray-400 mt-1">
+                생성자: {community.ownerNickname}
+              </div>
+            </div>
+            <button
+              onClick={() => navigate(`/community/${community.communityId}`)}
+              className="absolute bottom-4 right-4 px-4 py-2 bg-black text-white text-sm rounded-md hover:bg-gray-800 transition-colors"
+            >
+              입장
+            </button>
+          </div>
+        ))}
       </div>
     </div>
   );

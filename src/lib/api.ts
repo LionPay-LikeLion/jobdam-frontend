@@ -13,6 +13,15 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // 디버깅 로그 추가
+    console.log('API Request:', {
+      url: config.url,
+      method: config.method,
+      headers: config.headers,
+      hasToken: !!token
+    });
+    
     return config;
   },
   (error) => {
