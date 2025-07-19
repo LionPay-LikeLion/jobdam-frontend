@@ -10,13 +10,8 @@ export const fetchMySnsPosts = async () => {
   return response.data;
 };
 
-export const createSnsPost = async (data: {
-  title: string;
-  content: string;
-  imageUrl?: string;
-  attachmentUrl?: string;
-}) => {
-  const response = await api.post("/sns/posts", data);
+export const createSnsPost = async (formData: FormData) => {
+  const response = await api.post("/sns/posts", formData);
   return response.data;
 };
 

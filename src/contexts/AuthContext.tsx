@@ -1,11 +1,19 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { getTokens, clearTokens, isTokenValid } from '../lib/auth';
-import { logout as logoutApi } from '../lib/authApi';
+import { logout as logoutApi, getUserProfile } from '../lib/authApi';
 
 interface User {
-  id: string;
+  id?: string;
   email: string;
-  name: string;
+  name?: string;
+  nickname?: string;
+  memberTypeCode?: string;  // memberType -> memberTypeCode로 변경
+  subscriptionLevel?: string;
+  remainingPoints?: number;
+  role?: string;
+  phone?: string;
+  profileImageUrl?: string;
+  createdAt?: string;
 }
 
 interface AuthContextType {
@@ -15,6 +23,7 @@ interface AuthContextType {
   login: (user: User) => void;
   logout: () => Promise<void>;
   updateUser: (user: User) => void;
+  refreshUserInfo: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -41,14 +50,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const getUserFromToken = (token: string): User | null => {
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
-      const emailName = payload.email.split('@')[0];
-      const cleanName = emailName.replace(/[0-9]/g, ''); // 숫자 제거
-      const displayName = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
+      console.log('JWT payload:', payload); // 디버깅용
       
       return {
         id: payload.sub,
-        email: payload.email,
-        name: displayName
+        email: payload.email
       };
     } catch (error) {
       console.error('JWT decode error:', error);
@@ -63,10 +69,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const tokens = getTokens();
         
         if (tokens && isTokenValid(tokens.accessToken)) {
-          // JWT에서 사용자 정보 추출
+          // JWT에서 기본 사용자 정보 추출
           const userData = getUserFromToken(tokens.accessToken);
           if (userData) {
+            // 기본 정보로 먼저 설정
             setUser(userData);
+            
+            // 상세 정보를 API로 가져오기
+            try {
+              const detailedUser = await getUserProfile();
+              console.log('API user profile:', detailedUser); // 디버깅용
+              setUser(detailedUser);
+            } catch (error) {
+              console.error('Failed to get detailed user info:', error);
+              // 상세 정보 가져오기 실패해도 기본 정보는 유지
+            }
           } else {
             clearTokens();
           }
@@ -104,6 +121,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(userData);
   };
 
+  const refreshUserInfo = async () => {
+    try {
+      const tokens = getTokens();
+      if (tokens && isTokenValid(tokens.accessToken)) {
+        const userData = await getUserProfile();
+        if (userData) {
+          setUser(userData);
+        } else {
+          clearTokens();
+        }
+      } else {
+        clearTokens();
+      }
+    } catch (error) {
+      console.error('Error refreshing user info:', error);
+      clearTokens();
+    }
+  };
+
   const value: AuthContextType = {
     user,
     isAuthenticated,
@@ -111,6 +147,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     login,
     logout,
     updateUser,
+    refreshUserInfo,
   };
 
   return (
