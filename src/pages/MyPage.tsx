@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import api from "@/lib/api";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import MyPageLayout from "./MyPageLayout";
 
 interface UserProfile {
@@ -20,15 +21,91 @@ export default function MyPage() {
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const { toast } = useToast();
 
     const navigate = useNavigate();
 
     useEffect(() => {
+        fetchProfile();
+    }, []);
+
+    const fetchProfile = () => {
         api.get<UserProfile>("/user/profile")
             .then(res => setProfile(res.data))
             .catch(() => setError("유저 정보를 불러오지 못했습니다."))
             .finally(() => setLoading(false));
-    }, []);
+    };
+
+    const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        // 파일 크기 체크 (5MB 제한)
+        if (file.size > 5 * 1024 * 1024) {
+            toast({
+                title: "오류",
+                description: "파일 크기는 5MB 이하여야 합니다.",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        // 파일 타입 체크
+        if (!file.type.startsWith('image/')) {
+            toast({
+                title: "오류",
+                description: "이미지 파일만 업로드 가능합니다.",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        setIsUploading(true);
+
+        try {
+            const formData = new FormData();
+            formData.append('image', file);
+
+            // 디버깅: 토큰 확인
+            const token = localStorage.getItem('accessToken');
+            console.log('프로필 이미지 업로드 시도:', {
+                hasToken: !!token,
+                tokenLength: token?.length,
+                url: '/user/profile/image',
+                method: 'PUT'
+            });
+
+            const response = await api.put('/user/profile/image', formData);
+            // PUT 메서드로 변경
+
+            // 프로필 정보 새로고침
+            await fetchProfile();
+
+            toast({
+                title: "성공",
+                description: "프로필 이미지가 성공적으로 변경되었습니다.",
+            });
+        } catch (error: any) {
+            console.error('프로필 이미지 업로드 실패:', error);
+            toast({
+                title: "오류",
+                description: error.response?.data?.message || "프로필 이미지 변경 중 오류가 발생했습니다.",
+                variant: "destructive",
+            });
+        } finally {
+            setIsUploading(false);
+            // 파일 입력 초기화
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+        }
+    };
+
+    const handleImageClick = () => {
+        fileInputRef.current?.click();
+    };
 
     // 버튼 이동
     const goToPremiumUpgrade = () => navigate("/premium-upgrade");
@@ -48,14 +125,35 @@ export default function MyPage() {
                     <div className="w-[1100px] bg-white rounded-xl border border-[#eee] p-0 flex flex-row items-center h-[130px] shadow-[0_1px_8px_#0001]">
                         <div className="flex items-center px-8">
                             {profile?.profileImageUrl ? (
-                                <img className="w-[80px] h-[80px] rounded-full object-cover bg-gray-100" src={profile.profileImageUrl} alt="Profile" />
+                                <img 
+                                    className="w-[80px] h-[80px] rounded-full object-cover bg-gray-100 cursor-pointer hover:opacity-80 transition-opacity" 
+                                    src={profile.profileImageUrl} 
+                                    alt="Profile"
+                                    onClick={handleImageClick}
+                                />
                             ) : (
-                                <div className="w-[80px] h-[80px] rounded-full bg-gray-200 flex items-center justify-center text-lg text-gray-500">Profile</div>
+                                <div 
+                                    className="w-[80px] h-[80px] rounded-full bg-gray-200 flex items-center justify-center text-lg text-gray-500 cursor-pointer hover:bg-gray-300 transition-colors"
+                                    onClick={handleImageClick}
+                                >
+                                    Profile
+                                </div>
                             )}
                         </div>
-                        <Button className="ml-4 h-10 bg-black hover:bg-black/90 text-white rounded" disabled>
-                            프로필 이미지 변경
+                        <Button 
+                            className="ml-4 h-10 bg-black hover:bg-black/90 text-white rounded" 
+                            onClick={handleImageClick}
+                            disabled={isUploading}
+                        >
+                            {isUploading ? "업로드 중..." : "프로필 이미지 변경"}
                         </Button>
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                            className="hidden"
+                        />
                     </div>
                 </div>
 
