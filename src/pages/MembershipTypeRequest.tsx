@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -26,12 +26,26 @@ export default function MembershipTypeRequest(): JSX.Element {
         reason: "",
     });
 
+    // ✅ 유저정보 State
+    const [userName, setUserName] = useState("");
+    const [userEmail, setUserEmail] = useState("");
+
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
-    // 임시 사용자 정보
-    const userName = "홍길동";
-    const userEmail = "hong@jobdam.com";
+    // ✅ 회원정보 불러오기 (최초 1회)
+    useEffect(() => {
+        api.get("/user/profile")
+            .then(res => {
+                // 닉네임이 있으면 사용, 없으면 이름 등으로 수정
+                setUserName(res.data.nickname || res.data.name || "");
+                setUserEmail(res.data.email || "");
+            })
+            .catch(() => {
+                setUserName("");
+                setUserEmail("");
+            });
+    }, []);
 
     // 신청 처리
     const handleSubmit = async (e: React.FormEvent) => {
@@ -40,7 +54,7 @@ export default function MembershipTypeRequest(): JSX.Element {
         try {
             let reqBody: any = {};
             let attachment: File | null = null;
-            
+
             if (tab === "BUSINESS") {
                 if (!business.company.trim()) {
                     alert("회사명을 입력해주세요."); setLoading(false); return;
@@ -50,10 +64,10 @@ export default function MembershipTypeRequest(): JSX.Element {
                 }
                 reqBody = {
                     requestedMemberTypeCode: "EMPLOYEE",
-                    title: business.company, // 회사명을 제목으로 사용
+                    title: business.company,
                     reason: business.reason || "",
                     content: `회사명: ${business.company}\n회사이메일: ${business.companyEmail || "미입력"}\n사업분야: ${business.businessField || "미입력"}`,
-                    referenceLink: business.companyEmail || "", // 기업의 경우 회사 이메일을 reference_url에 저장
+                    referenceLink: business.companyEmail || "",
                 };
                 attachment = business.businessRegFile;
             } else {
@@ -65,38 +79,25 @@ export default function MembershipTypeRequest(): JSX.Element {
                 }
                 reqBody = {
                     requestedMemberTypeCode: "HUNTER",
-                    title: consultant.activity, // 활동분야를 제목으로 사용
+                    title: consultant.activity,
                     reason: consultant.reason || "",
                     content: `활동분야: ${consultant.activity}\n경력설명: ${consultant.experience}`,
-                    referenceLink: consultant.link || "", // 컨설턴트의 경우 포트폴리오/SNS 링크를 reference_url에 저장
+                    referenceLink: consultant.link || "",
                 };
                 attachment = consultant.certFile;
             }
 
-            // FormData로 파일 포함 (multipart/form-data)
             const formData = new FormData();
-            
-            // 타입 안전하게 FormData에 추가
             Object.entries(reqBody).forEach(([key, value]) => {
                 if (value !== null && value !== undefined) {
                     formData.append(key, String(value));
                 }
             });
-            
-            // 파일 첨부
             if (attachment) {
                 formData.append("attachment", attachment);
             }
 
-            // 디버깅: FormData 내용 확인
-            console.log("전송할 데이터:");
-            for (let [key, value] of formData.entries()) {
-                console.log(`${key}:`, value);
-            }
-
-            await api.post("/membertype-change", formData, {
-                // Content-Type 헤더 제거 - 브라우저가 자동으로 boundary 설정
-            });
+            await api.post("/membertype-change", formData);
 
             alert("전환 신청이 정상적으로 접수되었습니다.");
             navigate("/mypage");
@@ -118,8 +119,6 @@ export default function MembershipTypeRequest(): JSX.Element {
                     전환 신청은 관리자 승인 후 완료됩니다.
                 </p>
             </div>
-
-            {/* Main Card - Centered */}
             <div className="flex justify-center w-full">
                 <Card className="w-[650px] rounded-xl border border-solid border-[#00000014] shadow-[0px_0px_12px_#00000014]">
                     <CardContent className="p-0">
@@ -152,6 +151,7 @@ export default function MembershipTypeRequest(): JSX.Element {
                                             <Input className="h-[42px] bg-[#f8f9fa] border-[#00000026]" value={userEmail} disabled />
                                         </div>
                                     </div>
+                                    {/* 이하 기존과 동일 */}
                                     <div className="space-y-2">
                                         <label className="font-medium text-black text-sm">
                                             회사명 <span className="text-[#e53e3e]">*</span>
@@ -212,7 +212,6 @@ export default function MembershipTypeRequest(): JSX.Element {
                                     </Button>
                                 </form>
                             </TabsContent>
-
                             {/* 컨설턴트 전환 탭 */}
                             <TabsContent value="CONSULTANT" className="p-8">
                                 <form className="space-y-6" onSubmit={handleSubmit} encType="multipart/form-data">
@@ -226,6 +225,7 @@ export default function MembershipTypeRequest(): JSX.Element {
                                             <Input className="h-[42px] bg-[#f8f9fa] border-[#00000026]" value={userEmail} disabled />
                                         </div>
                                     </div>
+                                    {/* 이하 기존과 동일 */}
                                     <div className="space-y-2">
                                         <label className="font-medium text-black text-sm">
                                             활동분야 <span className="text-[#e53e3e]">*</span>
