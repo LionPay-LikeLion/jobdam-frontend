@@ -13,8 +13,14 @@ const SNSFeedHome = () => {
   useEffect(() => {
     if (!isLoading) {
       fetchSnsPosts()
-        .then(data => setPosts(data))
-        .catch(err => setPosts([]))
+        .then(data => {
+          console.log('SNS Posts:', data); // 디버깅용
+          setPosts(data);
+        })
+        .catch(err => {
+          console.error('SNS Posts Error:', err); // 디버깅용
+          setPosts([]);
+        })
         .finally(() => setLoading(false));
     }
   }, [isLoading]);
@@ -57,9 +63,18 @@ const SNSFeedHome = () => {
         <div className="space-y-6">
           {posts.map((post) => (
             <div key={post.snsPostId} className="flex border rounded-lg shadow p-6 bg-white">
-              <Link to={`/sns/${post.snsPostId}`} className="w-full flex">
+              <Link to={`/${post.snsPostId}`} className="w-full flex">
                 <div className="w-[300px] h-[216px] bg-gray-300 rounded-md">
-                  {post.imageUrl && <img src={post.imageUrl} alt="썸네일" className="w-full h-full object-cover rounded-md" />}
+                  {post.imageUrl && post.imageUrl !== "string" && post.imageUrl !== "" ? (
+                    <img src={post.imageUrl} alt="썸네일" className="w-full h-full object-cover rounded-md" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-500 bg-gray-100">
+                      <div className="text-center">
+                        <div className="text-4xl mb-2">📷</div>
+                        <div className="text-sm">이미지 없음</div>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div className="ml-6 flex flex-col justify-between w-full">
                   <div className="flex justify-between items-center">

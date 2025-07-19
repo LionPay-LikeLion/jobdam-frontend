@@ -39,6 +39,8 @@ export default function MembershipTypeRequest(): JSX.Element {
         setLoading(true);
         try {
             let reqBody: any = {};
+            let attachment: File | null = null;
+            
             if (tab === "BUSINESS") {
                 if (!business.company.trim()) {
                     alert("회사명을 입력해주세요."); setLoading(false); return;
@@ -47,12 +49,13 @@ export default function MembershipTypeRequest(): JSX.Element {
                     alert("사업자등록증 파일을 첨부해주세요."); setLoading(false); return;
                 }
                 reqBody = {
-                    type: "BUSINESS",
-                    company: business.company,
-                    companyEmail: business.companyEmail,
-                    businessField: business.businessField,
-                    reason: business.reason,
+                    requestedMemberTypeCode: "EMPLOYEE",
+                    title: business.company, // 회사명을 제목으로 사용
+                    reason: business.reason || "",
+                    content: `회사명: ${business.company}\n회사이메일: ${business.companyEmail || "미입력"}\n사업분야: ${business.businessField || "미입력"}`,
+                    referenceLink: business.companyEmail || "", // 기업의 경우 회사 이메일을 reference_url에 저장
                 };
+                attachment = business.businessRegFile;
             } else {
                 if (!consultant.activity.trim()) {
                     alert("활동분야를 입력해주세요."); setLoading(false); return;
@@ -61,26 +64,38 @@ export default function MembershipTypeRequest(): JSX.Element {
                     alert("경력 설명을 입력해주세요."); setLoading(false); return;
                 }
                 reqBody = {
-                    type: "CONSULTANT",
-                    activity: consultant.activity,
-                    link: consultant.link,
-                    reason: consultant.reason,
-                    experience: consultant.experience,
+                    requestedMemberTypeCode: "HUNTER",
+                    title: consultant.activity, // 활동분야를 제목으로 사용
+                    reason: consultant.reason || "",
+                    content: `활동분야: ${consultant.activity}\n경력설명: ${consultant.experience}`,
+                    referenceLink: consultant.link || "", // 컨설턴트의 경우 포트폴리오/SNS 링크를 reference_url에 저장
                 };
+                attachment = consultant.certFile;
             }
 
             // FormData로 파일 포함 (multipart/form-data)
             const formData = new FormData();
-            Object.entries(reqBody).forEach(([k, v]) => formData.append(k, v));
-            if (tab === "BUSINESS" && business.businessRegFile) {
-                formData.append("businessRegFile", business.businessRegFile);
+            
+            // 타입 안전하게 FormData에 추가
+            Object.entries(reqBody).forEach(([key, value]) => {
+                if (value !== null && value !== undefined) {
+                    formData.append(key, String(value));
+                }
+            });
+            
+            // 파일 첨부
+            if (attachment) {
+                formData.append("attachment", attachment);
             }
-            if (tab === "CONSULTANT" && consultant.certFile) {
-                formData.append("certFile", consultant.certFile);
+
+            // 디버깅: FormData 내용 확인
+            console.log("전송할 데이터:");
+            for (let [key, value] of formData.entries()) {
+                console.log(`${key}:`, value);
             }
 
             await api.post("/membertype-change", formData, {
-                headers: { "Content-Type": "multipart/form-data" },
+                // Content-Type 헤더 제거 - 브라우저가 자동으로 boundary 설정
             });
 
             alert("전환 신청이 정상적으로 접수되었습니다.");
