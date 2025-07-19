@@ -85,11 +85,14 @@ export default function TopBar() {
                 </div>
 
                 {/* 포인트 섹션 */}
-                <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-lg">
+                <div 
+                  className="flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors"
+                  onClick={() => navigate("/point-purchase")}
+                >
                   <Crown className="w-4 h-4 text-blue-600" />
                   <span className="text-sm text-gray-600">보유 포인트:</span>
                   <span className="text-sm font-medium text-blue-700">
-                    {user?.remainingPoints?.toLocaleString() || user?.point?.toLocaleString() || "1,000"}P
+                    {user?.remainingPoints?.toLocaleString()} P
                   </span>
                 </div>
 
