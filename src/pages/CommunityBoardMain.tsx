@@ -1,25 +1,139 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { FaBullhorn, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { FiSearch } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
+import api from "@/lib/api";
+
+interface CommunityPost {
+  postId: number;
+  boardId: number;
+  title: string;
+  content: string;
+  userNickname: string;
+  createdAt: string;
+  commentCount: number;
+  viewCount: number;
+  postTypeCode: string;
+}
 
 export default function CommunityBoardMain(): JSX.Element {
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { id, boardId } = useParams();
+  const [posts, setPosts] = useState<CommunityPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [keyword, setKeyword] = useState("");
+  const [postTypeCode, setPostTypeCode] = useState<string>("");
+  const [boardName, setBoardName] = useState("게시판");
+
+  useEffect(() => {
+    fetchPosts();
+  }, [boardId, postTypeCode]);
+
+  const fetchPosts = async () => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams();
+      if (postTypeCode) params.append("postTypeCode", postTypeCode);
+      if (keyword) params.append("keyword", keyword);
+
+      const response = await api.get<CommunityPost[]>(`/communities/${id}/boards/${boardId}/posts?${params}`);
+      setPosts(response.data);
+    } catch (error) {
+      console.error('게시글 목록 조회 실패:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSearch = () => {
+    fetchPosts();
+  };
+
+  const handlePostTypeChange = (type: string) => {
+    setPostTypeCode(type === "전체" ? "" : type);
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
+  };
+
+  const getPostTypeDisplay = (postTypeCode: string) => {
+    switch (postTypeCode) {
+      case "NOTICE": return "공지";
+      case "NORMAL": return "일반";
+      case "QNA": return "문답";
+      default: return postTypeCode;
+    }
+  };
+
+  const getPostTypeColor = (postTypeCode: string) => {
+    switch (postTypeCode) {
+      case "NOTICE": return "bg-red-500 text-white";
+      case "QNA": return "bg-sky-400 text-white";
+      case "NORMAL": return "bg-teal-400 text-white";
+      default: return "bg-gray-400 text-white";
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-white flex justify-center w-full">
+        <div className="w-full max-w-[1200px] h-auto px-4 pt-10 mx-auto">
+          <div className="text-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
+            <p className="text-gray-600">게시글을 불러오는 중...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-white flex justify-center w-full">
       <div className="w-full max-w-[1200px] h-auto px-4 pt-10 mx-auto">
         {/* 검색 및 버튼 영역 */}
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-4">
-            <div className="bg-gray-300 px-4 py-2 rounded-md text-sm">전체</div>
-            <div className="flex items-center border border-gray-300 px-3 py-2 rounded-md w-[250px]">
-              <FiSearch className="text-gray-500 mr-2" />
-              <span className="text-sm text-gray-500">게시글 검색</span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handlePostTypeChange("전체")}
+                className={`px-4 py-2 rounded-md text-sm ${
+                  postTypeCode === "" ? "bg-gray-300" : "bg-gray-100"
+                }`}
+              >
+                전체
+              </button>
+              <button
+                onClick={() => handlePostTypeChange("NOTICE")}
+                className={`px-4 py-2 rounded-md text-sm ${
+                  postTypeCode === "NOTICE" ? "bg-red-100" : "bg-gray-100"
+                }`}
+              >
+                공지
+              </button>
+              <button
+                onClick={() => handlePostTypeChange("NORMAL")}
+                className={`px-4 py-2 rounded-md text-sm ${
+                  postTypeCode === "NORMAL" ? "bg-teal-100" : "bg-gray-100"
+                }`}
+              >
+                일반
+              </button>
+              <button
+                onClick={() => handlePostTypeChange("QNA")}
+                className={`px-4 py-2 rounded-md text-sm ${
+                  postTypeCode === "QNA" ? "bg-sky-100" : "bg-gray-100"
+                }`}
+              >
+                문답
+              </button>
             </div>
-            <button className="bg-black text-white text-sm px-4 py-2 rounded-md">검색</button>
           </div>
-          <button className="bg-teal-400 text-white text-sm px-5 py-2 rounded-md">
+          <button 
+            className="bg-teal-400 text-white text-sm px-5 py-2 rounded-md"
+            onClick={() => navigate(`/community/${id}/board/${boardId}/post/write`)}
+          >
             + 게시글 작성
           </button>
         </div>
@@ -27,7 +141,7 @@ export default function CommunityBoardMain(): JSX.Element {
         {/* 게시판 제목 */}
         <div className="flex items-center gap-2 mb-4">
           <FaBullhorn className="text-black w-5 h-5" />
-          <h2 className="text-2xl font-semibold text-black">정보 공유</h2>
+          <h2 className="text-2xl font-semibold text-black">{boardName}</h2>
         </div>
 
         {/* 게시글 테이블 */}
@@ -40,131 +154,74 @@ export default function CommunityBoardMain(): JSX.Element {
             ))}
           </div>
 
-          {/* 공지 게시글 */}
-          {[
-            {
-              id: 1,
-              title: "[공지] 커뮤니티 이용 규칙 안내",
-              board: "공지사항",
-              author: "관리자",
-              comments: 12,
-              views: 245,
-              date: "2025.01.15",
-            },
-            {
-              id: 2,
-              title: "[공지] 서버 점검 안내",
-              board: "공지사항",
-              author: "관리자",
-              comments: 3,
-              views: 198,
-              date: "2025.01.12",
-            },
-          ].map((item, i) => (
-            <div className="grid grid-cols-[3fr_1fr_1fr_1fr_1fr_1fr] border-b border-gray-100 text-sm text-black bg-red-50">
-              <div className="flex items-center gap-2 px-4 py-3">
-                <span className="bg-red-500 text-white text-[10px] px-1.5 py-[2px] rounded">공지</span>
-                <div
-                  onClick={() => navigate(`/community/${id}/board/detail/${item.id}`)}
-                  className="text-black hover:text-blue-600 hover:underline cursor-pointer"
-                >
-                  {item.title}
-                </div>
-              </div>
-              <div className="px-4 py-3">
-                <span className="bg-red-500 text-white text-xs px-2 py-[2px] rounded">
-                  {item.board}
-                </span>
-              </div>
-              <div className="px-4 py-3 text-gray-700">{item.author}</div>
-              <div className="px-4 py-3 text-center text-gray-700">{item.comments}</div>
-              <div className="px-4 py-3 text-center text-gray-700">{item.views}</div>
-              <div className="px-4 py-3 text-center text-gray-700">{item.date}</div>
+          {posts.length === 0 ? (
+            <div className="py-20 text-center text-gray-500">
+              게시글이 없습니다.
             </div>
-          ))}
-
-          {/* 일반 게시글 */}
-          {[
-            {
-              id: 3,
-              title: "새로운 프로젝트 팀원을 모집합니다",
-              board: "자유게시판",
-              author: "김개발",
-              comments: 8,
-              views: 156,
-              date: "2025.01.14",
-            },
-            {
-              id: 4,
-              title: "React 관련 질문이 있습니다",
-              board: "Q&A",
-              author: "이초보",
-              comments: 15,
-              views: 89,
-              date: "2025.01.14",
-            },
-            {
-              id: 5,
-              title: "스터디 그룹 모집 공고",
-              board: "자유게시판",
-              author: "박스터디",
-              comments: 6,
-              views: 134,
-              date: "2025.01.13",
-            },
-            {
-              id: 6,
-              title: "JavaScript 비동기 처리 방법",
-              board: "Q&A",
-              author: "최코딩",
-              comments: 22,
-              views: 267,
-              date: "2025.01.12",
-            },
-            {
-              id: 7,
-              title: "프론트엔드 개발자 취업 후기",
-              board: "자유게시판",
-              author: "신입개발",
-              comments: 18,
-              views: 312,
-              date: "2025.01.11",
-            },
-            {
-              id: 8,
-              title: "CSS Grid vs Flexbox 언제 사용하나요?",
-              board: "Q&A",
-              author: "학습중",
-              comments: 11,
-              views: 178,
-              date: "2025.01.11",
-            },
-          ].map((item, i) => (
-            <div
-              key={item.id}
-              className="grid grid-cols-[3fr_1fr_1fr_1fr_1fr_1fr] border-b border-gray-100 text-sm text-black">
-              <div className="px-4 py-3">
-                <span
-                  onClick={() => navigate(`/community/${id}/board/detail/${item.id}`)}
-                  className="text-black hover:text-blue-600 hover:underline cursor-pointer"
-                >
-                  {item.title}
-                </span>
-              </div>
-              <div className="px-4 py-3">
-                <span
-                  className={`px-2 py-[2px] rounded text-white text-xs ${item.board === "Q&A" ? "bg-sky-400" : "bg-teal-400"
-                    }`}
-                >
-                  {item.board}
-                </span>
-              </div>
-              <div className="px-4 py-3 text-gray-700">{item.author}</div>
-              <div className="px-4 py-3 text-center text-gray-700">{item.comments}</div>
-              <div className="px-4 py-3 text-center text-gray-700">{item.views}</div>
-              <div className="px-4 py-3 text-center text-gray-700">{item.date}</div>
-            </div>
-          ))}
+          ) : (
+            <>
+              {/* 공지 게시글 */}
+              {posts
+                .filter(post => post.postTypeCode === "NOTICE")
+                .map((post) => (
+                  <div
+                    key={post.postId}
+                    className="grid grid-cols-[3fr_1fr_1fr_1fr_1fr_1fr] border-b border-gray-100 text-sm text-black bg-red-50"
+                  >
+                    <div className="flex items-center gap-2 px-4 py-3">
+                      <span className="bg-red-500 text-white text-[10px] px-1.5 py-[2px] rounded">
+                        공지
+                      </span>
+                      <div
+                        onClick={() => navigate(`/community/${id}/board/detail/${post.postId}`)}
+                        className="text-black hover:text-blue-600 hover:underline cursor-pointer"
+                      >
+                        {post.title}
+                      </div>
+                    </div>
+                    <div className="px-4 py-3">
+                      <span className={`px-2 py-[2px] rounded text-white text-xs ${getPostTypeColor(post.postTypeCode)}`}>
+                        {getPostTypeDisplay(post.postTypeCode)}
+                      </span>
+                    </div>
+                    <div className="px-4 py-3 text-gray-700">{post.userNickname}</div>
+                    <div className="px-4 py-3 text-center text-gray-700 flex items-end justify-center">{post.commentCount}</div>
+                    <div className="px-4 py-3 text-center text-gray-700 flex items-end justify-center">{post.viewCount}</div>
+                    <div className="px-4 py-3 text-center text-gray-700">{formatDate(post.createdAt)}</div>
+                  </div>
+                ))
+              }
+              
+              {/* 일반 게시글 */}
+              {posts
+                .filter(post => post.postTypeCode !== "NOTICE")
+                .map((post) => (
+                  <div
+                    key={post.postId}
+                    className="grid grid-cols-[3fr_1fr_1fr_1fr_1fr_1fr] border-b border-gray-100 text-sm text-black"
+                  >
+                    <div className="flex items-center gap-2 px-4 py-3">
+                      <div
+                        onClick={() => navigate(`/community/${id}/board/detail/${post.postId}`)}
+                        className="text-black hover:text-blue-600 hover:underline cursor-pointer"
+                      >
+                        {post.title}
+                      </div>
+                    </div>
+                    <div className="px-4 py-3">
+                      <span className={`px-2 py-[2px] rounded text-white text-xs ${getPostTypeColor(post.postTypeCode)}`}>
+                        {getPostTypeDisplay(post.postTypeCode)}
+                      </span>
+                    </div>
+                    <div className="px-4 py-3 text-gray-700">{post.userNickname}</div>
+                    <div className="px-4 py-3 text-center text-gray-700 flex items-end justify-center">{post.commentCount}</div>
+                    <div className="px-4 py-3 text-center text-gray-700 flex items-end justify-center">{post.viewCount}</div>
+                    <div className="px-4 py-3 text-center text-gray-700">{formatDate(post.createdAt)}</div>
+                  </div>
+                ))
+              }
+            </>
+          )}
         </div>
 
         {/* Pagination */}
