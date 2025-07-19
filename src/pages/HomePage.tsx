@@ -118,16 +118,17 @@ const HomePage = () => {
               SNS 기반 커뮤니티에서 사람과 기회, 정보를 연결하는 구독형 취업 매칭 플랫폼 – 지금 함께하세요.
             </p>
             <div className="flex gap-4">
-              <Button className="h-[48px] px-6 bg-black text-white rounded-md"
-                onClick={() => navigate("/community")}
-              >
-                커뮤니티 둘러보기
-              </Button>
               <Button
                 className="h-[48px] px-6 bg-white text-black border border-[#0000001a] rounded-md"
+                onClick={() => navigate("/login")}
+              >
+                로그인
+              </Button>
+              <Button
+                className="h-[48px] px-6 bg-[#4285f4] text-white rounded-md"
                 onClick={() => navigate("/signup")}
               >
-                구직자 회원가입
+                회원가입
               </Button>
             </div>
           </div>

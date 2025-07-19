@@ -150,6 +150,16 @@ export const getCurrentUser = async () => {
   }
 };
 
+// 사용자 프로필 가져오기
+export const getUserProfile = async () => {
+  try {
+    const response = await api.get('/user/profile');
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 // 토큰 갱신
 export const refreshToken = async (): Promise<AuthTokens> => {
   try {
