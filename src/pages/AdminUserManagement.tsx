@@ -1,8 +1,7 @@
-// src/pages/AdminUserManagement.tsx
-
 import React, { useState } from "react";
 import TopBar from "@/components/TopBar";
-import AdminSideBar from "@/components/AdminSideBar.tsx";
+import AdminSideBar from "@/components/AdminSideBar";
+import { CheckCircle, XCircle } from "lucide-react";
 
 const mockUsers = [
     { id: 1, name: "김민수", email: "minsu.kim@email.com", status: "활성", joined: "2024-01-15", lastLogin: "2024-03-10", isBanned: false, isSeceded: false, },
@@ -13,14 +12,14 @@ const mockUsers = [
 ];
 
 const statusColors: Record<string, string> = {
-    "활성": "bg-green-100 text-green-600",
-    "비활성": "bg-red-100 text-red-500",
-    "정지": "bg-gray-200 text-gray-500",
+    "활성": "bg-green-50 text-green-600 border border-green-200",
+    "비활성": "bg-yellow-50 text-yellow-600 border border-yellow-200",
+    "정지": "bg-red-50 text-red-500 border border-red-200",
 };
 
 const banColors: Record<string, string> = {
-    정상: "text-green-600",
-    탈퇴: "text-red-500",
+    정상: "text-green-600 font-semibold flex items-center gap-1",
+    탈퇴: "text-red-500 font-semibold flex items-center gap-1",
 };
 
 const AdminUserManagement: React.FC = () => {
@@ -53,51 +52,54 @@ const AdminUserManagement: React.FC = () => {
     };
 
     return (
-        <div className="bg-[#fafbfc] min-h-screen flex flex-col">
+        <div className="bg-gray-50 min-h-screen w-full">
             <TopBar />
-            <div className="flex flex-row justify-center w-full min-h-[calc(100vh-80px)]">
-                <div className="w-[1160px] flex flex-row gap-8 pt-14">
-                    {/* --- 사이드바 --- */}
-                    <AdminSideBar />
-                    {/* --- 메인 콘텐츠 --- */}
-                    <div className="flex-1">
-                        {/* 타이틀 */}
-                        <h1 className="text-3xl font-bold mb-2 text-center">회원 관리</h1>
-                        <p className="text-center text-gray-500 mb-8">모든 회원 정보를 관리하고 검색할 수 있습니다.</p>
-                        {/* 검색 필터 */}
+            <main className="flex flex-row justify-center w-full pt-12 pb-16">
+                <div className="flex w-full max-w-[1500px] gap-12">
+                    {/* 사이드바 */}
+                    <aside className="w-[220px] flex-shrink-0">
+                        <AdminSideBar />
+                    </aside>
+                    {/* 메인 콘텐츠 */}
+                    <section className="flex-1 min-w-0">
+                        <div className="mb-2 text-left">
+                            <h1 className="text-3xl font-bold mb-2">회원 관리</h1>
+                            <p className="text-gray-500 text-base">모든 회원 정보를 관리하고 검색할 수 있습니다.</p>
+                        </div>
+                        {/* 검색 필터 한줄 */}
                         <form
-                            className="bg-white rounded-xl shadow p-6 mb-8 flex flex-wrap gap-4 items-end"
+                            className="bg-white rounded-2xl shadow p-6 mb-7 border flex items-end gap-5 w-full max-w-[1250px]"
                             onSubmit={handleSearch}
                         >
-                            <div className="flex flex-col w-40">
-                                <label className="text-sm mb-1">이름</label>
+                            <div className="flex flex-col w-44">
+                                <label className="text-xs mb-1">이름</label>
                                 <input
                                     type="text"
                                     name="name"
                                     value={filters.name}
                                     onChange={handleInputChange}
                                     placeholder="이름을 입력하세요"
-                                    className="border rounded px-2 py-1 text-sm"
+                                    className="border rounded px-3 py-2 text-sm"
                                 />
                             </div>
-                            <div className="flex flex-col w-56">
-                                <label className="text-sm mb-1">이메일</label>
+                            <div className="flex flex-col w-60">
+                                <label className="text-xs mb-1">이메일</label>
                                 <input
                                     type="text"
                                     name="email"
                                     value={filters.email}
                                     onChange={handleInputChange}
                                     placeholder="이메일을 입력하세요"
-                                    className="border rounded px-2 py-1 text-sm"
+                                    className="border rounded px-3 py-2 text-sm"
                                 />
                             </div>
-                            <div className="flex flex-col w-32">
-                                <label className="text-sm mb-1">상태</label>
+                            <div className="flex flex-col w-40">
+                                <label className="text-xs mb-1">상태</label>
                                 <select
                                     name="status"
                                     value={filters.status}
                                     onChange={handleInputChange}
-                                    className="border rounded px-2 py-1 text-sm"
+                                    className="border rounded px-3 py-2 text-sm"
                                 >
                                     <option value="전체">전체</option>
                                     <option value="활성">활성</option>
@@ -105,89 +107,110 @@ const AdminUserManagement: React.FC = () => {
                                     <option value="정지">정지</option>
                                 </select>
                             </div>
-                            <div className="flex flex-col w-40">
-                                <label className="text-sm mb-1">가입일</label>
+                            <div className="flex flex-col w-48">
+                                <label className="text-xs mb-1">가입일</label>
                                 <input
                                     type="date"
                                     name="joined"
                                     value={filters.joined}
                                     onChange={handleInputChange}
-                                    className="border rounded px-2 py-1 text-sm"
+                                    className="border rounded px-3 py-2 text-sm"
                                 />
                             </div>
+                            <div className="flex-1" /> {/* 우측 밀어내기 */}
                             <button
                                 type="submit"
-                                className="ml-auto bg-black text-white px-6 py-2 rounded hover:bg-gray-800"
+                                className="bg-black text-white px-8 py-2 rounded-xl hover:bg-gray-800 h-11 text-sm font-semibold shadow mt-[22px]"
                             >
                                 검색
                             </button>
                         </form>
 
                         {/* 회원 테이블 */}
-                        <div className="bg-white rounded-xl shadow p-4">
-                            <table className="w-full text-sm">
-                                <thead>
-                                <tr className="border-b">
-                                    <th className="py-2">이름</th>
-                                    <th>이메일</th>
-                                    <th>상태</th>
-                                    <th>가입일</th>
-                                    <th>마지막 로그인</th>
-                                    <th>탈퇴 여부</th>
-                                    <th>관리</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {users.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={7} className="text-center py-8 text-gray-400">검색 결과가 없습니다.</td>
+                        <div className="w-full max-w-[1250px]">
+                            <h2 className="text-xl font-semibold mb-3 text-left">회원 목록</h2>
+                            <div className="bg-white rounded-2xl shadow border overflow-x-auto px-0 py-0">
+                                <table className="w-full text-sm text-left whitespace-nowrap">
+                                    <colgroup>
+                                        <col style={{ width: "15%" }} />
+                                        <col style={{ width: "23%" }} />
+                                        <col style={{ width: "11%" }} />
+                                        <col style={{ width: "13%" }} />
+                                        <col style={{ width: "13%" }} />
+                                        <col style={{ width: "11%" }} />
+                                        <col style={{ width: "14%" }} />
+                                    </colgroup>
+                                    <thead>
+                                    <tr className="border-b bg-gray-50">
+                                        <th className="py-3 px-4 text-sm font-medium">이름</th>
+                                        <th className="px-4 text-sm font-medium">이메일</th>
+                                        <th className="px-4 text-sm font-medium">상태</th>
+                                        <th className="px-4 text-sm font-medium">가입일</th>
+                                        <th className="px-4 text-sm font-medium">마지막 로그인</th>
+                                        <th className="px-4 text-sm font-medium">탈퇴 여부</th>
+                                        <th className="px-4 text-sm font-medium">관리</th>
                                     </tr>
-                                ) : (
-                                    users.map((user) => (
-                                        <tr key={user.id} className="border-b last:border-b-0 hover:bg-gray-50">
-                                            <td className="py-2 flex items-center gap-2">
+                                    </thead>
+                                    <tbody>
+                                    {users.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={7} className="text-center py-8 text-gray-400">검색 결과가 없습니다.</td>
+                                        </tr>
+                                    ) : (
+                                        users.map((user) => (
+                                            <tr key={user.id} className="border-b last:border-b-0 hover:bg-gray-50 text-[15px]">
+                                                <td className="py-3 px-4 flex items-center gap-2">
                                                     <span className="inline-block w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
                                                         <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
                                                             <circle cx="12" cy="8" r="4" fill="#cbd5e1"/>
                                                             <path d="M4 20c0-2.21 3.582-4 8-4s8 1.79 8 4" fill="#cbd5e1"/>
                                                         </svg>
                                                     </span>
-                                                {user.name}
-                                            </td>
-                                            <td>{user.email}</td>
-                                            <td>
-                                                <span className={`px-2 py-1 rounded text-xs font-semibold ${statusColors[user.status]}`}>{user.status}</span>
-                                            </td>
-                                            <td>{user.joined}</td>
-                                            <td>{user.lastLogin}</td>
-                                            <td>
+                                                    <span>{user.name}</span>
+                                                </td>
+                                                <td className="px-4 align-middle">{user.email}</td>
+                                                <td className="px-4 align-middle">
+                                                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-semibold ${statusColors[user.status]}`}>
+                                                        {user.status === "활성" && <CheckCircle size={15} className="inline text-green-500" />}
+                                                        {user.status === "비활성" && <XCircle size={15} className="inline text-yellow-600" />}
+                                                        {user.status === "정지" && <XCircle size={15} className="inline text-red-500" />}
+                                                        {user.status}
+                                                    </span>
+                                                </td>
+                                                <td className="px-4 align-middle">{user.joined}</td>
+                                                <td className="px-4 align-middle">{user.lastLogin}</td>
+                                                <td className="px-4 align-middle">
                                                     <span className={user.isBanned ? banColors["탈퇴"] : banColors["정상"]}>
+                                                        {user.isBanned ? <XCircle size={14} /> : <CheckCircle size={14} />}
                                                         {user.isBanned ? "탈퇴" : "정상"}
                                                     </span>
-                                            </td>
-                                            <td className="flex gap-2">
-                                                <button
-                                                    className="px-3 py-1 rounded border text-xs hover:bg-gray-100"
-                                                    onClick={() => handleDetail(user)}
-                                                >
-                                                    상세 보기
-                                                </button>
-                                                <button
-                                                    className="px-3 py-1 rounded border text-xs text-red-500 border-red-200 hover:bg-red-50"
-                                                    onClick={() => handleDelete(user)}
-                                                >
-                                                    탈퇴 처리
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))
-                                )}
-                                </tbody>
-                            </table>
+                                                </td>
+                                                <td className="px-4 align-middle">
+                                                    <div className="flex gap-1">
+                                                        <button
+                                                            className="px-3 h-8 rounded-lg border border-gray-300 text-xs hover:bg-gray-100 min-w-[64px]"
+                                                            onClick={() => handleDetail(user)}
+                                                        >
+                                                            상세보기
+                                                        </button>
+                                                        <button
+                                                            className="px-3 h-8 rounded-lg text-xs bg-red-50 text-red-500 border border-red-200 hover:bg-red-100 transition-colors min-w-[64px]"
+                                                            onClick={() => handleDelete(user)}
+                                                        >
+                                                            탈퇴 처리
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                    </div>
+                    </section>
                 </div>
-            </div>
+            </main>
         </div>
     );
 };
