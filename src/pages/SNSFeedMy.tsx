@@ -53,15 +53,22 @@ const SNSFeedMy = () => {
             <div
               key={post.snsPostId}
               className="w-full bg-white border border-gray-200 rounded-lg shadow-sm p-6 flex gap-6 cursor-pointer"
-              onClick={() => navigate(`/sns/${post.snsPostId}`)}
+              onClick={() => navigate(`/${post.snsPostId}`)}
             >
               <div className="w-64 h-48 bg-gray-200 rounded-md">
-                {post.imageUrl && (
+                {post.imageUrl && post.imageUrl !== "string" && post.imageUrl !== "" ? (
                   <img
                     src={post.imageUrl}
                     alt="썸네일"
                     className="w-full h-full object-cover rounded-md"
                   />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-500 bg-gray-100">
+                    <div className="text-center">
+                      <div className="text-4xl mb-2">📷</div>
+                      <div className="text-sm">이미지 없음</div>
+                    </div>
+                  </div>
                 )}
               </div>
               <div className="flex-1 relative">
