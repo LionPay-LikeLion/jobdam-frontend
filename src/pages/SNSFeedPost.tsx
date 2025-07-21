@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Bookmark, Flag, Heart, MessageSquare, Download } from "lucide-react";
-import TopBar from "@/components/TopBar";
 
 const postTags = ["#면접후기", "#포트폴리오", "#이직준비", "#마케팅"];
 
@@ -98,7 +97,6 @@ const SNSFeedPost = () => {
 
   return (
     <div className="bg-white min-h-screen w-full">
-      <TopBar />
       <main className="flex-1 px-8 py-8">
         <div className="flex flex-col items-center mb-8">
           <h1 className="text-[40px] font-bold leading-[48px] text-center">피드 상세</h1>
