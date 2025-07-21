@@ -20,6 +20,11 @@ export const fetchSnsPostDetail = async (postId: number) => {
   return response.data;
 };
 
+export const fetchFilteredPosts = async (memberType: string, sort: string, userId: number) => {
+  const res = await api.get("/sns/posts/filter", { params: { memberType, sort, userId }, });
+  return res.data;
+};
+
 export const searchByKeyword = async (keyword: string, userId?: number) => {
   const res = await api.get(`/sns/posts/search`, { params: { keyword, ...(userId && { userId }) }, });
   return res.data;
