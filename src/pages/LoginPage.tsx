@@ -9,11 +9,49 @@ import { useState } from "react";
 import { login } from "@/lib/authApi";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useEffect } from "react";
+import { googleLogin } from "@/lib/authApi";
+import { useGoogleLogin } from "@react-oauth/google";
+import { setTokens } from '@/lib/auth';
+
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const { login: authLogin } = useAuth();
-  
+
+  const googleRedirectLogin = useGoogleLogin({
+    flow: "auth-code",
+    redirect_uri: import.meta.env.VITE_GOOGLE_REDIRECT_URI,
+    onSuccess: async (codeResponse) => {
+      console.log("DEBUG: Google login success", codeResponse)
+      try {
+        console.log("Google auth code:", codeResponse.code);
+
+        const data = await googleLogin(codeResponse.code);
+        console.log("✅ FULL BACKEND RESPONSE", JSON.stringify(data, null, 2));
+
+        if (data.accessToken) {
+          await authLogin(data.accessToken); // ✅ stores to localStorage
+          setTokens({ accessToken: data.accessToken, refreshToken: data.refreshToken });
+          console.log("✅ Token set, now navigating...");
+          toast.success("Google 로그인 성공!");
+          navigate("/", { replace: true });
+          console.log("localStorage accessToken:", localStorage.getItem("accessToken"));
+        } else {
+          toast.error("Google 로그인 실패: 토큰 누락");
+        }
+
+      } catch (error) {
+        console.error("Google login error:", error);
+        toast.error("Google 로그인에 실패했습니다.");
+      }
+    },
+    onError: (errorResponse) => {
+      console.error("Google login failed", errorResponse);
+      toast.error("Google 로그인 실패");
+    },
+  });
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -45,8 +83,12 @@ export default function LoginPage() {
       });
       
       // AuthContext에 사용자 정보 저장
-      if (response.user) {
+      /*if (response.user) {
         authLogin(response.user);
+      }*/
+      if (response.accessToken) {
+        authLogin(response.accessToken); // ✅ Same as Google login
+        setTokens({ accessToken: response.accessToken, refreshToken: response.refreshToken }); // ✅ store to localStorage
       }
       
       toast.success("로그인되었습니다!");
@@ -128,6 +170,7 @@ export default function LoginPage() {
             variant="outline"
             className="w-full h-14 mb-3 flex items-center justify-center gap-2 border-2 border-[#0000001a]"
             disabled={isLoading}
+            onClick={() => googleRedirectLogin()}
           >
             <FcGoogle className="w-5 h-5" />
             Google 로그인

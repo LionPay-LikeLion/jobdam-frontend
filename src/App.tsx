@@ -3,7 +3,9 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
+import GoogleRedirectHandler from "./pages/GoogleRedirectHandler";
 import HomePage from "@/pages/HomePage";
 import LoginPage from "@/pages/LoginPage";
 import SignUp from "@/pages/SignUp";
@@ -42,6 +44,7 @@ import AdminReport from "@/pages/AdminReport.tsx";
 
 const queryClient = new QueryClient();
 
+// 루트 경로 컴포넌트 - 로그인 상태에 따라 다른 페이지 렌더링
 const RootComponent = () => {
     const { isAuthenticated, isLoading } = useAuth();
 
@@ -116,24 +119,29 @@ const AppRoutes = () => {
                 </>
             )}
 
-            {/* 404 */}
-            <Route path="*" element={<NotFound />} />
-        </Routes>
-    );
+      {/* ✅ Add this for Google redirect */}
+      <Route path="/api/oauth/google/callback" element={<GoogleRedirectHandler />} />
+
+      {/* 404 */}
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
 };
 
 const App = () => (
-    <QueryClientProvider client={queryClient}>
+  <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+    <BrowserRouter> {/* Moved up here */}
+      <QueryClientProvider client={queryClient}>
         <AuthProvider>
-            <TooltipProvider>
-                <Toaster />
-                <Sonner />
-                <BrowserRouter>
-                    <AppRoutes />
-                </BrowserRouter>
-            </TooltipProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <AppRoutes />
+          </TooltipProvider>
         </AuthProvider>
-    </QueryClientProvider>
+      </QueryClientProvider>
+    </BrowserRouter>
+  </GoogleOAuthProvider>
 );
 
 export default App;
