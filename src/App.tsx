@@ -3,7 +3,9 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
+import GoogleRedirectHandler from "./pages/GoogleRedirectHandler";
 import HomePage from "@/pages/HomePage";
 import LoginPage from "@/pages/LoginPage";
 import SignUp from "@/pages/SignUp";
@@ -28,7 +30,7 @@ import CommunityManagement from "@/pages/CommunityManagement";
 import CommunityBoardCreate from "@/pages/CommunityBoardCreate";
 import PointPurchase from "@/pages/PointPurchase";
 import MyPage from "@/pages/MyPage";
-import PremiumUpgrade from "@/pages/PremiumUpgrade"; // << 추가
+import PremiumUpgrade from "@/pages/PremiumUpgrade"; // <<GoogleOAuthProvider 추가
 import NotFound from "./pages/NotFound";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import PaymentSuccess from "@/pages/PaymentSuccess.tsx";
@@ -112,6 +114,9 @@ const AppRoutes = () => {
         </>
       )}
 
+      {/* ✅ Add this for Google redirect */}
+      <Route path="/api/oauth/google/callback" element={<GoogleRedirectHandler />} />
+
       {/* 404 */}
       <Route path="*" element={<NotFound />} />
     </Routes>
@@ -119,17 +124,19 @@ const AppRoutes = () => {
 };
 
 const App = () => (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
+  <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+    <BrowserRouter> {/* Moved up here */}
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
             <AppRoutes />
-          </BrowserRouter>
-        </TooltipProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+          </TooltipProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </BrowserRouter>
+  </GoogleOAuthProvider>
 );
 
 export default App;
