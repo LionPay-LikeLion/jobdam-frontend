@@ -1,12 +1,8 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
-import {
-  fetchSnsPostDetail,
-  fetchComments,
-  createComment,
-  updateComment,
-  deleteComment
-} from "@/lib/snsApi";
+import { fetchSnsPostDetail, fetchComments, createComment, updateComment, deleteComment,
+        likeSnsPost, unlikeSnsPost, addBookmark, removeBookmark, deleteSnsPost } from "@/lib/snsApi";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,6 +18,8 @@ import TopBar from "@/components/TopBar";
 const postTags = ["#면접후기", "#포트폴리오", "#이직준비", "#마케팅"];
 
 const SNSFeedPost = () => {
+  const navigate = useNavigate();
+
   const { postId } = useParams();
   const [post, setPost] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -74,6 +72,51 @@ const SNSFeedPost = () => {
   const handleDeleteComment = async (commentId: number) => {
     await deleteComment(commentId);
     fetchComments(Number(postId)).then(setComments);
+  };
+
+  // 좋아요 토글
+  const handleToggleLike = async () => {
+    if (!post) return;
+    if (post.liked) {
+      await unlikeSnsPost(post.snsPostId);
+    } else {
+      await likeSnsPost(post.snsPostId);
+    }
+    const updatedPost = await fetchSnsPostDetail(post.snsPostId);
+    setPost(updatedPost);
+  };
+
+  // 북마크 토글
+  const handleToggleBookmark = async () => {
+    if (!post || typeof post.snsPostId !== "number") {
+      console.error("post 또는 postId가 유효하지 않음:", post);
+      return;
+    }
+    if (post.bookmarked) {
+      await removeBookmark(post.snsPostId);
+    } else {
+      await addBookmark(post.snsPostId);
+    }
+    const updatedPost = await fetchSnsPostDetail(post.snsPostId);
+    setPost(updatedPost);
+  }
+
+  // 게시글 수정 페이지 이동
+  const handleEditPost = () => {
+    navigate(`/sns/posts/${postId}/edit`);
+  };
+
+  // 게시글 삭제
+  const handleDeletePost = async (postId: number) => {
+    if (!window.confirm("정말 게시글을 삭제하시겠습니까?")) return;
+
+    try {
+      await deleteSnsPost(postId);
+      navigate("/"); // 삭제 후 루트로 이동
+    } catch (err) {
+      console.error("게시글 삭제 실패:", err);
+      alert("게시글 삭제 중 오류가 발생했습니다.");
+    }
   };
 
   // 첨부파일 다운로드
@@ -217,24 +260,28 @@ const SNSFeedPost = () => {
               </div>
             </CardFooter>
           </Card>
-
-          {/* ===== 댓글 ===== */}
-          <div className="w-[736px] mx-auto">
-            <h2 className="text-2xl font-bold mb-4">댓글</h2>
-            <div className="flex items-center gap-2 mb-6">
-              <Input
-                  className="h-[55px] px-4 py-4 text-sm flex-1"
-                  placeholder="댓글을 입력하세요"
-                  value={commentInput}
-                  onChange={e => setCommentInput(e.target.value)}
-                  onKeyDown={e => { if (e.key === "Enter") handleCreateComment(); }}
-              />
-              <Button
-                  className="h-[55px] px-6 rounded-md bg-blue-500 text-white text-sm font-medium"
-                  onClick={handleCreateComment}
-              >
-                등록
+          <CardFooter className="px-8 pt-4 pb-6 border-t border-[#0000001a]">
+            <div className="flex items-center gap-4 w-full">
+              <Button variant="outline" className="bg-[#f0f0f0] h-[43px] gap-2 rounded-md" onClick={handleToggleLike}>
+                <Heart className={post.liked ? "text-red-500" : "text-gray-400"} />
+                <span className="text-sm font-medium">{post.likeCount}</span>
               </Button>
+              <Button variant="outline" className="bg-[#f0f0f0] h-[43px] gap-2 rounded-md">
+                <MessageSquare className="h-5 w-5" />
+                <span className="text-sm font-medium">{post.commentCount}</span>
+              </Button>
+              <Button variant="outline" className="bg-[#f0f0f0] h-[43px] gap-2 rounded-md" onClick={handleToggleBookmark}>
+                <Bookmark className={post.bookmarked ? "text-blue-500" : "text-gray-400"} />
+                <span className="text-sm font-medium">북마크</span>
+              </Button>
+              <div className="ml-auto flex gap-2">
+                <Button variant="outline" className="bg-[#f0f0f0] h-[37px] rounded-md" onClick={handleEditPost}>수정</Button>
+                <Button variant="destructive" className="bg-[#ff3b30] h-[37px] rounded-md" onClick={() => handleDeletePost(post.snsPostId)}>삭제</Button>
+                <Button variant="outline" className="bg-[#f0f0f0] h-[37px] gap-1 rounded-md">
+                  <Flag className="h-4 w-4" />
+                  <span className="text-sm font-medium">신고</span>
+                </Button>
+              </div>
             </div>
 
             <div className="space-y-4">
