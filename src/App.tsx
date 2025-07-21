@@ -39,7 +39,6 @@ import NotFound from "./pages/NotFound";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import PaymentSuccess from "@/pages/PaymentSuccess.tsx";
 import MembershipTypeRequest from "@/pages/MembershipTypeRequest";
-import MyPageLayout from "@/pages/MyPageLayout";
 import PaymentHistoryPage from "@/pages/PaymentHistoryPage";
 import PointHistoryPage from "@/pages/PointHistoryPage";
 import AdminUserManagement from "@/pages/AdminUserManagement.tsx";
@@ -112,7 +111,8 @@ const AppRoutes = () => {
                     <Route path="/membership-type-request" element={<MembershipTypeRequest />} />
                     <Route path="/mypage/payments" element={<PaymentHistoryPage />} />
                     <Route path="/mypage/points" element={<PointHistoryPage />} />
-                    <Route path="/mypage/activity" element={<ActivityHistoryPage />} />
+
+                    <Route path="/activity-history" element={<ActivityHistoryPage />} />
 
                     {/* ------ 어드민 영역 ------ */}
                     <Route path="/admin/users" element={<AdminUserManagement />} />
