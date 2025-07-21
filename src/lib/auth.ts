@@ -48,11 +48,14 @@ export const isTokenValid = (token: string): boolean => {
 };
 
 // 사용자 정보 가져오기 (토큰에서)
-export const getUserFromToken = (token: string) => {
+export const getUserFromToken = (token: string): User | null => {
   try {
     const payload = JSON.parse(atob(token.split('.')[1]));
-    return payload;
+    return {
+      id: payload.sub,
+      email: payload.email,
+    };
   } catch {
     return null;
   }
-}; 
+};
