@@ -39,7 +39,6 @@ import NotFound from "./pages/NotFound";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import PaymentSuccess from "@/pages/PaymentSuccess.tsx";
 import MembershipTypeRequest from "@/pages/MembershipTypeRequest";
-import MyPageLayout from "@/pages/MyPageLayout";
 import PaymentHistoryPage from "@/pages/PaymentHistoryPage";
 import PointHistoryPage from "@/pages/PointHistoryPage";
 import AdminUserManagement from "@/pages/AdminUserManagement.tsx";
@@ -68,7 +67,53 @@ const RootComponent = () => {
 };
 
 const AppRoutes = () => {
-  const { isAuthenticated } = useAuth();
+  
+    const { isAuthenticated } = useAuth();
+
+    return (
+        <Routes>
+            {/* 루트 경로 - 로그인 상태에 따라 다르게 처리 */}
+            <Route path="/" element={<RootComponent />}>
+                {isAuthenticated && (
+                    <>
+                        <Route index element={<SNSFeedHome />} />
+                        <Route path="mine" element={<SNSFeedMy />} />
+                        <Route path=":postId" element={<SNSFeedPost />} />
+                        <Route path="messages" element={<SNSMessage />} />
+                        <Route path="sns-post-write" element={<SNSPostWrite />} />
+                        <Route path="/sns/posts/:postId/edit" element={<SNSPostEdit /> } />
+                    </>
+                )}
+            </Route>
+
+            {/* 로그인된 사용자만 접근 가능한 라우트들 */}
+            {isAuthenticated && (
+                <>
+                    <Route path="/mypage" element={<MyPage />} />
+                    <Route path="/point-purchase" element={<PointPurchase />} />
+                    <Route path="/premium-upgrade" element={<PremiumUpgrade />} />
+                    <Route path="/community" element={<CommunityPage />} />
+                    <Route path="/community/create" element={<CommunityCreate />} />
+                    <Route path="/community/:id" element={<CommunityLayout />}>
+                        <Route index element={<CommunityHome />} />
+                        <Route path="board" element={<CommunityBoardList />} />
+                        <Route path="board/:boardId" element={<CommunityBoardMain />} />
+                        <Route path="board/:boardId/post/write" element={<CommunityPostWrite />} />
+                        <Route path="board/:boardId/post/edit/:postId" element={<CommunityPostEdit />} />
+                        <Route path="board/detail/:postId" element={<CommunityBoardPostDetail />} />
+                        <Route path="members" element={<CommunityMemberList />} />
+                        <Route path="messenger" element={<CommunityMessenger />} />
+                        <Route path="management" element={<CommunityManagement />} />
+                        <Route path="board/create" element={<CommunityBoardCreate />} />
+                        <Route path="upgrade" element={<CommunityPremiumUpgrade />} />
+                        <Route path="board/detail/:postId" element={<CommunityBoardPostDetail />} />
+                    </Route>
+                    <Route path="/payment-success" element={<PaymentSuccess />} />
+                    <Route path="/membership-type-request" element={<MembershipTypeRequest />} />
+                    <Route path="/mypage/payments" element={<PaymentHistoryPage />} />
+                    <Route path="/mypage/points" element={<PointHistoryPage />} />
+
+                    <Route path="/activity-history" element={<ActivityHistoryPage />} />
 
   return (
     <Routes>
