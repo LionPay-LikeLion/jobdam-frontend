@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { fetchSnsPostDetail, fetchComments, createComment, updateComment, deleteComment } from "@/lib/snsApi";
+import { fetchSnsPostDetail, fetchComments, createComment, updateComment, deleteComment,
+        likeSnsPost, unlikeSnsPost, addBookmark, removeBookmark, deleteSnsPost } from "@/lib/snsApi";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -60,6 +61,33 @@ const SNSFeedPost = () => {
     await deleteComment(commentId);
     fetchComments(Number(postId)).then(setComments);
   };
+
+  // 좋아요 토글
+  const handleToggleLike = async () => {
+    if (!post) return;
+    if (post.liked) {
+      await unlikeSnsPost(post.snsPostId);
+    } else {
+      await likeSnsPost(post.snsPostId);
+    }
+    const updatedPost = await fetchSnsPostDetail(post.snsPostId);
+    setPost(updatedPost);
+  };
+
+  // 북마크 토글
+  const handleToggleBookmark = async () => {
+    if (!post || typeof post.snsPostId !== "number") {
+      console.error("post 또는 postId가 유효하지 않음:", post);
+      return;
+    }
+    if (post.bookmarked) {
+      await removeBookmark(post.snsPostId);
+    } else {
+      await addBookmark(post.snsPostId);
+    }
+    const updatedPost = await fetchSnsPostDetail(post.snsPostId);
+    setPost(updatedPost);
+  }
 
   // 첨부파일 다운로드
   const handleDownloadAttachment = async (url: string) => {
@@ -187,7 +215,7 @@ const SNSFeedPost = () => {
 
           <CardFooter className="px-8 pt-4 pb-6 border-t border-[#0000001a]">
             <div className="flex items-center gap-4 w-full">
-              <Button variant="outline" className="bg-[#f0f0f0] h-[43px] gap-2 rounded-md">
+              <Button variant="outline" className="bg-[#f0f0f0] h-[43px] gap-2 rounded-md" onClick={handleToggleLike}>
                 <Heart className={post.liked ? "text-red-500" : "text-gray-400"} />
                 <span className="text-sm font-medium">{post.likeCount}</span>
               </Button>
@@ -195,7 +223,7 @@ const SNSFeedPost = () => {
                 <MessageSquare className="h-5 w-5" />
                 <span className="text-sm font-medium">{post.commentCount}</span>
               </Button>
-              <Button variant="outline" className="bg-[#f0f0f0] h-[43px] gap-2 rounded-md">
+              <Button variant="outline" className="bg-[#f0f0f0] h-[43px] gap-2 rounded-md" onClick={handleToggleBookmark}>
                 <Bookmark className={post.bookmarked ? "text-blue-500" : "text-gray-400"} />
                 <span className="text-sm font-medium">북마크</span>
               </Button>
