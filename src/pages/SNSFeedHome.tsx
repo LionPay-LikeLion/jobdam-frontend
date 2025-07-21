@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { FaHeart, FaComment, FaEye } from "react-icons/fa";
 import { FiSearch } from "react-icons/fi";
 import { Link } from "react-router-dom";
-import { fetchSnsPosts, searchByKeyword } from "@/lib/snsApi";
+import { fetchSnsPosts, searchByKeyword , fetchSnsPostsFiltered} from "@/lib/snsApi";
 import { useAuth } from "@/contexts/AuthContext";
 import clsx from "clsx";
 
@@ -57,8 +57,6 @@ const SNSFeedHome = () => {
             onChange={(e) => setKeyword(e.target.value)}
             placeholder="키워드 검색"
             className="border px-3 py-1 rounded-md w-[280px] text-sm"
-            value={keyword}
-            onChange={e => setKeyword(e.target.value)}
           />
           <button
             className="bg-black text-white px-4 py-1 rounded-md text-sm"

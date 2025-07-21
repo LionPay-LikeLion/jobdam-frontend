@@ -339,7 +339,7 @@ const SNSFeedPost = () => {
                 );
               })}
             </div>
-          </div>
+          </CardFooter>
         </main>
 
         {/* 신고 모달 */}
