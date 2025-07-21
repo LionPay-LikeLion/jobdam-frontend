@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import { fetchSnsPostDetail, fetchComments, createComment, updateComment, deleteComment,
         likeSnsPost, unlikeSnsPost, addBookmark, removeBookmark, deleteSnsPost } from "@/lib/snsApi";
@@ -13,6 +14,8 @@ import TopBar from "@/components/TopBar";
 const postTags = ["#면접후기", "#포트폴리오", "#이직준비", "#마케팅"];
 
 const SNSFeedPost = () => {
+  const navigate = useNavigate();
+
   const { postId } = useParams();
   const [post, setPost] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -88,6 +91,18 @@ const SNSFeedPost = () => {
     const updatedPost = await fetchSnsPostDetail(post.snsPostId);
     setPost(updatedPost);
   }
+
+  const handleDeletePost = async (postId: number) => {
+    if (!window.confirm("정말 게시글을 삭제하시겠습니까?")) return;
+
+    try {
+      await deleteSnsPost(postId);
+      navigate("/"); // 삭제 후 루트로 이동
+    } catch (err) {
+      console.error("게시글 삭제 실패:", err);
+      alert("게시글 삭제 중 오류가 발생했습니다.");
+    }
+  };
 
   // 첨부파일 다운로드
   const handleDownloadAttachment = async (url: string) => {
@@ -229,7 +244,7 @@ const SNSFeedPost = () => {
               </Button>
               <div className="ml-auto flex gap-2">
                 <Button variant="outline" className="bg-[#f0f0f0] h-[37px] rounded-md">수정</Button>
-                <Button variant="destructive" className="bg-[#ff3b30] h-[37px] rounded-md">삭제</Button>
+                <Button variant="destructive" className="bg-[#ff3b30] h-[37px] rounded-md" onClick={() => handleDeletePost(post.snsPostId)}>삭제</Button>
                 <Button variant="outline" className="bg-[#f0f0f0] h-[37px] gap-1 rounded-md">
                   <Flag className="h-4 w-4" />
                   <span className="text-sm font-medium">신고</span>
