@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import MyPageLayout from "./MyPageLayout";
+import { withdrawUser } from "@/lib/authApi";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface UserProfile {
     email: string;
@@ -23,6 +25,7 @@ export default function MyPage() {
     const [error, setError] = useState<string | null>(null);
     const { toast } = useToast();
     const navigate = useNavigate();
+    const { logout } = useAuth();
 
     useEffect(() => {
         fetchProfile();
@@ -43,6 +46,27 @@ export default function MyPage() {
         if (!isoDate) return "";
         const date = new Date(isoDate);
         return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
+    };
+
+    const handleWithdraw = async () => {
+        if (!window.confirm("정말로 회원 탈퇴하시겠습니까?")) return;
+        try {
+            await withdrawUser();
+            await logout();
+            toast({
+                title: "탈퇴 완료",
+                description: "회원 탈퇴가 완료되었습니다.",
+            });
+            navigate("/");
+        } catch (error: any) {
+            let msg = "회원 탈퇴에 실패했습니다.";
+            if (error.response?.data?.message) msg = error.response.data.message;
+            toast({
+                title: "오류",
+                description: msg,
+                variant: "destructive",
+            });
+        }
     };
 
     return (
@@ -111,7 +135,7 @@ export default function MyPage() {
                                 <Button className="h-[44px] w-[180px] bg-black hover:bg-black/90 text-white font-normal text-base">
                                     비밀번호 변경
                                 </Button>
-                                <Button variant="outline" className="h-[44px] w-[180px] border-red-600 text-red-600 hover:bg-red-50 font-normal text-base">
+                                <Button variant="outline" className="h-[44px] w-[180px] border-red-600 text-red-600 hover:bg-red-50 font-normal text-base" onClick={handleWithdraw}>
                                     회원 탈퇴 요청
                                 </Button>
                             </div>

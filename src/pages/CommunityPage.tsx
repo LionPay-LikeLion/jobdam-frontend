@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiUser, FiPlus } from "react-icons/fi";
 import { fetchCommunities, fetchMyCommunities } from "@/lib/communityApi";
+import TopBar from "@/components/TopBar";
 
 interface Community {
   communityId: number;
@@ -82,7 +83,9 @@ const CommunityPage = () => {
   }
 
   return (
-    <div className="w-full max-w-[1440px] mx-auto px-6 py-10">
+    <div className="min-h-screen bg-white">
+      <TopBar />
+      <div className="w-full max-w-[1440px] mx-auto px-6 py-10">
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-[32px] font-bold leading-10">커뮤니티</h1>
@@ -175,6 +178,7 @@ const CommunityPage = () => {
             </button>
           </div>
         ))}
+      </div>
       </div>
     </div>
   );

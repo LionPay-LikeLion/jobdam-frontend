@@ -180,3 +180,12 @@ export const refreshToken = async (): Promise<AuthTokens> => {
     throw error;
   }
 }; 
+
+// 회원 탈퇴 API
+export const withdrawUser = async (): Promise<void> => {
+  try {
+    await api.delete('/user/withdraw');
+  } catch (error) {
+    throw error;
+  }
+}; 
