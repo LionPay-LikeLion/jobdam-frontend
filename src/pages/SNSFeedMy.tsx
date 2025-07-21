@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { FaRegThumbsUp, FaRegCommentDots } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { fetchMySnsPosts } from "@/lib/snsApi";
+import { fetchMySnsPosts, deleteSnsPost } from "@/lib/snsApi";
 import { useAuth } from "@/contexts/AuthContext";
 
 const SNSFeedMy = () => {
@@ -25,8 +25,16 @@ const SNSFeedMy = () => {
     console.log("Edit post:", id);
   };
 
-  const handleDeletePost = (id: number) => {
-    console.log("Delete post:", id);
+  const handleDeletePost = async (postId: number) => {
+    if (!window.confirm("정말 게시글을 삭제하시겠습니까?")) return;
+
+    try {
+      await deleteSnsPost(postId);
+      navigate("/"); // 삭제 후 루트로 이동
+    } catch (err) {
+      console.error("게시글 삭제 실패:", err);
+      alert("게시글 삭제 중 오류가 발생했습니다.");
+    }
   };
 
   const handleNewPost = () => {
