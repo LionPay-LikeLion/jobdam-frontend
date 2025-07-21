@@ -43,6 +43,7 @@ import PaymentHistoryPage from "@/pages/PaymentHistoryPage";
 import PointHistoryPage from "@/pages/PointHistoryPage";
 import AdminUserManagement from "@/pages/AdminUserManagement.tsx";
 import AdminReport from "@/pages/AdminReport.tsx";
+import ActivityHistoryPage from "@/pages/ActivityHistoryPage";
 // Admin 관련 페이지 추가 시 import!
 
 const queryClient = new QueryClient();
@@ -107,6 +108,7 @@ const AppRoutes = () => {
                     <Route path="/membership-type-request" element={<MembershipTypeRequest />} />
                     <Route path="/mypage/payments" element={<PaymentHistoryPage />} />
                     <Route path="/mypage/points" element={<PointHistoryPage />} />
+                    <Route path="/mypage/activity" element={<ActivityHistoryPage />} />
 
                     {/* ------ 어드민 영역 ------ */}
                     <Route path="/admin/users" element={<AdminUserManagement />} />
