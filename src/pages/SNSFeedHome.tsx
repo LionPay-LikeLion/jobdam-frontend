@@ -15,19 +15,12 @@ const SNSFeedHome = () => {
   const [keyword, setKeyword] = useState("");
 
   useEffect(() => {
-    if (!isLoading) {
-      fetchSnsPosts()
-        .then(data => {
-          console.log('SNS Posts:', data); // 디버깅용
-          setPosts(data);
-        })
-        .catch(err => {
-          console.error('SNS Posts Error:', err); // 디버깅용
-          setPosts([]);
-        })
-        .finally(() => setLoading(false));
-    }
-  }, [isLoading]);
+    setLoading(true);
+    fetchSnsPostsFiltered(memberType, sort)
+      .then(data => setPosts(data))
+      .catch(() => setPosts([]))
+      .finally(() => setLoading(false));  
+  }, [memberType, sort]);
 
   const isPremium = (subscriptionLevelCode: string) => {
     return subscriptionLevelCode === "PREMIUM";
@@ -57,12 +50,15 @@ const SNSFeedHome = () => {
             <option value="latest">최신순</option>
             <option value="likes">인기순</option>
           </select>
+          <span className="ml-8 mr-2 font-bold text-blue-600 text-base">제목/내용</span>
           <input
             type="text"
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
             placeholder="키워드 검색"
-            className="ml-auto border px-3 py-1 rounded-md w-[280px] text-sm"
+            className="border px-3 py-1 rounded-md w-[280px] text-sm"
+            value={keyword}
+            onChange={e => setKeyword(e.target.value)}
           />
           <button
             className="bg-black text-white px-4 py-1 rounded-md text-sm"
@@ -97,7 +93,6 @@ const SNSFeedHome = () => {
           >
             검색
           </button>
-
         </div>
 
         {/* 게시글 카드 */}

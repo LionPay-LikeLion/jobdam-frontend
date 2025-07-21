@@ -84,4 +84,19 @@ export const deleteComment = async (commentId: number) => {
 export const searchUsers = async (query: string) => {
   const response = await api.get("/user/search", { params: { keyword: query } });
   return response.data;
+};
+
+// 필터/정렬된 SNS 게시글 조회
+export const fetchSnsPostsFiltered = async (memberType?: string, sort?: string) => {
+  const params: any = {};
+  if (memberType && memberType !== "전체") params.memberType = memberType;
+  if (sort) params.sort = sort;
+  const response = await api.get("/sns/posts/filter", { params });
+  return response.data;
+};
+
+// 키워드로 SNS 게시글 검색
+export const searchSnsPosts = async (keyword: string) => {
+  const response = await api.get("/sns/posts/search", { params: { keyword } });
+  return response.data;
 }; 

@@ -77,60 +77,22 @@ export default function CommunityCreate(): JSX.Element {
 
     setLoading(true);
     try {
-      // 토큰 만료 체크 및 사용자 정보 갱신
-      if (!user?.id) {
-        try {
-          await refreshUserInfo();
-          if (!user?.id) {
-            toast({
-              title: "인증 오류",
-              description: "로그인이 만료되었습니다. 다시 로그인해주세요.",
-              variant: "destructive",
-            });
-            navigate("/login");
-            return;
-          }
-        } catch (error) {
-          toast({
-            title: "인증 오류",
-            description: "로그인이 만료되었습니다. 다시 로그인해주세요.",
-            variant: "destructive",
-          });
-          navigate("/login");
-          return;
-        }
-      }
-
+      console.log('user:', user); // 사용자 정보 로그
+      console.log('user.id:', user?.id); // user.id 로그
       const formDataToSend = new FormData();
       formDataToSend.append("name", formData.name);
       formDataToSend.append("description", formData.description);
       formDataToSend.append("enterPoint", formData.enterPoint.toString());
-      
-      // 최신 사용자 정보 사용
-      let currentUser = user;
-      if (!currentUser?.id) {
-        await refreshUserInfo();
-        currentUser = user; // refreshUserInfo 후 다시 확인
-      }
-      
-      if (!currentUser?.id) {
+      if (!user?.id) {
         toast({
           title: "오류",
           description: "사용자 정보를 가져올 수 없습니다. 다시 로그인해주세요.",
           variant: "destructive",
         });
-        navigate("/login");
         return;
       }
-      
-      formDataToSend.append("userId", currentUser.id);
-      
+      formDataToSend.append("userId", user.id);
       if (profileImage) {
-        console.log("이미지 파일 정보:", {
-          name: profileImage.name,
-          size: profileImage.size,
-          type: profileImage.type
-        });
         formDataToSend.append("profileImage", profileImage);
       }
 
