@@ -47,7 +47,7 @@ export default function CommunityHome(): JSX.Element {
   const checkMemberStatus = async () => {
     try {
       const response = await api.get(`/communities/${id}/members/${user?.userId}/exist`);
-      setIsMember(response.data); 
+      setIsMember(response.data);
     } catch (error) {
       setIsMember(false);
     }
@@ -68,10 +68,8 @@ export default function CommunityHome(): JSX.Element {
   const fetchUserPoints = async () => {
     try {
       const response = await api.get('/user/profile');
-      console.log('User profile response:', response.data);
       setUserPoints(response.data.remainingPoints);
     } catch (error) {
-      console.error("사용자 포인트를 가져오는데 실패했습니다:", error);
       setUserPoints(0);
     }
   };
@@ -164,34 +162,34 @@ export default function CommunityHome(): JSX.Element {
           <h2 className="font-medium text-2xl leading-8 mb-6">인기 게시판</h2>
           <div className="flex flex-col gap-4">
             {communityData.popularBoards
-              .filter((board, index, self) => 
+              .filter((board, index, self) =>
                 index === self.findIndex(b => b.communityBoardId === board.communityBoardId)
               )
               .map((board) => (
-              <Card key={board.communityBoardId} className="shadow-sm">
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="font-medium text-lg">{board.name}</h3>
-                    <div className="flex items-center gap-1">
-                      <LayoutGrid className="w-4 h-4 text-gray-500" />
-                      <span className="text-gray-600 text-sm">
-                        {board.boardTypeCode}
-                      </span>
+                <Card key={board.communityBoardId} className="shadow-sm">
+                  <CardContent className="p-6">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="font-medium text-lg">{board.name}</h3>
+                      <div className="flex items-center gap-1">
+                        <LayoutGrid className="w-4 h-4 text-gray-500" />
+                        <span className="text-gray-600 text-sm">
+                          {board.boardTypeCode}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex justify-between text-sm text-gray-500">
-                    <span>{board.description}</span>
-                    <span>{board.boardStatusCode}</span>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                    <div className="flex justify-between text-sm text-gray-500">
+                      <span>{board.description}</span>
+                      <span>{board.boardStatusCode}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
           </div>
         </div>
       )}
 
-      <CommunityJoinModal 
-        open={joinModalOpen} 
+      <CommunityJoinModal
+        open={joinModalOpen}
         onClose={() => setJoinModalOpen(false)}
         joinPoint={communityData.enterPoint}
         userPoint={userPoints}
