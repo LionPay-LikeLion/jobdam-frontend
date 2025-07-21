@@ -1,3 +1,5 @@
+import { User } from "@/contexts/AuthContext";
+
 // 토큰 관리 유틸리티
 export interface AuthTokens {
   accessToken: string;

@@ -4,8 +4,8 @@ import { getUserFromToken } from '../lib/auth';
 import { logout as logoutApi, getUserProfile } from '../lib/authApi';
 
 
-interface User {
-  id?: string;
+export interface User {
+  userId?: string;
   email: string;
   name?: string;
   nickname?: string;
@@ -17,6 +17,8 @@ interface User {
   profileImageUrl?: string;
   createdAt?: string;
 }
+
+
 
 interface AuthContextType {
   user: User | null;

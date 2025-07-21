@@ -113,7 +113,7 @@ export default function CommunityBoardPostDetail(): JSX.Element {
       return;
     }
 
-    if (!user?.id) {
+    if (!user?.userId) {
       toast({
         title: "인증 오류",
         description: "사용자 정보를 가져올 수 없습니다.",
@@ -123,7 +123,7 @@ export default function CommunityBoardPostDetail(): JSX.Element {
     }
 
     try {
-      await api.delete(`/communities/${id}/boards/${boardId}/posts/${postId}?userId=${user.id}`);
+      await api.delete(`/communities/${id}/boards/${boardId}/posts/${postId}?userId=${user.userId}`);
       
       toast({
         title: "성공",

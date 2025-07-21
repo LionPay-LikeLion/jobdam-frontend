@@ -1,5 +1,6 @@
 import api from "./api";
 import { setTokens, AuthTokens } from "./auth";
+import { User } from "@/contexts/AuthContext";
 
 export interface LoginRequest {
   email: string;
@@ -150,21 +151,15 @@ export const logout = async (): Promise<void> => {
   }
 };
 
-// 사용자 정보 가져오기
-export const getCurrentUser = async () => {
-  try {
-    const response = await api.get('/auth/me');
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
-};
-
 // 사용자 프로필 가져오기
 export const getUserProfile = async () => {
   try {
     const response = await api.get('/user/profile');
-    return response.data;
+    const data = response.data;
+    return {
+      ...data,
+      id: data.userId   // userId -> id로만 추가 매핑
+    };
   } catch (error) {
     throw error;
   }
