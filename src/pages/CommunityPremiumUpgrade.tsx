@@ -4,7 +4,8 @@ import api from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import TopBar from "@/components/TopBar";
+
+// TopBar import 완전 삭제!
 
 // 커스텀 라디오버튼
 const CustomRadio = ({ checked }: { checked: boolean }) => (
@@ -38,9 +39,9 @@ const CommunityPremiumUpgrade = (): JSX.Element => {
         setLoading(true);
         setResultMsg(null);
         try {
-            await api.post("/communities/upgrade", { 
-                communityId: Number(communityId), 
-                planType 
+            await api.post("/communities/upgrade", {
+                communityId: Number(communityId),
+                planType
             });
             setResultMsg("🎉 프리미엄 커뮤니티 업그레이드가 완료되었습니다.");
             setTimeout(() => navigate("/community"), 1200);
@@ -56,8 +57,7 @@ const CommunityPremiumUpgrade = (): JSX.Element => {
 
     return (
         <div className="bg-white min-h-screen w-full flex flex-col">
-            <TopBar />
-            {/* 중앙정렬 전체 wrapper */}
+            {/* TopBar 완전 제거! */}
             <main className="flex-1 w-full max-w-7xl mx-auto flex flex-col items-center pt-[120px] px-4">
                 {/* 타이틀 */}
                 <h1 className="font-bold text-black text-[2.5rem] sm:text-[2.8rem] mb-8 text-center">
@@ -161,7 +161,7 @@ const CommunityPremiumUpgrade = (): JSX.Element => {
                     </div>
                 </section>
 
-                                {/* 안내 및 버튼 */}
+                {/* 안내 및 버튼 */}
                 <div className="flex flex-col items-center mt-14 mb-14 w-full">
                     <p className="font-normal text-[#000000b2] text-sm">포인트로 결제됩니다.</p>
                     <Button
@@ -182,4 +182,4 @@ const CommunityPremiumUpgrade = (): JSX.Element => {
     );
 };
 
-export default CommunityPremiumUpgrade; 
+export default CommunityPremiumUpgrade;
