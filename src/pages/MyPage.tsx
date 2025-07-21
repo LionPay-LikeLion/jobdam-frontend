@@ -4,6 +4,9 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import MyPageLayout from "./MyPageLayout";
+import { withdrawUser } from "@/lib/authApi";
+import { useAuth } from "@/contexts/AuthContext";
+import { Input } from "@/components/ui/input";
 
 interface UserProfile {
     email: string;
@@ -23,6 +26,12 @@ export default function MyPage() {
     const [error, setError] = useState<string | null>(null);
     const { toast } = useToast();
     const navigate = useNavigate();
+    const { logout } = useAuth();
+
+    const [showPwModal, setShowPwModal] = useState(false);
+    const [currentPassword, setCurrentPassword] = useState("");
+    const [newPassword, setNewPassword] = useState("");
+    const [pwLoading, setPwLoading] = useState(false);
 
     useEffect(() => {
         fetchProfile();
@@ -43,6 +52,64 @@ export default function MyPage() {
         if (!isoDate) return "";
         const date = new Date(isoDate);
         return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
+    };
+
+    const handleWithdraw = async () => {
+        if (!window.confirm("정말로 회원 탈퇴하시겠습니까?")) return;
+        try {
+            await withdrawUser();
+            await logout();
+            toast({
+                title: "탈퇴 완료",
+                description: "회원 탈퇴가 완료되었습니다.",
+            });
+            navigate("/");
+        } catch (error: any) {
+            let msg = "회원 탈퇴에 실패했습니다.";
+            if (error.response?.data?.message) msg = error.response.data.message;
+            toast({
+                title: "오류",
+                description: msg,
+                variant: "destructive",
+            });
+        }
+    };
+
+    const handleChangePassword = async () => {
+        if (!currentPassword || !newPassword) {
+            toast({
+                title: "입력 오류",
+                description: "현재 비밀번호와 새 비밀번호를 모두 입력하세요.",
+                variant: "destructive",
+            });
+            return;
+        }
+        setPwLoading(true);
+        try {
+            await api.put("/user/password", {
+                currentPassword,
+                newPassword,
+            });
+            toast({
+                title: "비밀번호 변경 완료",
+                description: "다시 로그인 해주세요.",
+            });
+            setShowPwModal(false);
+            setCurrentPassword("");
+            setNewPassword("");
+            await logout();
+            navigate("/");
+        } catch (error: any) {
+            let msg = "비밀번호 변경에 실패했습니다.";
+            if (error.response?.data?.message) msg = error.response.data.message;
+            toast({
+                title: "오류",
+                description: msg,
+                variant: "destructive",
+            });
+        } finally {
+            setPwLoading(false);
+        }
     };
 
     return (
@@ -108,10 +175,10 @@ export default function MyPage() {
                             </div>
                             
                             <div className="flex gap-4 pt-6">
-                                <Button className="h-[44px] w-[180px] bg-black hover:bg-black/90 text-white font-normal text-base">
+                                <Button className="h-[44px] w-[180px] bg-black hover:bg-black/90 text-white font-normal text-base" onClick={() => setShowPwModal(true)}>
                                     비밀번호 변경
                                 </Button>
-                                <Button variant="outline" className="h-[44px] w-[180px] border-red-600 text-red-600 hover:bg-red-50 font-normal text-base">
+                                <Button variant="outline" className="h-[44px] w-[180px] border-red-600 text-red-600 hover:bg-red-50 font-normal text-base" onClick={handleWithdraw}>
                                     회원 탈퇴 요청
                                 </Button>
                             </div>
@@ -119,6 +186,49 @@ export default function MyPage() {
                     </div>
                 )}
             </div>
+            {showPwModal && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+                    <div className="bg-white rounded-lg shadow-lg p-8 w-[350px]">
+                        <h2 className="text-xl font-bold mb-4">비밀번호 변경</h2>
+                        <div className="mb-3">
+                            <label className="block text-sm mb-1">현재 비밀번호</label>
+                            <Input
+                                type="password"
+                                value={currentPassword}
+                                onChange={e => setCurrentPassword(e.target.value)}
+                                className="mb-2"
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label className="block text-sm mb-1">새 비밀번호</label>
+                            <Input
+                                type="password"
+                                value={newPassword}
+                                onChange={e => setNewPassword(e.target.value)}
+                            />
+                        </div>
+                        <div className="flex justify-end gap-2">
+                            <Button
+                                variant="outline"
+                                onClick={() => {
+                                    setShowPwModal(false);
+                                    setCurrentPassword("");
+                                    setNewPassword("");
+                                }}
+                                disabled={pwLoading}
+                            >
+                                취소
+                            </Button>
+                            <Button
+                                onClick={handleChangePassword}
+                                disabled={pwLoading}
+                            >
+                                {pwLoading ? "변경 중..." : "변경"}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </MyPageLayout>
     );
 }
