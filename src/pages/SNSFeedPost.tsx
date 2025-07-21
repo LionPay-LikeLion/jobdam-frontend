@@ -92,6 +92,12 @@ const SNSFeedPost = () => {
     setPost(updatedPost);
   }
 
+  // 게시글 수정 페이지 이동
+  const handleEditPost = () => {
+    navigate(`/sns/posts/${postId}/edit`);
+  };
+
+  // 게시글 삭제
   const handleDeletePost = async (postId: number) => {
     if (!window.confirm("정말 게시글을 삭제하시겠습니까?")) return;
 
@@ -243,7 +249,7 @@ const SNSFeedPost = () => {
                 <span className="text-sm font-medium">북마크</span>
               </Button>
               <div className="ml-auto flex gap-2">
-                <Button variant="outline" className="bg-[#f0f0f0] h-[37px] rounded-md">수정</Button>
+                <Button variant="outline" className="bg-[#f0f0f0] h-[37px] rounded-md" onClick={handleEditPost}>수정</Button>
                 <Button variant="destructive" className="bg-[#ff3b30] h-[37px] rounded-md" onClick={() => handleDeletePost(post.snsPostId)}>삭제</Button>
                 <Button variant="outline" className="bg-[#f0f0f0] h-[37px] gap-1 rounded-md">
                   <Flag className="h-4 w-4" />
