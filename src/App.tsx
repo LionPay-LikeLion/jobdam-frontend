@@ -104,6 +104,7 @@ const AppRoutes = () => {
                         <Route path="management" element={<CommunityManagement />} />
                         <Route path="board/create" element={<CommunityBoardCreate />} />
                         <Route path="upgrade" element={<CommunityPremiumUpgrade />} />
+                        <Route path="board/detail/:postId" element={<CommunityBoardPostDetail />} />
                     </Route>
                     <Route path="/payment-success" element={<PaymentSuccess />} />
                     <Route path="/membership-type-request" element={<MembershipTypeRequest />} />
@@ -117,6 +118,8 @@ const AppRoutes = () => {
                     <Route path="/admin/type-request" element={<AdminRoleChange />} />
                     {/* 신고 관리, 전환요청 등은 아래처럼 확장 가능! */}
                     {/* <Route path="/admin/report" element={<AdminReportManagement />} /> */}
+
+
                 </>
             )}
 
