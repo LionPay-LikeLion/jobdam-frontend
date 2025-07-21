@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, User, Crown } from "lucide-react";
+import { Search, User, Crown, MessageSquare } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -59,6 +59,14 @@ export default function TopBar() {
                 onClick={() => navigate("/community")}
               >
                 커뮤니티
+              </Button>
+              <Button
+                variant="ghost"
+                className="font-normal text-base flex items-center gap-2"
+                onClick={() => navigate("/messages")}
+              >
+                <MessageSquare className="w-4 h-4" />
+                메시지
               </Button>
 
               {/* 사용자 정보 및 포인트 표시 */}

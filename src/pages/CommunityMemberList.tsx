@@ -5,6 +5,7 @@ import { HiOutlineEye } from "react-icons/hi";
 import { useParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import api from "@/lib/api";
+import { sendMessage } from "@/lib/messageApi";
 
 interface CommunityMember {
     userId: number;
@@ -49,10 +50,7 @@ export default function CommunityMemberList(): JSX.Element {
         if (!selectedMember || !message.trim()) return;
 
         try {
-            await api.post(`/communities/${id}/message`, {
-                receiverId: selectedMember.userId,
-                content: message
-            });
+            await sendMessage(selectedMember.userId, message);
 
             toast({
                 title: "성공",
