@@ -13,7 +13,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Bookmark, Flag, Heart, MessageSquare, Download } from "lucide-react";
+
 import ReportModal from "@/components/ReportModal";
+
+import TopBar from "@/components/TopBar";
+
 
 const postTags = ["#면접후기", "#포트폴리오", "#이직준비", "#마케팅"];
 
