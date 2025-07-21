@@ -235,7 +235,7 @@ export default function SNSMessagePage() {
                                           : msg.createdAt}
                               </span>
                                   </div>
-                                  <div className={`mt-1 px-4 py-2 rounded-2xl text-base break-words ${isMine ? "bg-blue-100 text-blue-900 text-left" : "bg-gray-100 text-black text-left"}`}>
+                                  <div className={`mt-1 px-4 py-2 rounded-2xl text-base break-words ${isMine ? "bg-blue-100 text-blue-900 text-left" + "" : "bg-gray-100 text-black text-left"}`}>
                                     {msg.content}
                                   </div>
                                 </div>
