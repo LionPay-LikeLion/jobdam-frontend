@@ -26,9 +26,12 @@ import CommunityMemberList from "@/pages/CommunityMemberList";
 import CommunityMessenger from "@/pages/CommunityMessenger";
 import CommunityManagement from "@/pages/CommunityManagement";
 import CommunityBoardCreate from "@/pages/CommunityBoardCreate";
+import CommunityPostWrite from "@/pages/CommunityPostWrite";
+import CommunityPostEdit from "@/pages/CommunityPostEdit";
 import PointPurchase from "@/pages/PointPurchase";
 import MyPage from "@/pages/MyPage";
 import PremiumUpgrade from "@/pages/PremiumUpgrade";
+import CommunityPremiumUpgrade from "@/pages/CommunityPremiumUpgrade";
 import NotFound from "./pages/NotFound";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import PaymentSuccess from "@/pages/PaymentSuccess.tsx";
@@ -88,11 +91,14 @@ const AppRoutes = () => {
                         <Route index element={<CommunityHome />} />
                         <Route path="board" element={<CommunityBoardList />} />
                         <Route path="board/:boardId" element={<CommunityBoardMain />} />
+                        <Route path="board/:boardId/post/write" element={<CommunityPostWrite />} />
+                        <Route path="board/:boardId/post/edit/:postId" element={<CommunityPostEdit />} />
                         <Route path="board/detail/:postId" element={<CommunityBoardPostDetail />} />
                         <Route path="members" element={<CommunityMemberList />} />
                         <Route path="messenger" element={<CommunityMessenger />} />
                         <Route path="management" element={<CommunityManagement />} />
                         <Route path="board/create" element={<CommunityBoardCreate />} />
+                        <Route path="upgrade" element={<CommunityPremiumUpgrade />} />
                     </Route>
                     <Route path="/payment-success" element={<PaymentSuccess />} />
                     <Route path="/membership-type-request" element={<MembershipTypeRequest />} />

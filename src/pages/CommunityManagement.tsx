@@ -93,7 +93,10 @@ const CommunityManagement = () => {
                                 <p className="font-medium text-lg">현재 플랜</p>
                                 <p className="text-purple-600 font-semibold text-xl">베이직</p>
                             </div>
-                            <button className="bg-purple-600 text-white px-5 py-2 rounded-md">
+                            <button 
+                                className="bg-purple-600 text-white px-5 py-2 rounded-md hover:bg-purple-700 transition-colors"
+                                onClick={() => navigate(`/community/${id}/upgrade`)}
+                            >
                                 플랜 전환
                             </button>
                         </div>
