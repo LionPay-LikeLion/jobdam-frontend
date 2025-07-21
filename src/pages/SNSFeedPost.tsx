@@ -147,7 +147,6 @@ const SNSFeedPost = () => {
 
   return (
     <div className="bg-white min-h-screen w-full">
-      <TopBar />
       <main className="flex-1 px-8 py-8">
         <div className="flex flex-col items-center mb-8">
           <h1 className="text-[40px] font-bold leading-[48px] text-center">피드 상세</h1>

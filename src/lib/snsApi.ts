@@ -78,4 +78,10 @@ export const updateComment = async (commentId: number, snsPostId: number, conten
 export const deleteComment = async (commentId: number) => {
   const res = await api.delete(`/sns/comments/${commentId}`);
   return res.data;
+};
+
+// 유저 검색 함수
+export const searchUsers = async (query: string) => {
+  const response = await api.get("/user/search", { params: { keyword: query } });
+  return response.data;
 }; 

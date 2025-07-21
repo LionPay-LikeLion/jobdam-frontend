@@ -1,130 +1,188 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import TopBar from "@/components/TopBar";
 import AdminSideBar from "@/components/AdminSideBar";
 import { CheckCircle, XCircle, Info } from "lucide-react";
+import api from "@/lib/api";
 
-const reportList = [
-    {
-        type: "게시글",
-        summary: "부적절한 언어 사용",
-        reason: "욕설/비방",
-        reporter: "user123@email.com",
-        reported: "홍길동",
-        date: "2024-01-15",
-        status: "대기",
-    },
-    {
-        type: "댓글",
-        summary: "스팸성 광고 댓글",
-        reason: "스팸/광고",
-        reporter: "admin@site.com",
-        reported: "김철수",
-        date: "2024-01-14",
-        status: "승인",
-    },
-    {
-        type: "게시글",
-        summary: "허위 정보 유포 의혹",
-        reason: "허위정보",
-        reporter: "reporter@email.com",
-        reported: "이영희",
-        date: "2024-01-13",
-        status: "반려",
-    },
-    {
-        type: "댓글",
-        summary: "개인정보 무단 공개",
-        reason: "개인정보침해",
-        reporter: "privacy@email.com",
-        reported: "박민수",
-        date: "2024-01-12",
-        status: "대기",
-    },
-    {
-        type: "게시글",
-        summary: "저작권 침해 콘텐츠",
-        reason: "저작권침해",
-        reporter: "copyright@email.com",
-        reported: "최지훈",
-        date: "2024-01-11",
-        status: "대기",
-    },
-];
+// === 상태별 뱃지, 라벨, 아이콘 정의 ===
+const statusBadge: Record<number, string> = {
+    0: "bg-yellow-50 text-yellow-700 border border-yellow-200",
+    1: "bg-red-50 text-red-600 border border-red-200",    // 반려(빨강)
+    2: "bg-green-50 text-green-600 border border-green-200", // 정지처리(초록)
+};
+const statusLabel: Record<number, string> = {
+    0: "대기중",
+    1: "반려",           // 반려(빨강)
+    2: "정지처리",       // 정지처리(초록)
+};
+const statusIcon: Record<number, React.ReactNode> = {
+    0: <Info size={15} className="inline mr-1 text-yellow-500" />,
+    1: <XCircle size={15} className="inline mr-1 text-red-500" />,      // 반려(빨강)
+    2: <CheckCircle size={15} className="inline mr-1 text-green-500" />,// 정지처리(초록)
+};
 
-const statusBadge: Record<string, string> = {
-    "대기": "bg-yellow-50 text-yellow-700 border border-yellow-200",
-    "승인": "bg-green-50 text-green-600 border border-green-200",
-    "반려": "bg-red-50 text-red-500 border border-red-200",
+const statusMap: Record<string, number | undefined> = {
+    "전체": undefined,
+    "대기중": 0,
+    "반려": 1,            // 반려(빨강)
+    "정지처리": 2,        // 정지처리(초록)
+};
+
+type ReportItem = {
+    reportId: number;
+    reason: string;
+    reporterNickname: string;
+    reportedNickname: string;
+    createdAt: string;
+    status: number;
+    targetId: number;
+    postType: "community" | "sns";
+    reportedUserId: number; // 신고된 회원 아이디(정지/활성화용)
 };
 
 const AdminReport: React.FC = () => {
+    const [filters, setFilters] = useState({
+        status: "전체",
+        reporter: "",
+        date: "",
+    });
+    const [reportList, setReportList] = useState<ReportItem[]>([]);
+    const [loading, setLoading] = useState(false);
+
+    const [processingId, setProcessingId] = useState<number | null>(null);
+
+    const [showModal, setShowModal] = useState(false);
+    const [modalMessage, setModalMessage] = useState("");
+
+    // === 신고 리스트 불러오기 ===
+    const fetchList = async () => {
+        setLoading(true);
+        try {
+            const params: Record<string, string | number> = {};
+            if (filters.status !== "전체") params.status = statusMap[filters.status] as number;
+            if (filters.reporter) params.reporter = filters.reporter;
+            if (filters.date) params.date = filters.date;
+            const res = await api.get("/admin/report", { params });
+            let list: ReportItem[] = [];
+            if (res.data && Array.isArray(res.data.content)) {
+                list = res.data.content;
+            } else if (Array.isArray(res.data)) {
+                list = res.data;
+            }
+            setReportList(list);
+        } catch (e) {
+            console.error("신고 목록 조회 실패", e);
+            setReportList([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => { fetchList(); }, []);
+
+    // === 필터 핸들러 ===
+    const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        setFilters({ ...filters, [e.target.name]: e.target.value });
+    };
+    const handleSearch = () => {
+        fetchList();
+    };
+
+    // === 승인/거절 처리 ===
+    const handleProcess = async (item: ReportItem, action: "승인" | "거절") => {
+        setProcessingId(item.reportId);
+        try {
+            if (action === "승인") {
+                // 승인 == 정지처리 (status=2)
+                await api.patch(`/admin/report/${item.reportId}/deactivate`);
+                setModalMessage("해당 유저가 정지처리되었습니다.");
+            } else if (action === "거절") {
+                // 거절 == 반려 (status=1)
+                await api.patch(`/admin/report/${item.reportId}/approve`);
+                setModalMessage("해당 신고가 반려되었습니다.");
+            }
+            setShowModal(true);
+        } catch (e) {
+            setModalMessage("처리 중 오류가 발생했습니다.");
+            setShowModal(true);
+        } finally {
+            setProcessingId(null);
+        }
+    };
+
+
+    // === 모달 닫기 ===
+    const handleCloseModal = () => {
+        setShowModal(false);
+        fetchList();
+    };
+
     return (
         <div className="bg-gray-50 min-h-screen w-full">
             <TopBar />
             <main className="flex flex-row justify-center w-full pt-12 pb-16">
                 <div className="flex w-full max-w-[1500px] gap-12">
-                    {/* 사이드바 */}
                     <aside className="w-[220px] flex-shrink-0">
                         <AdminSideBar />
                     </aside>
-                    {/* 본문 */}
                     <section className="flex-1 min-w-0">
                         <div className="mb-2 text-left">
                             <h1 className="text-3xl font-bold mb-2">신고 관리</h1>
                             <p className="text-gray-500 text-base">사용자가 신고한 콘텐츠를 검토하고 처리할 수 있습니다.</p>
                         </div>
-                        {/* 검색/필터: 항상 한 줄, 버튼 개행 없음 */}
+                        {/* --- 검색/필터 --- */}
                         <div className="bg-white rounded-2xl shadow p-6 mb-7 border flex items-end gap-5 w-full max-w-[1250px]">
                             <div className="flex flex-col w-48">
-                                <label className="text-xs mb-1">신고 대상</label>
-                                <select className="border rounded px-3 py-2 text-sm">
-                                    <option>전체</option>
-                                    <option>게시글</option>
-                                    <option>댓글</option>
-                                </select>
-                            </div>
-                            <div className="flex flex-col w-48">
                                 <label className="text-xs mb-1">처리 상태</label>
-                                <select className="border rounded px-3 py-2 text-sm">
+                                <select
+                                    className="border rounded px-3 py-2 text-sm"
+                                    name="status"
+                                    value={filters.status}
+                                    onChange={handleFilterChange}
+                                >
                                     <option>전체</option>
-                                    <option>대기</option>
-                                    <option>승인</option>
+                                    <option>대기중</option>
                                     <option>반려</option>
+                                    <option>정지처리</option>
                                 </select>
                             </div>
                             <div className="flex flex-col w-72">
-                                <label className="text-xs mb-1">신고자 이메일</label>
-                                <input className="border rounded px-3 py-2 text-sm" placeholder="이메일 주소를 입력하세요" />
+                                <label className="text-xs mb-1">신고자 닉네임</label>
+                                <input
+                                    className="border rounded px-3 py-2 text-sm"
+                                    name="reporter"
+                                    value={filters.reporter}
+                                    onChange={handleFilterChange}
+                                    placeholder="닉네임을 입력하세요"
+                                />
                             </div>
                             <div className="flex flex-col w-56">
                                 <label className="text-xs mb-1">신고일</label>
-                                <input type="date" className="border rounded px-3 py-2 text-sm" placeholder="연도. 월. 일." />
+                                <input
+                                    type="date"
+                                    className="border rounded px-3 py-2 text-sm"
+                                    name="date"
+                                    value={filters.date}
+                                    onChange={handleFilterChange}
+                                />
                             </div>
-                            <div className="flex-1" /> {/* 우측 밀어내기 */}
-                            <button className="bg-black text-white px-8 py-2 rounded-xl hover:bg-gray-800 h-11 text-sm font-semibold shadow mt-[22px]">
-                                검색
+                            <div className="flex-1" />
+                            <button
+                                className="bg-black text-white px-8 py-2 rounded-xl hover:bg-gray-800 h-11 text-sm font-semibold shadow mt-[22px]"
+                                onClick={handleSearch}
+                                disabled={loading}
+                            >
+                                {loading ? "검색 중..." : "검색"}
                             </button>
                         </div>
-                        {/* 신고 목록 */}
+                        {/* --- 신고 목록 --- */}
                         <div className="w-full max-w-[1250px]">
                             <h2 className="text-xl font-semibold mb-3 text-left">신고 목록</h2>
                             <div className="bg-white rounded-2xl shadow border px-0 py-0 overflow-x-auto">
                                 <table className="w-full text-sm text-left whitespace-nowrap">
-                                    <colgroup>
-                                        <col style={{ width: "8%" }} />
-                                        <col style={{ width: "18%" }} />
-                                        <col style={{ width: "13%" }} />
-                                        <col style={{ width: "19%" }} />
-                                        <col style={{ width: "12%" }} />
-                                        <col style={{ width: "13%" }} />
-                                        <col style={{ width: "9%" }} />
-                                        <col style={{ width: "12%" }} />
-                                    </colgroup>
                                     <thead>
                                     <tr className="border-b bg-gray-50">
-                                        <th className="py-3 px-4 text-sm font-medium">신고 대상</th>
-                                        <th className="px-4 text-sm font-medium">내용 요약</th>
-                                        <th className="px-4 text-sm font-medium">신고 사유</th>
+                                        <th className="py-3 px-4 text-sm font-medium">신고 사유</th>
                                         <th className="px-4 text-sm font-medium">신고자</th>
                                         <th className="px-4 text-sm font-medium">피신고자</th>
                                         <th className="px-4 text-sm font-medium">신고일</th>
@@ -133,35 +191,48 @@ const AdminReport: React.FC = () => {
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    {reportList.map((item, idx) => (
+                                    {(reportList?.length ?? 0) === 0 && !loading && (
+                                        <tr>
+                                            <td colSpan={6} className="py-10 text-center text-gray-400">
+                                                신고 내역이 없습니다.
+                                            </td>
+                                        </tr>
+                                    )}
+                                    {Array.isArray(reportList) && reportList.map((item) => (
                                         <tr
-                                            key={idx}
+                                            key={item.reportId}
                                             className="border-b last:border-b-0 hover:bg-gray-50 text-[15px] align-middle"
                                         >
-                                            <td className="py-3 px-4 align-middle">{item.type}</td>
-                                            <td className="px-4 align-middle">{item.summary}</td>
-                                            <td className="px-4 align-middle">{item.reason}</td>
-                                            <td className="px-4 align-middle font-semibold">{item.reporter}</td>
-                                            <td className="px-4 align-middle">{item.reported}</td>
-                                            <td className="px-4 align-middle">{item.date}</td>
+                                            <td className="py-3 px-4 align-middle">{item.reason}</td>
+                                            <td className="px-4 align-middle">{item.reporterNickname}</td>
+                                            <td className="px-4 align-middle">{item.reportedNickname}</td>
                                             <td className="px-4 align-middle">
-                          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-semibold ${statusBadge[item.status]}`}>
-                            {item.status === "승인" && <CheckCircle size={15} className="inline mr-1 text-green-500" />}
-                              {item.status === "반려" && <XCircle size={15} className="inline mr-1 text-red-400" />}
-                              {item.status === "대기" && <Info size={15} className="inline mr-1 text-yellow-500" />}
-                              {item.status}
-                          </span>
+                                                {item.createdAt ? new Date(item.createdAt).toLocaleString("ko-KR", {
+                                                    year: "numeric", month: "2-digit", day: "2-digit",
+                                                    hour: "2-digit", minute: "2-digit"
+                                                }) : ""}
+                                            </td>
+                                            <td className="px-4 align-middle">
+                                                <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-semibold ${statusBadge[item.status]}`}>
+                                                    {statusIcon[item.status]}
+                                                    {statusLabel[item.status]}
+                                                </span>
                                             </td>
                                             <td className="px-4 align-middle">
                                                 <div className="flex flex-nowrap gap-1">
-                                                    <button className="px-3 h-8 rounded-lg border border-gray-300 text-xs hover:bg-gray-100 min-w-[64px]">
-                                                        상세보기
-                                                    </button>
-                                                    <button className="px-3 h-8 rounded-lg text-xs bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition-colors flex items-center gap-1 min-w-[52px]">
+                                                    <button
+                                                        className="px-3 h-8 rounded-lg text-xs bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition-colors flex items-center gap-1 min-w-[52px]"
+                                                        disabled={item.status !== 0 || processingId !== null}
+                                                        onClick={() => handleProcess(item, "승인")}
+                                                    >
                                                         <CheckCircle size={13} className="inline" />
                                                         승인
                                                     </button>
-                                                    <button className="px-3 h-8 rounded-lg text-xs bg-red-50 text-red-500 border border-red-200 hover:bg-red-100 transition-colors flex items-center gap-1 min-w-[52px]">
+                                                    <button
+                                                        className="px-3 h-8 rounded-lg text-xs bg-red-50 text-red-500 border border-red-200 hover:bg-red-100 transition-colors flex items-center gap-1 min-w-[52px]"
+                                                        disabled={item.status !== 0 || processingId !== null}
+                                                        onClick={() => handleProcess(item, "거절")}
+                                                    >
                                                         <XCircle size={13} className="inline" />
                                                         거절
                                                     </button>
@@ -171,11 +242,26 @@ const AdminReport: React.FC = () => {
                                     ))}
                                     </tbody>
                                 </table>
+                                {loading && (
+                                    <div className="py-10 text-center text-gray-400 text-base">로딩 중...</div>
+                                )}
                             </div>
                         </div>
                     </section>
                 </div>
             </main>
+            {/* --- 처리 완료 모달 --- */}
+            {showModal && (
+                <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/40">
+                    <div className="bg-white rounded-2xl px-10 py-8 shadow-xl text-center">
+                        <div className="mb-5 text-2xl font-semibold">{modalMessage}</div>
+                        <button
+                            className="mt-2 px-7 py-2 bg-black text-white rounded-xl font-semibold hover:bg-gray-800"
+                            onClick={handleCloseModal}
+                        >확인</button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
