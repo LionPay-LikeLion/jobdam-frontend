@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { FaHeart, FaComment, FaEye } from "react-icons/fa";
 import { FiSearch } from "react-icons/fi";
 import { Link } from "react-router-dom";
-import { fetchSnsPosts } from "@/lib/snsApi";
+import { fetchSnsPosts, searchByKeyword } from "@/lib/snsApi";
 import { useAuth } from "@/contexts/AuthContext";
 import clsx from "clsx";
 
@@ -10,6 +10,7 @@ const SNSFeedHome = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const { isLoading } = useAuth();
+  const [keyword, setKeyword] = useState("");
 
   useEffect(() => {
     if (!isLoading) {
@@ -56,10 +57,20 @@ const SNSFeedHome = () => {
           </select>
           <input
             type="text"
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
             placeholder="키워드 검색"
             className="ml-auto border px-3 py-1 rounded-md w-[280px] text-sm"
           />
-          <button className="bg-black text-white px-4 py-1 rounded-md text-sm">검색</button>
+          <button className="bg-black text-white px-4 py-1 rounded-md text-sm"
+            onClick={() => {
+              searchByKeyword(keyword)
+                .then(data => setPosts(data))
+                .catch(err => {
+                  console.error("검색 실패:", err);
+                  setPosts([]);
+                });
+            }}>검색</button>
         </div>
 
         {/* 게시글 카드 */}
