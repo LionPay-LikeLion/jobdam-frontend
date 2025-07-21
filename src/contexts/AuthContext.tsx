@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { getTokens, clearTokens, isTokenValid } from '../lib/auth';
+import { getTokens, clearTokens, isTokenValid, setTokens } from '../lib/auth';
+import { getUserFromToken } from '../lib/auth';
 import { logout as logoutApi, getUserProfile } from '../lib/authApi';
+
 
 interface User {
   id?: string;
@@ -24,6 +26,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   updateUser: (user: User) => void;
   refreshUserInfo: () => Promise<void>;
+  authLogin: (token: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -45,22 +48,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   const isAuthenticated = !!user;
-
-  // JWT에서 사용자 정보 추출하는 함수
-  const getUserFromToken = (token: string): User | null => {
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      console.log('JWT payload:', payload); // 디버깅용
-      
-      return {
-        id: payload.sub,
-        email: payload.email
-      };
-    } catch (error) {
-      console.error('JWT decode error:', error);
-      return null;
-    }
-  };
 
   // 앱 시작 시 토큰 검증 및 사용자 정보 가져오기
   useEffect(() => {
@@ -140,6 +127,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const authLogin = async (token: string) => {
+  try {
+    // Store tokens in localStorage or your method
+    setTokens({ accessToken: token }); // replaces localStorage.setItem()
+
+    // Decode user info from token
+    const basicUser = getUserFromToken(token);
+    if (basicUser) {
+      setUser(basicUser);
+    }
+
+    // Fetch detailed profile
+    try {
+      const detailedUser = await getUserProfile();
+      setUser(detailedUser);
+    } catch (error) {
+      console.error("Failed to fetch user profile after login", error);
+    }
+    } catch (error) {
+      console.error("authLogin error", error);
+    }
+  };
+
   const value: AuthContextType = {
     user,
     isAuthenticated,
@@ -148,6 +158,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     logout,
     updateUser,
     refreshUserInfo,
+    authLogin
   };
 
   return (
