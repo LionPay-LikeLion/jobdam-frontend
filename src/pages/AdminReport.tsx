@@ -4,17 +4,29 @@ import AdminSideBar from "@/components/AdminSideBar";
 import { CheckCircle, XCircle, Info } from "lucide-react";
 import api from "@/lib/api";
 
+// === 상태별 뱃지, 라벨, 아이콘 정의 (정지됨 추가) ===
 const statusBadge: Record<number, string> = {
     0: "bg-yellow-50 text-yellow-700 border border-yellow-200",
     1: "bg-green-50 text-green-600 border border-green-200",
+    2: "bg-red-50 text-red-600 border border-red-200", // 정지됨
 };
 const statusLabel: Record<number, string> = {
     0: "대기중",
     1: "처리완료",
+    2: "정지됨",
 };
 const statusIcon: Record<number, React.ReactNode> = {
     0: <Info size={15} className="inline mr-1 text-yellow-500" />,
     1: <CheckCircle size={15} className="inline mr-1 text-green-500" />,
+    2: <XCircle size={15} className="inline mr-1 text-red-500" />,
+};
+
+// === 상태 필터 옵션 (정지됨 추가) ===
+const statusMap: Record<string, number | undefined> = {
+    "전체": undefined,
+    "대기중": 0,
+    "처리완료": 1,
+    "정지됨": 2,
 };
 
 type ReportItem = {
@@ -51,11 +63,13 @@ const AdminReport: React.FC = () => {
     const [showDetail, setShowDetail] = useState(false);
     const [detailPost, setDetailPost] = useState<PostDetail | null>(null);
 
+    // === 신고 리스트 불러오기 ===
     const fetchList = async () => {
         setLoading(true);
         try {
-            const params: Record<string, string> = {};
-            if (filters.status !== "전체") params.status = filters.status;
+            const params: Record<string, string | number> = {};
+            // status=undefined(전체)면 쿼리 제외
+            if (filters.status !== "전체") params.status = statusMap[filters.status] as number;
             if (filters.reporter) params.reporter = filters.reporter;
             if (filters.date) params.date = filters.date;
             const res = await api.get("/admin/report", { params });
@@ -76,6 +90,7 @@ const AdminReport: React.FC = () => {
 
     useEffect(() => { fetchList(); }, []);
 
+    // === 필터 핸들러 ===
     const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         setFilters({ ...filters, [e.target.name]: e.target.value });
     };
@@ -83,7 +98,7 @@ const AdminReport: React.FC = () => {
         fetchList();
     };
 
-    // === 여기 분기만 추가! ===
+    // === 허용/정지 처리 ===
     const handleProcess = async (reportId: number, action: "허용" | "정지") => {
         setProcessingId(reportId);
         try {
@@ -103,6 +118,7 @@ const AdminReport: React.FC = () => {
         }
     };
 
+    // === 상세보기 ===
     const handleDetail = async (item: ReportItem) => {
         try {
             let url = "";
@@ -119,6 +135,7 @@ const AdminReport: React.FC = () => {
         }
     };
 
+    // === 모달 닫기 ===
     const handleCloseModal = () => {
         setShowModal(false);
         fetchList();
@@ -150,6 +167,7 @@ const AdminReport: React.FC = () => {
                                     <option>전체</option>
                                     <option>대기중</option>
                                     <option>처리완료</option>
+                                    <option>정지됨</option>
                                 </select>
                             </div>
                             <div className="flex flex-col w-72">
