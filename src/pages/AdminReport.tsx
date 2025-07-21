@@ -7,25 +7,30 @@ import api from "@/lib/api";
 // === 상태별 뱃지, 라벨, 아이콘 정의 ===
 const statusBadge: Record<number, string> = {
     0: "bg-yellow-50 text-yellow-700 border border-yellow-200",
-    1: "bg-red-50 text-red-600 border border-red-200",    // 반려(빨강)
-    2: "bg-green-50 text-green-600 border border-green-200", // 정지처리(초록)
+    1: "bg-red-50 text-red-600 border border-red-200",
+    2: "bg-green-50 text-green-600 border border-green-200",
 };
 const statusLabel: Record<number, string> = {
     0: "대기중",
-    1: "반려",           // 반려(빨강)
-    2: "정지처리",       // 정지처리(초록)
+    1: "반려",
+    2: "정지처리",
 };
 const statusIcon: Record<number, React.ReactNode> = {
     0: <Info size={15} className="inline mr-1 text-yellow-500" />,
-    1: <XCircle size={15} className="inline mr-1 text-red-500" />,      // 반려(빨강)
-    2: <CheckCircle size={15} className="inline mr-1 text-green-500" />,// 정지처리(초록)
+    1: <XCircle size={15} className="inline mr-1 text-red-500" />,
+    2: <CheckCircle size={15} className="inline mr-1 text-green-500" />,
 };
-
 const statusMap: Record<string, number | undefined> = {
     "전체": undefined,
     "대기중": 0,
-    "반려": 1,            // 반려(빨강)
-    "정지처리": 2,        // 정지처리(초록)
+    "반려": 1,
+    "정지처리": 2,
+};
+
+// === 신고 유형 라벨 ===
+const reportTypeLabel: Record<number, string> = {
+    1: "게시글",
+    2: "댓글",
 };
 
 type ReportItem = {
@@ -36,8 +41,9 @@ type ReportItem = {
     createdAt: string;
     status: number;
     targetId: number;
-    postType: "community" | "sns";
-    reportedUserId: number; // 신고된 회원 아이디(정지/활성화용)
+    reportTypeCodeId: number; // ← 신고 유형(1: 게시글, 2: 댓글)
+    postType?: "community" | "sns";
+    reportedUserId?: number;
 };
 
 const AdminReport: React.FC = () => {
@@ -93,11 +99,9 @@ const AdminReport: React.FC = () => {
         setProcessingId(item.reportId);
         try {
             if (action === "승인") {
-                // 승인 == 정지처리 (status=2)
                 await api.patch(`/admin/report/${item.reportId}/deactivate`);
                 setModalMessage("해당 유저가 정지처리되었습니다.");
             } else if (action === "거절") {
-                // 거절 == 반려 (status=1)
                 await api.patch(`/admin/report/${item.reportId}/approve`);
                 setModalMessage("해당 신고가 반려되었습니다.");
             }
@@ -109,7 +113,6 @@ const AdminReport: React.FC = () => {
             setProcessingId(null);
         }
     };
-
 
     // === 모달 닫기 ===
     const handleCloseModal = () => {
@@ -182,6 +185,7 @@ const AdminReport: React.FC = () => {
                                 <table className="w-full text-sm text-left whitespace-nowrap">
                                     <thead>
                                     <tr className="border-b bg-gray-50">
+                                        <th className="py-3 px-4 text-sm font-medium">신고 유형</th>
                                         <th className="py-3 px-4 text-sm font-medium">신고 사유</th>
                                         <th className="px-4 text-sm font-medium">신고자</th>
                                         <th className="px-4 text-sm font-medium">피신고자</th>
@@ -193,7 +197,7 @@ const AdminReport: React.FC = () => {
                                     <tbody>
                                     {(reportList?.length ?? 0) === 0 && !loading && (
                                         <tr>
-                                            <td colSpan={6} className="py-10 text-center text-gray-400">
+                                            <td colSpan={7} className="py-10 text-center text-gray-400">
                                                 신고 내역이 없습니다.
                                             </td>
                                         </tr>
@@ -203,6 +207,9 @@ const AdminReport: React.FC = () => {
                                             key={item.reportId}
                                             className="border-b last:border-b-0 hover:bg-gray-50 text-[15px] align-middle"
                                         >
+                                            <td className="py-3 px-4 align-middle">
+                                                {reportTypeLabel[item.reportTypeCodeId] || "알수없음"}
+                                            </td>
                                             <td className="py-3 px-4 align-middle">{item.reason}</td>
                                             <td className="px-4 align-middle">{item.reporterNickname}</td>
                                             <td className="px-4 align-middle">{item.reportedNickname}</td>
