@@ -224,41 +224,6 @@ const SNSFeedPost = () => {
                   </div>
               )}
             </CardContent>
-
-            <CardFooter className="px-8 pt-4 pb-6 border-t border-[#0000001a]">
-              <div className="flex items-center gap-4 w-full">
-                <Button variant="outline" className="bg-[#f0f0f0] h-[43px] gap-2 rounded-md">
-                  <Heart className={post.liked ? "text-red-500" : "text-gray-400"} />
-                  <span className="text-sm font-medium">{post.likeCount}</span>
-                </Button>
-                <Button variant="outline" className="bg-[#f0f0f0] h-[43px] gap-2 rounded-md">
-                  <MessageSquare className="h-5 w-5" />
-                  <span className="text-sm font-medium">{post.commentCount}</span>
-                </Button>
-                <Button variant="outline" className="bg-[#f0f0f0] h-[43px] gap-2 rounded-md">
-                  <Bookmark className={post.bookmarked ? "text-blue-500" : "text-gray-400"} />
-                  <span className="text-sm font-medium">북마크</span>
-                </Button>
-                <div className="ml-auto flex gap-2">
-                  <Button variant="outline" className="bg-[#f0f0f0] h-[37px] rounded-md">수정</Button>
-                  <Button variant="destructive" className="bg-[#ff3b30] h-[37px] rounded-md">삭제</Button>
-                  {/* 게시글 신고 버튼 → reportTypeCodeId는 무조건 1 */}
-                  <Button
-                      variant="outline"
-                      className="bg-[#f0f0f0] h-[37px] gap-1 rounded-md"
-                      onClick={() => {
-                        setReportTargetId(snsPostId);
-                        setReportTypeCodeId(1); // 게시글(커뮤니티/SNS 모두 1)
-                        setShowReport(true);
-                      }}
-                      disabled={!snsPostId}
-                  >
-                    <Flag className="h-4 w-4" />
-                    <span className="text-sm font-medium">신고</span>
-                  </Button>
-                </div>
-              </div>
-            </CardFooter>
           </Card>
           <CardFooter className="px-8 pt-4 pb-6 border-t border-[#0000001a]">
             <div className="flex items-center gap-4 w-full">
