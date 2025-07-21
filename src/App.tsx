@@ -17,6 +17,7 @@ import SNSFeedPost from "@/pages/SNSFeedPost";
 import SNSFeedMy from "@/pages/SNSFeedMy";
 import SNSMessage from "@/pages/SNSMessage";
 import SNSPostWrite from "@/pages/SNSPostWrite";
+import SNSPostEdit from "@/pages/SNSPostEdit";
 import CommunityPage from "@/pages/CommunityPage";
 import CommunityCreate from "@/pages/CommunityCreate";
 import CommunityLayout from "@/pages/layouts/CommunityLayout";
@@ -80,6 +81,7 @@ const AppRoutes = () => {
                         <Route path=":postId" element={<SNSFeedPost />} />
                         <Route path="messages" element={<SNSMessage />} />
                         <Route path="sns-post-write" element={<SNSPostWrite />} />
+                        <Route path="/sns/posts/:postId/edit" element={<SNSPostEdit /> } />
                     </>
                 )}
             </Route>

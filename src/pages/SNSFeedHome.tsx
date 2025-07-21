@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { FaHeart, FaComment, FaEye } from "react-icons/fa";
 import { FiSearch } from "react-icons/fi";
 import { Link } from "react-router-dom";
-import { fetchSnsPosts, fetchSnsPostsFiltered, searchSnsPosts } from "@/lib/snsApi";
+import { fetchSnsPosts, searchByKeyword } from "@/lib/snsApi";
 import { useAuth } from "@/contexts/AuthContext";
 import clsx from "clsx";
 
@@ -10,8 +10,8 @@ const SNSFeedHome = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const { isLoading } = useAuth();
-  const [memberType, setMemberType] = useState("전체");
-  const [sort, setSort] = useState("latest");
+  const [memberType, setMemberType] = useState<string>("");
+  const [sort, setSort] = useState<string>("latest");
   const [keyword, setKeyword] = useState("");
 
   useEffect(() => {
@@ -39,28 +39,22 @@ const SNSFeedHome = () => {
         {/* 필터 영역 */}
         <div className="flex items-center gap-4 bg-white border rounded-lg shadow p-4 mb-8">
           <label className="text-sm font-medium">작성자 유형:</label>
-          <select
-            className="h-[42px] w-[100px] border border-gray-300 rounded-md px-3 text-sm"
-            value={memberType}
-            onChange={e => setMemberType(e.target.value)}
-          >
-            <option value="전체">전체</option>
+          <select className="h-[42px] w-[100px] border border-gray-300 rounded-md px-3 text-sm">
+            <option value="">전체</option>
             <option value="GENERAL">구직자</option>
             <option value="HUNTER">컨설턴트</option>
             <option value="EMPLOYEE">기업</option>
           </select>
           <label className="text-sm font-medium ml-4">정렬 기준:</label>
-          <select
-            className="h-[42px] w-[100px] border border-gray-300 rounded-md px-3 text-sm"
-            value={sort}
-            onChange={e => setSort(e.target.value)}
-          >
+          <select value={sort} onChange={(e) => setSort(e.target.value)} className="h-[42px] w-[100px] border border-gray-300 rounded-md px-3 text-sm">
             <option value="latest">최신순</option>
-            <option value="likes">좋아요순</option>
+            <option value="likes">인기순</option>
           </select>
           <span className="ml-8 mr-2 font-bold text-blue-600 text-base">제목/내용</span>
           <input
             type="text"
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
             placeholder="키워드 검색"
             className="border px-3 py-1 rounded-md w-[280px] text-sm"
             value={keyword}
@@ -68,16 +62,32 @@ const SNSFeedHome = () => {
           />
           <button
             className="bg-black text-white px-4 py-1 rounded-md text-sm"
-            onClick={async (e) => {
-              e.preventDefault();
-              setLoading(true);
+            onClick={async () => {
               try {
-                const data = await searchSnsPosts(keyword);
-                setPosts(data);
-              } catch (e) {
+                let data = [];
+
+                if (keyword.trim() !== "") {
+                  data = await searchByKeyword(keyword);
+                } else {
+                  data = await fetchSnsPosts();
+                }
+
+                const filtered = data
+                  .filter(post => {
+                    return memberType === "" || post.memberTypeCode === memberType;
+                  })
+                  .sort((a, b) => {
+                    if (sort === "likes") {
+                      return b.likeCount - a.likeCount;
+                    } else {
+                      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+                    }
+                  });
+
+                setPosts(filtered);
+              } catch (err) {
+                console.error("통합 검색 실패:", err);
                 setPosts([]);
-              } finally {
-                setLoading(false);
               }
             }}
           >
