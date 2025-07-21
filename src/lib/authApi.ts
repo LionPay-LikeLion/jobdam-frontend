@@ -35,6 +35,16 @@ export interface RegisterResponse {
   message: string;
 }
 
+export interface GoogleLoginResponse {
+  accessToken: string;
+  user: User;
+}
+
+export const googleLogin = async (code: string): Promise<GoogleLoginResponse> => {
+  const response = await api.post('/oauth/login', { code });
+  return response.data;
+};
+
 // 로그인 API
 export const login = async (credentials: LoginRequest): Promise<LoginResponse> => {
   try {

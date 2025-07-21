@@ -4,6 +4,7 @@ import { FiSearch } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import { fetchSnsPosts } from "@/lib/snsApi";
 import { useAuth } from "@/contexts/AuthContext";
+import clsx from "clsx";
 
 const SNSFeedHome = () => {
   const [posts, setPosts] = useState([]);
@@ -25,7 +26,9 @@ const SNSFeedHome = () => {
     }
   }, [isLoading]);
 
-
+  const isPremium = (subscriptionLevelCode: string) => {
+    return subscriptionLevelCode === "PREMIUM";
+  };
 
   if (loading) return <div className="text-center py-10">로딩중...</div>;
 
@@ -62,9 +65,18 @@ const SNSFeedHome = () => {
         {/* 게시글 카드 */}
         <div className="space-y-6">
           {posts.map((post) => (
-            <div key={post.snsPostId} className="flex border rounded-lg shadow p-6 bg-white">
+            <div 
+              key={post.snsPostId} 
+              className={clsx(
+                "flex border rounded-lg shadow p-6 bg-white transition-all duration-300 relative",
+                isPremium(post.subscriptionLevelCode) && [
+                  "border-4 border-yellow-500",
+                  "shadow-lg hover:shadow-xl"
+                ]
+              )}
+            >
               <Link to={`/${post.snsPostId}`} className="w-full flex">
-                <div className="w-[300px] h-[216px] bg-gray-300 rounded-md">
+                <div className="w-[300px] h-[216px] bg-gray-300 rounded-md overflow-hidden">
                   {post.imageUrl && post.imageUrl !== "string" && post.imageUrl !== "" ? (
                     <img src={post.imageUrl} alt="썸네일" className="w-full h-full object-cover rounded-md" />
                   ) : (
@@ -82,9 +94,16 @@ const SNSFeedHome = () => {
                       <p className="font-medium">{post.nickname}</p>
                       <p className="text-sm text-gray-500">{post.createdAt}</p>
                     </div>
-                    <span className="bg-gray-100 px-3 py-1 rounded text-sm">
-                      {post.memberTypeCode}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      {isPremium(post.subscriptionLevelCode) && (
+                        <span className="bg-yellow-500 text-white px-2 py-1 rounded text-xs font-semibold">
+                          PREMIUM
+                        </span>
+                      )}
+                      <span className="bg-gray-100 px-3 py-1 rounded text-sm">
+                        {post.memberTypeCode}
+                      </span>
+                    </div>
                   </div>
                   <div className="mt-3">
                     <h3 className="text-xl font-bold">{post.title}</h3>
