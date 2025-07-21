@@ -1,32 +1,34 @@
+// src/pages/PointPurchase.tsx
+
 import React, { useState, useEffect } from "react";
 import { AxiosError } from "axios";
-import api from "@/lib/api"; // 반드시 api 인스턴스 import!
+import api from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import TopBar from "@/components/TopBar";
 import { useNavigate } from "react-router-dom";
 
-// 결제 옵션
+// 충전 옵션 정의 (추천/이벤트 표시용 필드 추가)
 const chargeOptions = [
     { value: "BASIC_10000", display: "1만원 충전 (1만P)", amount: 10000, point: 10000 },
     { value: "BONUS_20000", display: "2만원 충전 (2.2만P)", amount: 22000, point: 20000 },
     { value: "BONUS_30000", display: "3만원 충전 (3만P)", amount: 33000, point: 30000 },
     { value: "BONUS_40000", display: "4만원 충전 (4만P)", amount: 45000, point: 40000 },
-    { value: "PROMO_50000", display: "5만원 충전 (6만P)", amount: 60000, point: 50000 },
+    { value: "PROMO_50000", display: "5만원 충전 (6만P)", amount: 60000, point: 50000, recommend: true },
+    // 오픈이벤트 옵션
+    { value: "EVENT_100", display: "오픈 기념! 100원 → 30만P", amount: 300000, point: 100, event: true }
 ];
 
 const paymentTypeCodeId = 1;
 const method = "CARD";
 
-// 안내문 멘트
 const usageGuidelines = [
     "결제는 안전한 이니시스를 통해 처리됩니다.",
     "충전된 포인트는 미사용시 환불 가능합니다.",
     "결제 관련 문의는 고객센터로 연락해 주세요.",
 ];
 
-// 아임포트 타입 선언
 declare global {
     interface Window {
         IMP?: {
@@ -54,18 +56,14 @@ interface IamportResponse {
     paid_amount?: number;
     error_msg?: string;
 }
-
 interface PaymentCreateResponse {
     merchantUid: string;
     amount: number;
 }
-
 interface PaymentConfirmResponse {
     status: string;
     point: number;
-    // 기타 필요한 필드
 }
-
 const IMP_CODE = "imp00213017"; // 실제 본인 imp 코드로 수정!
 
 export default function PointPurchase(): JSX.Element {
@@ -75,7 +73,6 @@ export default function PointPurchase(): JSX.Element {
     const { user } = useAuth();
     const navigate = useNavigate();
 
-    // 아임포트 스크립트 동적 삽입 (최초 1회만)
     useEffect(() => {
         if (!window.IMP) {
             const script = document.createElement("script");
@@ -85,7 +82,6 @@ export default function PointPurchase(): JSX.Element {
         }
     }, []);
 
-    // 결제 로직 (userId, email, name 포함)
     const handlePurchase = async () => {
         if (!selectedOption || !user) {
             setResult("로그인이 필요합니다.");
@@ -96,7 +92,6 @@ export default function PointPurchase(): JSX.Element {
 
         let created: PaymentCreateResponse;
         try {
-            // 반드시 api 인스턴스를 사용!
             const res = await api.post<PaymentCreateResponse>("/payment/create", {
                 chargeOption: selectedOption,
                 method,
@@ -135,8 +130,7 @@ export default function PointPurchase(): JSX.Element {
 
                 if (rsp.success && rsp.imp_uid) {
                     try {
-                        // confirm도 반드시 api 인스턴스 사용!
-                        const confirmRes = await api.post<PaymentConfirmResponse>(
+                        await api.post<PaymentConfirmResponse>(
                             "/payment/confirm",
                             null,
                             {
@@ -147,7 +141,6 @@ export default function PointPurchase(): JSX.Element {
                                 },
                             }
                         );
-                        // 결제 성공시 -> 결제성공 페이지로 이동
                         navigate("/payment-success");
                     } catch (error) {
                         const err = error as AxiosError<{ message?: string }>;
@@ -176,19 +169,40 @@ export default function PointPurchase(): JSX.Element {
                             {chargeOptions.map((option) => (
                                 <Card
                                     key={option.value}
-                                    className={`w-[250px] h-14 cursor-pointer ${selectedOption === option.value ? "border-primary" : "border-[#0000001a]"}`}
+                                    className={`w-[250px] h-14 cursor-pointer relative
+                                        ${selectedOption === option.value ? "border-[#ff6b35] border-2" : "border-[#0000001a] border"}
+                                        ${option.event ? "border-[#ff6b35] border-2" : ""}
+                                    `}
                                     onClick={() => setSelectedOption(option.value)}
                                 >
-                                    <CardContent className="flex items-center justify-center h-full p-0">
+                                    <CardContent className="flex items-center justify-center h-full p-0 relative">
                                         <span className="font-medium text-black text-base text-center">
                                             {option.display}
                                         </span>
+                                        {/* 추천/이벤트 배지 */}
+                                        {option.recommend && (
+                                            <span
+                                                className="absolute -top-3 right-2 px-3 py-1 border-2 border-[#ff6b35] rounded-full text-[#ff6b35] text-xs font-bold bg-white"
+                                                style={{
+                                                    boxShadow: "0px 2px 8px #ff6b3530",
+                                                    letterSpacing: "0.02em"
+                                                }}
+                                            >추천!</span>
+                                        )}
+                                        {option.event && (
+                                            <span
+                                                className="absolute -top-3 right-2 px-3 py-1 border-2 border-[#ff6b35] rounded-full text-[#ff6b35] text-xs font-bold bg-white"
+                                                style={{
+                                                    boxShadow: "0px 2px 8px #ff6b3530",
+                                                    letterSpacing: "0.02em"
+                                                }}
+                                            >오픈이벤트</span>
+                                        )}
                                     </CardContent>
                                 </Card>
                             ))}
                         </div>
                     </section>
-                    {/* 결제 버튼 */}
                     <Button
                         className="w-full h-14 mt-8 bg-[#0000001a] text-[#00000080] rounded-lg font-medium text-base text-center"
                         disabled={!selectedOption || loading}
@@ -196,7 +210,6 @@ export default function PointPurchase(): JSX.Element {
                     >
                         {loading ? "결제 중..." : "결제하기"}
                     </Button>
-                    {/* 결제 결과 */}
                     {result && (
                         <div
                             className="w-full mt-4 p-4 border border-[#eee] rounded-lg text-[15px] whitespace-pre-wrap"
@@ -205,7 +218,6 @@ export default function PointPurchase(): JSX.Element {
                             {result}
                         </div>
                     )}
-                    {/* 안내 */}
                     <Card className="w-full h-[180px] mt-8 bg-[#00000005] rounded-lg">
                         <CardContent className="p-5">
                             <h3 className="font-medium text-black text-base mb-2">이용 안내</h3>
