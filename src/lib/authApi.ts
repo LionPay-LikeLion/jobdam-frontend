@@ -35,6 +35,16 @@ export interface RegisterResponse {
   message: string;
 }
 
+export interface GoogleLoginResponse {
+  accessToken: string;
+  user: User;
+}
+
+export const googleLogin = async (code: string): Promise<GoogleLoginResponse> => {
+  const response = await api.post('/oauth/login', { code });
+  return response.data;
+};
+
 // 로그인 API
 export const login = async (credentials: LoginRequest): Promise<LoginResponse> => {
   try {
@@ -166,6 +176,15 @@ export const refreshToken = async (): Promise<AuthTokens> => {
     const response = await api.post<AuthTokens>('/auth/refresh');
     setTokens(response.data);
     return response.data;
+  } catch (error) {
+    throw error;
+  }
+}; 
+
+// 회원 탈퇴 API
+export const withdrawUser = async (): Promise<void> => {
+  try {
+    await api.delete('/user/withdraw');
   } catch (error) {
     throw error;
   }
