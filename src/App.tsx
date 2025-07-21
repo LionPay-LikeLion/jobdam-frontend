@@ -43,6 +43,7 @@ import PaymentHistoryPage from "@/pages/PaymentHistoryPage";
 import PointHistoryPage from "@/pages/PointHistoryPage";
 import AdminUserManagement from "@/pages/AdminUserManagement.tsx";
 import AdminReport from "@/pages/AdminReport.tsx";
+import AdminRoleChange from "@/pages/AdminRoleChange.tsx";
 import ActivityHistoryPage from "@/pages/ActivityHistoryPage";
 // Admin 관련 페이지 추가 시 import!
 
@@ -113,6 +114,7 @@ const AppRoutes = () => {
                     {/* ------ 어드민 영역 ------ */}
                     <Route path="/admin/users" element={<AdminUserManagement />} />
                     <Route path="/admin/report" element={<AdminReport />} />
+                    <Route path="/admin/type-request" element={<AdminRoleChange />} />
                     {/* 신고 관리, 전환요청 등은 아래처럼 확장 가능! */}
                     {/* <Route path="/admin/report" element={<AdminReportManagement />} /> */}
                 </>

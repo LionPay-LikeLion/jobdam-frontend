@@ -3,12 +3,11 @@ import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 
+// 관리자 메뉴에서 '관리자 대시보드', '고객센터 관리' 제거!
 const adminTabs = [
     { label: "회원 관리", path: "/admin/users" },
     { label: "신고 관리", path: "/admin/report" },
     { label: "전환 요청 관리", path: "/admin/type-request" },
-    { label: "관리자 대시보드", path: "/admin/dashboard" },
-    { label: "고객센터 관리", path: "/admin/support" },
 ];
 
 const AdminSideBar: React.FC = () => {
