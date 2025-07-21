@@ -116,7 +116,7 @@ export default function CommunityHome(): JSX.Element {
   }
 
   return (
-    <div className="w-full max-w-[1440px] mx-auto px-6 py-10">
+    <div className="w-full max-w-[1440px] mx-auto px-6 py-10 pt-0">
       {/* Page Title */}
       <h1 className="text-[32px] font-bold leading-10 mb-8">커뮤니티 홈</h1>
 
