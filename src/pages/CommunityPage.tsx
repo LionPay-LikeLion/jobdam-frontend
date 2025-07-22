@@ -143,8 +143,9 @@ const CommunityPage = () => {
             return (
               <div
                 key={community.communityId}
+                onClick={() => navigate(`/communities/${community.communityId}`)}
                 className={`
-                  flex gap-4 border rounded-lg p-8 items-start relative transition-all
+                  flex gap-4 border rounded-lg p-8 items-start relative transition-all cursor-pointer hover:shadow-lg hover:scale-[1.02]
                   ${isPremium
                     ? "border-4 border-yellow-400 bg-gradient-to-br from-yellow-50 via-white to-yellow-100 shadow-[0_0_24px_#ffe066] ring-2 ring-yellow-200/80"
                     : "border bg-white shadow-sm"
@@ -190,15 +191,6 @@ const CommunityPage = () => {
                       {isPremium && <FaCrown className="text-yellow-400 mr-1" />}
                       {community.name}
                     </h2>
-                    {/* 등급 뱃지 우측 상단 고정 */}
-                    <span className={clsx(
-                      "absolute top-6 right-6 px-2 py-1 rounded text-xs font-bold border z-10",
-                      isPremium
-                        ? 'bg-yellow-100 text-yellow-800 border-yellow-400'
-                        : 'bg-gray-100 text-gray-800 border-gray-200'
-                    )}>
-                      {community.subscriptionLevelCode}
-                    </span>
                   </div>
                   <p className="text-sm text-gray-600 mt-1 leading-5 mb-4 line-clamp-2">{community.description}</p>
                   <div className="flex items-center gap-4 text-sm text-gray-500 mb-1">
@@ -206,15 +198,14 @@ const CommunityPage = () => {
                       <FiUser size={16} />
                       <span>{community.currentMember}/{community.maxMember}명 참여 중</span>
                     </div>
-                    <span className="font-medium text-blue-600">입장 포인트: {community.enterPoint.toLocaleString()}P</span>
                   </div>
                 </div>
              {/* 오른쪽 위 생성자(닉네임 + 프사, 가로 정렬, 크기 맞춤) */}
                 <div className="absolute top-6 right-6 flex items-center gap-2 z-20">
                   <span className="font-bold text-gray-700 text-base">{community.ownerNickname}</span>
-                  {community.profileImageUrl ? (
+                  {community.ownerProfileImageUrl ? (
                     <img
-                      src={community.profileImageUrl}
+                      src={community.ownerProfileImageUrl}
                       alt={community.ownerNickname}
                       className="w-10 h-10 rounded-full object-cover border-2 border-gray-300"
                     />
@@ -222,19 +213,11 @@ const CommunityPage = () => {
                     <span className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-200 text-gray-400 text-xl">👤</span>
                   )}
                 </div>
-                {/* 프리미엄 뱃지 + 입장 버튼 */}
-                <div className="absolute bottom-4 right-4 flex items-center gap-2">
-                  {isPremium && (
-                    <span className="px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 border border-yellow-400 text-xs font-bold mr-2">
-                      <FaCrown className="inline-block mr-1" /> 프리미엄
-                    </span>
-                  )}
-                  <button
-                    onClick={() => navigate(`/communities/${community.communityId}`)}
-                    className="px-4 py-2 bg-black text-white text-sm rounded-md hover:bg-gray-800 transition-colors"
-                  >
-                    입장
-                  </button>
+                {/* 입장 포인트 박스 */}
+                <div className="absolute bottom-4 right-4">
+                  <div className="px-5 py-2 bg-black text-white text-base rounded-md font-bold shadow-md select-none">
+                    {community.enterPoint.toLocaleString()} POINT
+                  </div>
                 </div>
               </div>
             );

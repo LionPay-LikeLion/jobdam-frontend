@@ -58,6 +58,24 @@ const getBoardTypeColor = (boardTypeCode: string) => {
     }
 };
 
+// 게시판 타입에 따른 한글명 매핑
+const getBoardTypeName = (boardTypeCode: string) => {
+    switch (boardTypeCode) {
+        case "GENERAL":
+            return "자유게시판";
+        case "NOTICE":
+            return "공지사항";
+        case "QNA":
+            return "Q&A";
+        case "ANNOUNCEMENT":
+            return "자료공유";
+        case "FEEDBACK":
+            return "스터디 모집";
+        default:
+            return boardTypeCode;
+    }
+};
+
 export const CommunityBoardList = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -133,14 +151,7 @@ export const CommunityBoardList = () => {
             <div className="w-full py-10 px-4 md:px-0 bg-white shadow-sm border-b border-gray-100 mb-8">
                 <div className="max-w-[900px] mx-auto flex flex-row items-center justify-between text-center">
                     <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight">게시판</h1>
-                    <button
-                        onClick={() => isOwner ? navigate(`/communities/${id}/board/create`) : null}
-                        className={`flex items-center gap-2 px-5 py-2 rounded-md border text-base font-bold shadow transition-all duration-150
-                ${isOwner ? "bg-blue-500 text-white hover:bg-blue-600 border-blue-400 cursor-pointer" : "bg-gray-200 text-gray-400 border-gray-200 cursor-not-allowed"}`}
-                    >
-                        <FaPlus className="w-5 h-5" />
-                        게시판 생성
-                    </button>
+                    {/* 게시판 생성 버튼 제거 */}
                 </div>
             </div>
             {/* 게시판 카드 리스트 */}
@@ -165,7 +176,7 @@ export const CommunityBoardList = () => {
                             </div>
                             <p className="text-gray-700 text-base mb-4 line-clamp-2 break-words">{board.description}</p>
                             <div className="flex items-center gap-2 mt-auto">
-                                <span className={`text-xs px-3 py-1 rounded-full border font-bold ${getBoardTypeColor(board.boardTypeCode)}`}>{board.boardTypeCode}</span>
+                                <span className={`text-xs px-3 py-1 rounded-full border font-bold ${getBoardTypeColor(board.boardTypeCode)}`}>{getBoardTypeName(board.boardTypeCode)}</span>
                                 <span className={`ml-auto`}>
                                     <button
                                         onClick={() => navigate(`/communities/${id}/board/${board.communityBoardId}`)}
