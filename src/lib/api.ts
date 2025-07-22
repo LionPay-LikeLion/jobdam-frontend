@@ -56,8 +56,8 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // 401 에러이고 아직 재시도하지 않은 경우
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // 401 또는 403 에러이고 아직 재시도하지 않은 경우 (JWT 만료/무효)
+    if ((error.response?.status === 401 || error.response?.status === 403) && !originalRequest._retry) {
       // refresh token 요청은 무한 루프 방지
       if (originalRequest.url?.includes('/auth/reissue')) {
         clearTokens();
