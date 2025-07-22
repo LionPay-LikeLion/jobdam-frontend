@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FaHeart, FaComment } from "react-icons/fa";
+import { FaHeart, FaComment, FaRegThumbsUp, FaRegCommentDots } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { fetchMySnsPosts, deleteSnsPost } from "@/lib/snsApi";
 import { useAuth } from "@/contexts/AuthContext";
