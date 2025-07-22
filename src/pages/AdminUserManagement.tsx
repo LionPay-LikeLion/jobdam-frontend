@@ -71,7 +71,7 @@ const AdminUserManagement: React.FC = () => {
     };
 
     return (
-        <div className="bg-gray-50 min-h-screen w-full">
+        <div className="min-h-screen flex flex-col bg-white font-korean">
             <TopBar />
             <main className="flex flex-row justify-center w-full pt-12 pb-16">
                 <div className="flex w-full max-w-[1500px] gap-12">
@@ -145,64 +145,64 @@ const AdminUserManagement: React.FC = () => {
                                         <col style={{ width: "10%" }} />
                                     </colgroup>
                                     <thead>
-                                    <tr className="border-b bg-gray-50">
-                                        <th className="py-3 px-4 text-sm font-medium">닉네임</th>
-                                        <th className="px-4 text-sm font-medium">이메일</th>
-                                        <th className="px-4 text-sm font-medium">상태</th>
-                                        <th className="px-4 text-sm font-medium">관리</th>
-                                    </tr>
+                                        <tr className="border-b bg-gray-50">
+                                            <th className="py-3 px-4 text-sm font-medium">닉네임</th>
+                                            <th className="px-4 text-sm font-medium">이메일</th>
+                                            <th className="px-4 text-sm font-medium">상태</th>
+                                            <th className="px-4 text-sm font-medium">관리</th>
+                                        </tr>
                                     </thead>
                                     <tbody>
-                                    {loading ? (
-                                        <tr>
-                                            <td colSpan={4} className="text-center py-8 text-gray-400">로딩 중...</td>
-                                        </tr>
-                                    ) : filteredUsers.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={4} className="text-center py-8 text-gray-400">검색 결과가 없습니다.</td>
-                                        </tr>
-                                    ) : (
-                                        filteredUsers.map((user) => (
-                                            <tr key={user.userId} className="border-b last:border-b-0 hover:bg-gray-50 text-[15px]">
-                                                <td className="py-3 px-4 flex items-center gap-2">
-                                                    <span className="inline-block w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
-                                                        <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
-                                                            <circle cx="12" cy="8" r="4" fill="#cbd5e1"/>
-                                                            <path d="M4 20c0-2.21 3.582-4 8-4s8 1.79 8 4" fill="#cbd5e1"/>
-                                                        </svg>
-                                                    </span>
-                                                    <span>{user.nickname}</span>
-                                                </td>
-                                                <td className="px-4 align-middle">{user.email}</td>
-                                                <td className="px-4 align-middle">
-                                                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-semibold ${statusColors[user.isActive ? "활성" : "정지"]}`}>
-                                                        {user.isActive
-                                                            ? <CheckCircle size={15} className="inline text-green-500" />
-                                                            : <XCircle size={15} className="inline text-red-500" />}
-                                                        {user.isActive ? "활성" : "정지"}
-                                                    </span>
-                                                </td>
-                                                <td className="px-4 align-middle">
-                                                    <div className="flex gap-1">
-                                                        <button
-                                                            className="px-3 h-8 rounded-lg border border-green-300 text-xs bg-green-50 text-green-700 hover:bg-green-100 min-w-[64px]"
-                                                            onClick={() => handleActivate(user)}
-                                                            disabled={user.isActive}
-                                                        >
-                                                            활성화
-                                                        </button>
-                                                        <button
-                                                            className="px-3 h-8 rounded-lg border border-red-200 text-xs bg-red-50 text-red-500 hover:bg-red-100 min-w-[64px]"
-                                                            onClick={() => handleDeactivate(user)}
-                                                            disabled={!user.isActive}
-                                                        >
-                                                            정지
-                                                        </button>
-                                                    </div>
-                                                </td>
+                                        {loading ? (
+                                            <tr>
+                                                <td colSpan={4} className="text-center py-8 text-gray-400">로딩 중...</td>
                                             </tr>
-                                        ))
-                                    )}
+                                        ) : filteredUsers.length === 0 ? (
+                                            <tr>
+                                                <td colSpan={4} className="text-center py-8 text-gray-400">검색 결과가 없습니다.</td>
+                                            </tr>
+                                        ) : (
+                                            filteredUsers.map((user) => (
+                                                <tr key={user.userId} className="border-b last:border-b-0 hover:bg-gray-50 text-[15px]">
+                                                    <td className="py-3 px-4 flex items-center gap-2">
+                                                        <span className="inline-block w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+                                                            <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
+                                                                <circle cx="12" cy="8" r="4" fill="#cbd5e1" />
+                                                                <path d="M4 20c0-2.21 3.582-4 8-4s8 1.79 8 4" fill="#cbd5e1" />
+                                                            </svg>
+                                                        </span>
+                                                        <span>{user.nickname}</span>
+                                                    </td>
+                                                    <td className="px-4 align-middle">{user.email}</td>
+                                                    <td className="px-4 align-middle">
+                                                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-semibold ${statusColors[user.isActive ? "활성" : "정지"]}`}>
+                                                            {user.isActive
+                                                                ? <CheckCircle size={15} className="inline text-green-500" />
+                                                                : <XCircle size={15} className="inline text-red-500" />}
+                                                            {user.isActive ? "활성" : "정지"}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-4 align-middle">
+                                                        <div className="flex gap-1">
+                                                            <button
+                                                                className="px-3 h-8 rounded-lg border border-green-300 text-xs bg-green-50 text-green-700 hover:bg-green-100 min-w-[64px]"
+                                                                onClick={() => handleActivate(user)}
+                                                                disabled={user.isActive}
+                                                            >
+                                                                활성화
+                                                            </button>
+                                                            <button
+                                                                className="px-3 h-8 rounded-lg border border-red-200 text-xs bg-red-50 text-red-500 hover:bg-red-100 min-w-[64px]"
+                                                                onClick={() => handleDeactivate(user)}
+                                                                disabled={!user.isActive}
+                                                            >
+                                                                정지
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
                                     </tbody>
                                 </table>
                             </div>
