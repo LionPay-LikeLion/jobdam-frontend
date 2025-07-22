@@ -47,9 +47,7 @@ export default function ActivityHistoryPage() {
 
   return (
       <div className="min-h-screen w-full bg-white">
-        <TopBar />
         <div className="flex w-full">
-          <SNS_SideBar />
           <main className="flex-1 flex flex-col items-center px-10 py-12 bg-white">
             <div className="w-full max-w-4xl">
               <h1 className="text-3xl font-bold mb-6 text-black">활동 내역</h1>

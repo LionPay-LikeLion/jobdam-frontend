@@ -76,9 +76,9 @@ const AppRoutes = () => {
                         <Route index element={<SNSFeedHome />} />
                         <Route path="mine" element={<SNSFeedMy />} />
                         <Route path=":postId" element={<SNSFeedPost />} />
-                        <Route path="messages" element={<SNSMessage />} />
                         <Route path="sns-post-write" element={<SNSPostWrite />} />
                         <Route path="sns/posts/:postId/edit" element={<SNSPostEdit />} />
+                        <Route path="/activity-history" element={<ActivityHistoryPage />} />
                     </>
                 )}
             </Route>
@@ -108,7 +108,8 @@ const AppRoutes = () => {
                     <Route path="/membership-type-request" element={<MembershipTypeRequest />} />
                     <Route path="/mypage/payments" element={<PaymentHistoryPage />} />
                     <Route path="/mypage/points" element={<PointHistoryPage />} />
-                    <Route path="/activity-history" element={<ActivityHistoryPage />} />
+                    <Route path="messages" element={<SNSMessage />} />
+
                     {/* ------ 어드민 영역 ------ */}
                     <Route path="/admin/users" element={<AdminUserManagement />} />
                     <Route path="/admin/report" element={<AdminReport />} />

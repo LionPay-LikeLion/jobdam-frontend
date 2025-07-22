@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiUser, FiPlus } from "react-icons/fi";
-import { fetchCommunities, fetchMyCommunities } from "@/lib/communityApi";
+import { fetchCommunities, fetchMineCommunities, fetchMyCommunities } from "@/lib/communityApi";
 import TopBar from "@/components/TopBar";
 import { FaCrown } from "react-icons/fa";
 
@@ -21,14 +21,16 @@ const CommunityPage = () => {
   const navigate = useNavigate();
   const [communities, setCommunities] = useState<Community[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedTab, setSelectedTab] = useState<"전체" | "가입한 커뮤니티">("전체");
+  const [selectedTab, setSelectedTab] = useState<"전체" | "가입한 커뮤니티" | "내 커뮤니티">("전체");
 
-  const fetchData = async (tab: "전체" | "가입한 커뮤니티") => {
+  const fetchData = async (tab: "전체" | "가입한 커뮤니티" | "내 커뮤니티") => {
     setLoading(true);
     try {
       let data;
       if (tab === "가입한 커뮤니티") {
         data = await fetchMyCommunities();
+      } else if (tab === "내 커뮤니티") {
+        data = await fetchMineCommunities();
       } else {
         data = await fetchCommunities();
       }
@@ -67,7 +69,7 @@ const CommunityPage = () => {
     fetchData(selectedTab);
   }, [selectedTab]);
 
-  const handleTabChange = (tab: "전체" | "가입한 커뮤니티") => {
+  const handleTabChange = (tab: "전체" | "가입한 커뮤니티" | "내 커뮤니티") => {
     setSelectedTab(tab);
   };
 
@@ -118,6 +120,15 @@ const CommunityPage = () => {
               }`}
           >
             가입한 커뮤니티
+          </button>
+          <button
+            onClick={() => handleTabChange("내 커뮤니티")}
+            className={`px-4 py-2 rounded-md transition-colors ${selectedTab === "내 커뮤니티"
+              ? "bg-black text-white"
+              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+          >
+            내 커뮤니티
           </button>
         </div>
 

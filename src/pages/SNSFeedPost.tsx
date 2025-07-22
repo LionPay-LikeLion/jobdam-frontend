@@ -22,6 +22,22 @@ import { Input } from "@/components/ui/input";
 import { Bookmark, Flag, Heart, MessageSquare, Download } from "lucide-react";
 import ReportModal from "@/components/ReportModal";
 
+// 간단한 커스텀 모달 컴포넌트
+function ConfirmModal({ open, message, onConfirm, onCancel }: { open: boolean, message: string, onConfirm: () => void, onCancel: () => void }) {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg shadow-lg p-8 min-w-[300px]">
+        <p className="mb-6 text-lg text-center">{message}</p>
+        <div className="flex gap-4 justify-center">
+          <Button variant="outline" onClick={onCancel}>취소</Button>
+          <Button onClick={onConfirm}>확인</Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const postTags = ["#면접후기", "#포트폴리오", "#이직준비", "#마케팅"];
 
 const SNSFeedPost = () => {
@@ -40,6 +56,10 @@ const SNSFeedPost = () => {
   const [showReport, setShowReport] = useState(false);
   const [reportTargetId, setReportTargetId] = useState<number | null>(null);
   const [reportTypeCodeId, setReportTypeCodeId] = useState<number>(1); // 게시글=1, 댓글=2
+
+  // 좋아요 확인 모달 state
+  const [showLikeConfirm, setShowLikeConfirm] = useState(false);
+  const [showBookmarkConfirm, setShowBookmarkConfirm] = useState(false);
 
   // 게시글 상세
   useEffect(() => {
@@ -239,7 +259,7 @@ const SNSFeedPost = () => {
                 <Button
                     variant="outline"
                     className="bg-[#f0f0f0] h-[43px] gap-2 rounded-md"
-                    onClick={handleToggleLike}
+                    onClick={() => setShowLikeConfirm(true)}
                 >
                   <Heart className={post.liked ? "text-red-500" : "text-gray-400"} />
                   <span className="text-sm font-medium">{post.likeCount}</span>
@@ -251,7 +271,7 @@ const SNSFeedPost = () => {
                 <Button
                     variant="outline"
                     className="bg-[#f0f0f0] h-[43px] gap-2 rounded-md"
-                    onClick={handleToggleBookmark}
+                    onClick={() => setShowBookmarkConfirm(true)}
                 >
                   <Bookmark className={post.bookmarked ? "text-blue-500" : "text-gray-400"} />
                   <span className="text-sm font-medium">북마크</span>
@@ -396,6 +416,27 @@ const SNSFeedPost = () => {
             onClose={() => setShowReport(false)}
             targetId={reportTargetId}
             reportTypeCodeId={reportTypeCodeId}
+        />
+
+        {/* 좋아요 확인 모달 */}
+        <ConfirmModal
+          open={showLikeConfirm}
+          message={post.liked ? "좋아요를 취소하시겠습니까?" : "좋아요 하시겠습니까?"}
+          onCancel={() => setShowLikeConfirm(false)}
+          onConfirm={async () => {
+            setShowLikeConfirm(false);
+            await handleToggleLike();
+          }}
+        />
+        {/* 북마크 확인 모달 */}
+        <ConfirmModal
+          open={showBookmarkConfirm}
+          message={post.bookmarked ? "북마크를 취소하시겠습니까?" : "북마크 하시겠습니까?"}
+          onCancel={() => setShowBookmarkConfirm(false)}
+          onConfirm={async () => {
+            setShowBookmarkConfirm(false);
+            await handleToggleBookmark();
+          }}
         />
       </div>
   );
