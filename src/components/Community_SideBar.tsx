@@ -19,7 +19,7 @@ const Community_SideBar = () => {
 
   const checkMemberStatus = async () => {
     try {
-      const response = await api.get(`/communities/${id}/members/${user?.userId}/exist`);
+      const response = await api.get(`/communities/${id}/members/${user?.id}/exist`);
       setIsMember(response.data); 
     } catch (error) {
       setIsMember(false);
@@ -27,10 +27,10 @@ const Community_SideBar = () => {
   };
 
   const menuItems = [
-    { label: "커뮤니티 홈", path: `/community/${id}`, alwaysEnabled: true },
-    { label: "게시판", path: `/community/${id}/board`, alwaysEnabled: false },
-    { label: "멤버 목록", path: `/community/${id}/members`, alwaysEnabled: false },
-    { label: "관리", path: `/community/${id}/management`, alwaysEnabled: false },
+    { label: "커뮤니티 홈", path: `/communities/${id}`, alwaysEnabled: true },
+    { label: "게시판", path: `/communities/${id}/board`, alwaysEnabled: false },
+    { label: "멤버 목록", path: `/communities/${id}/members`, alwaysEnabled: false },
+    { label: "관리", path: `/communities/${id}/management`, alwaysEnabled: false },
   ];
 
   const getIsActive = (path: string) => {

@@ -68,8 +68,10 @@ export default function CommunityHome(): JSX.Element {
   const fetchUserPoints = async () => {
     try {
       const response = await api.get('/user/profile');
+      console.log('User profile response:', response.data);
       setUserPoints(response.data.remainingPoints);
     } catch (error) {
+      console.error("사용자 포인트를 가져오는데 실패했습니다:", error);
       setUserPoints(0);
     }
   };
@@ -114,10 +116,14 @@ export default function CommunityHome(): JSX.Element {
   }
 
   return (
-    <div className="w-full max-w-[1440px] mx-auto px-6 py-10 pt-0">
+    <>
       {/* Page Title */}
-      <h1 className="text-[32px] font-bold leading-10 mb-8">커뮤니티 홈</h1>
-
+      <div className="container mx-auto mt-12 mb-8 px-4 text-left">
+        <h1 className="text-3xl md:text-4xl font-bold text-gray-900">커뮤니티 홈</h1>
+        {communityData.description && (
+          <p className="text-base text-gray-500 mt-2">{communityData.description}</p>
+        )}
+      </div>
       {/* Hero Banner */}
       <div className="w-full h-[280px] rounded-xl bg-gradient-to-r from-[#667eea] to-[#764ba2] relative mb-10">
         <div className="absolute inset-0 bg-black/30 rounded-xl">
@@ -194,6 +200,6 @@ export default function CommunityHome(): JSX.Element {
         joinPoint={communityData.enterPoint}
         userPoint={userPoints}
       />
-    </div>
+    </>
   );
 }

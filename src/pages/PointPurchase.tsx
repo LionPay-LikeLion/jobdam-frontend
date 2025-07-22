@@ -6,8 +6,8 @@ import api from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import TopBar from "@/components/TopBar";
 import { useNavigate } from "react-router-dom";
+import TopBar from "@/components/TopBar";
 
 // 충전 옵션 정의 (추천/이벤트 표시용 필드 추가)
 const chargeOptions = [
@@ -67,7 +67,9 @@ interface PaymentConfirmResponse {
 const IMP_CODE = "imp00213017"; // 실제 본인 imp 코드로 수정!
 
 export default function PointPurchase(): JSX.Element {
-    const [selectedOption, setSelectedOption] = useState<string | null>(null);
+    // 오픈이벤트 옵션 value를 찾아 초기값으로 사용
+    const eventOption = chargeOptions.find(option => option.event);
+    const [selectedOption, setSelectedOption] = useState<string | null>(eventOption ? eventOption.value : null);
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState<string | null>(null);
     const { user } = useAuth();
@@ -79,6 +81,10 @@ export default function PointPurchase(): JSX.Element {
             script.src = "https://cdn.iamport.kr/js/iamport.payment-1.2.0.js";
             script.async = true;
             document.body.appendChild(script);
+        }
+        // 오픈이벤트 옵션이 있으면 자동 선택
+        if (eventOption) {
+            setSelectedOption(eventOption.value);
         }
     }, []);
 
@@ -171,7 +177,6 @@ export default function PointPurchase(): JSX.Element {
                                     key={option.value}
                                     className={`w-[250px] h-14 cursor-pointer relative
                                         ${selectedOption === option.value ? "border-[#ff6b35] border-2" : "border-[#0000001a] border"}
-                                        ${option.event ? "border-[#ff6b35] border-2" : ""}
                                     `}
                                     onClick={() => setSelectedOption(option.value)}
                                 >

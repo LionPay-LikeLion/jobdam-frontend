@@ -11,17 +11,17 @@ const CustomRadio = ({ checked }: { checked: boolean }) => (
     <span
         className={`inline-block w-6 h-6 rounded-full border-2 mr-4 align-middle relative
       ${checked ? "border-[#ff6b35]" : "border-[#d6d6d6]"}`}>
-    {checked && (
-        <span className="block w-3 h-3 rounded-full bg-[#ff6b35] absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" />
-    )}
-  </span>
+        {checked && (
+            <span className="block w-3 h-3 rounded-full bg-[#ff6b35] absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" />
+        )}
+    </span>
 );
 
 const benefits = [
     { emoji: "🏠", title: "전용 커뮤니티 생성", description: "프리미엄 회원은 전용 커뮤니티를 직접 만들 수 있습니다." },
     { emoji: "📢", title: "피드 노출 우선순위", description: "프리미엄 회원의 글이 더 많은 사용자에게 먼저 노출됩니다." },
     { emoji: "✏", title: "게시글 무제한 작성", description: "게시글 작성 횟수에 제한이 없습니다." },
-    { emoji: "🎁", title: "북마크 무제한", description: "북마크 횟수에 제한이 없습니다." },
+    { emoji: "📑", title: "북마크 무제한", description: "북마크 횟수에 제한이 없습니다." },
 ];
 
 const PremiumUpgrade = (): JSX.Element => {
@@ -51,7 +51,7 @@ const PremiumUpgrade = (): JSX.Element => {
         <div className="bg-white min-h-screen w-full flex flex-col">
             <TopBar />
             {/* 중앙정렬 전체 wrapper */}
-            <main className="flex-1 w-full max-w-7xl mx-auto flex flex-col items-center pt-[120px] px-4">
+            <main className="flex-1 w-full max-w-7xl mx-auto flex flex-col items-center pt-12 px-4">
                 {/* 타이틀 */}
                 <h1 className="font-bold text-black text-[2.5rem] sm:text-[2.8rem] mb-8 text-center">
                     프리미엄 회원 업그레이드
@@ -135,10 +135,10 @@ const PremiumUpgrade = (): JSX.Element => {
                         </div>
                     </div>
                     {/* 안내 및 버튼 */}
-                    <div className="flex flex-col items-center mt-14 mb-14 w-full">
+                    <div className="flex flex-col items-center mt-8 mb-8 w-full">
                         <p className="font-normal text-[#000000b2] text-sm">포인트로 결제됩니다.</p>
                         <Button
-                            className="w-[283px] h-14 mt-12 bg-black rounded-lg text-white text-lg"
+                            className="w-[283px] h-14 mt-8 bg-black rounded-lg text-white text-lg"
                             onClick={handleUpgrade}
                             disabled={loading}
                         >
