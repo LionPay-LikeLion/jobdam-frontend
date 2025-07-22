@@ -92,56 +92,49 @@ export default function CommunityBoardMain(): JSX.Element {
   return (
     <div className="bg-white flex justify-center w-full">
       <div className="w-full max-w-[1200px] h-auto px-4 pt-10 mx-auto">
+        {/* 게시판 제목 modern 스타일 */}
+        <div className="flex items-center gap-4 mb-8 mt-2">
+          <FaBullhorn className="w-8 h-8 text-blue-500 drop-shadow" />
+          <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-gray-900 drop-shadow-sm">{boardName || '게시판'}</h2>
+        </div>
         {/* 검색 및 버튼 영역 */}
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <button
                 onClick={() => handlePostTypeChange("전체")}
-                className={`px-4 py-2 rounded-md text-sm ${
-                  postTypeCode === "" ? "bg-gray-300" : "bg-gray-100"
-                }`}
+                className={`px-4 py-2 rounded-md text-sm ${postTypeCode === "" ? "bg-gray-300" : "bg-gray-100"
+                  }`}
               >
                 전체
               </button>
               <button
                 onClick={() => handlePostTypeChange("NOTICE")}
-                className={`px-4 py-2 rounded-md text-sm ${
-                  postTypeCode === "NOTICE" ? "bg-red-100" : "bg-gray-100"
-                }`}
+                className={`px-4 py-2 rounded-md text-sm ${postTypeCode === "NOTICE" ? "bg-red-100" : "bg-gray-100"
+                  }`}
               >
                 공지
               </button>
               <button
                 onClick={() => handlePostTypeChange("NORMAL")}
-                className={`px-4 py-2 rounded-md text-sm ${
-                  postTypeCode === "NORMAL" ? "bg-teal-100" : "bg-gray-100"
-                }`}
+                className={`px-4 py-2 rounded-md text-sm ${postTypeCode === "NORMAL" ? "bg-teal-100" : "bg-gray-100"}`}
               >
                 일반
               </button>
               <button
                 onClick={() => handlePostTypeChange("QNA")}
-                className={`px-4 py-2 rounded-md text-sm ${
-                  postTypeCode === "QNA" ? "bg-sky-100" : "bg-gray-100"
-                }`}
+                className={`px-4 py-2 rounded-md text-sm ${postTypeCode === "QNA" ? "bg-sky-100" : "bg-gray-100"}`}
               >
                 문답
               </button>
             </div>
           </div>
-          <button 
+          <button
             className="bg-teal-400 text-white text-sm px-5 py-2 rounded-md"
             onClick={() => navigate(`/communities/${id}/board/${boardId}/post/write`)}
           >
             + 게시글 작성
           </button>
-        </div>
-
-        {/* 게시판 제목 */}
-        <div className="flex items-center gap-2 mb-4">
-          <FaBullhorn className="text-black w-5 h-5" />
-          <h2 className="text-2xl font-semibold text-black">{boardName}</h2>
         </div>
 
         {/* 게시글 테이블 */}
@@ -191,7 +184,7 @@ export default function CommunityBoardMain(): JSX.Element {
                   </div>
                 ))
               }
-              
+
               {/* 일반 게시글 */}
               {posts
                 .filter(post => post.postTypeCode !== "NOTICE")
@@ -245,6 +238,6 @@ export default function CommunityBoardMain(): JSX.Element {
           </button>
         </div>
       </div>
-    </div>
+    </div >
   );
 }

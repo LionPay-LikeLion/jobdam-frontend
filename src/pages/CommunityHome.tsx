@@ -46,8 +46,8 @@ export default function CommunityHome(): JSX.Element {
 
   const checkMemberStatus = async () => {
     try {
-      const response = await api.get(`/communities/${id}/members/${user?.userId}/exist`);
-      setIsMember(response.data);
+      const response = await api.get(`/communities/${id}/members/${user?.id}/exist`);
+      setIsMember(response.data); 
     } catch (error) {
       setIsMember(false);
     }
@@ -116,14 +116,10 @@ export default function CommunityHome(): JSX.Element {
   }
 
   return (
-    <>
+    <div className="w-full max-w-[1440px] mx-auto px-6 py-10 pt-0">
       {/* Page Title */}
-      <div className="container mx-auto mt-12 mb-8 px-4 text-left">
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-900">커뮤니티 홈</h1>
-        {communityData.description && (
-          <p className="text-base text-gray-500 mt-2">{communityData.description}</p>
-        )}
-      </div>
+      <h1 className="text-[32px] font-bold leading-10 mb-8">커뮤니티 홈</h1>
+
       {/* Hero Banner */}
       <div className="w-full h-[280px] rounded-xl bg-gradient-to-r from-[#667eea] to-[#764ba2] relative mb-10">
         <div className="absolute inset-0 bg-black/30 rounded-xl">
@@ -168,38 +164,38 @@ export default function CommunityHome(): JSX.Element {
           <h2 className="font-medium text-2xl leading-8 mb-6">인기 게시판</h2>
           <div className="flex flex-col gap-4">
             {communityData.popularBoards
-              .filter((board, index, self) =>
+              .filter((board, index, self) => 
                 index === self.findIndex(b => b.communityBoardId === board.communityBoardId)
               )
               .map((board) => (
-                <Card key={board.communityBoardId} className="shadow-sm">
-                  <CardContent className="p-6">
-                    <div className="flex justify-between items-center mb-4">
-                      <h3 className="font-medium text-lg">{board.name}</h3>
-                      <div className="flex items-center gap-1">
-                        <LayoutGrid className="w-4 h-4 text-gray-500" />
-                        <span className="text-gray-600 text-sm">
-                          {board.boardTypeCode}
-                        </span>
-                      </div>
+              <Card key={board.communityBoardId} className="shadow-sm">
+                <CardContent className="p-6">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="font-medium text-lg">{board.name}</h3>
+                    <div className="flex items-center gap-1">
+                      <LayoutGrid className="w-4 h-4 text-gray-500" />
+                      <span className="text-gray-600 text-sm">
+                        {board.boardTypeCode}
+                      </span>
                     </div>
-                    <div className="flex justify-between text-sm text-gray-500">
-                      <span>{board.description}</span>
-                      <span>{board.boardStatusCode}</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                  </div>
+                  <div className="flex justify-between text-sm text-gray-500">
+                    <span>{board.description}</span>
+                    <span>{board.boardStatusCode}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       )}
 
-      <CommunityJoinModal
-        open={joinModalOpen}
+      <CommunityJoinModal 
+        open={joinModalOpen} 
         onClose={() => setJoinModalOpen(false)}
         joinPoint={communityData.enterPoint}
         userPoint={userPoints}
       />
-    </>
+    </div>
   );
 }

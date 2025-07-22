@@ -8,6 +8,7 @@ const adminTabs = [
     { label: "회원 관리", path: "/admin/users" },
     { label: "신고 관리", path: "/admin/report" },
     { label: "전환 요청 관리", path: "/admin/type-request" },
+    { label: "매출 통계 관리", path: "/admin/sales-stats" },
 ];
 
 const AdminSideBar: React.FC = () => {
