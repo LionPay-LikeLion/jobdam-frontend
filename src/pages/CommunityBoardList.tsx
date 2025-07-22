@@ -172,7 +172,7 @@ export const CommunityBoardList = () => {
                         <p className="text-sm text-gray-600 mb-2">{board.description}</p>
                         <div className="flex justify-end mb-4">
                             <span className={`text-xs px-2 py-1 rounded-full border ${getBoardTypeColor(board.boardTypeCode)}`}>
-                                {board.boardTypeCode}
+                                {getBoardTypeName(board.boardTypeCode)}
                             </span>
                         </div>
                         <button
