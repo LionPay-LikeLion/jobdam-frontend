@@ -3,25 +3,19 @@ import { FaUser, FaCrown, FaTrashAlt, FaEdit, FaPlus, FaUserSlash } from "react-
 import { useNavigate, useParams } from "react-router-dom";
 import api from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 const CommunityManagement = () => {
     const navigate = useNavigate();
     const { id: communityId } = useParams();
-    const { user, isLoading } = useAuth();
+    const { user } = useAuth();
     const [loading, setLoading] = useState(true);
     const [communityInfo, setCommunityInfo] = useState<any>(null);
     const [error, setError] = useState<string | null>(null);
+    const [kickLoading, setKickLoading] = useState<number | null>(null); // 강퇴 로딩
 
-    // ✅ useAuth 로딩 중이거나, param 없음, user 없음 => API 호출 금지
-    useEffect(() => {
-        if (isLoading) return; // 아직 user profile 로딩 중이면 아무것도 안 함
-        if (!communityId || !user?.userId) {
-            setError("잘못된 접근입니다. (커뮤니티 ID 또는 로그인 정보 없음)");
-            setLoading(false);
-            return;
-        }
+    // 데이터 불러오기 함수
+    const fetchInfo = () => {
         setLoading(true);
         setError(null);
         api.get(`/communities/${communityId}/admin/manage`)
@@ -34,21 +28,39 @@ const CommunityManagement = () => {
                 );
             })
             .finally(() => setLoading(false));
-    }, [communityId, user?.userId, isLoading]);
+    };
+
+    useEffect(() => {
+        if (!communityId) return;
+        fetchInfo();
+        // eslint-disable-next-line
+    }, [communityId]);
 
     if (loading) return <div className="min-h-screen flex items-center justify-center">로딩 중...</div>;
     if (error) return <div className="min-h-screen flex items-center justify-center text-red-600 font-bold">{error}</div>;
     if (!communityInfo) return null;
 
-    // owner/권한 판별(프론트 방어)
-    const isOwner = String(user.userId) === String(communityInfo.members?.find((m: any) => m.role === "OWNER")?.userId);
+    // 소유자 여부
+    const isOwner = String(user?.userId) === String(communityInfo.members?.find((m: any) => m.role === "OWNER")?.userId);
     const isPremium = communityInfo?.plan?.levelCode === "PREMIUM" || communityInfo?.plan?.levelName?.includes("프리미엄");
-
-    // 플랜 등급 색상
-    const getPlanColor = (code: string) =>
-        code === "PREMIUM" ? "text-orange-500" : "text-purple-600";
+    const getPlanColor = (code: string) => code === "PREMIUM" ? "text-orange-500" : "text-purple-600";
     const roleIcon = (role: string) =>
         role === "OWNER" ? <FaCrown className="text-yellow-500 text-lg mr-1" /> : <FaUser className="text-gray-500 mr-1" />;
+
+    // 강퇴 함수
+    const handleKick = async (userId: number) => {
+        if (!window.confirm("정말 이 멤버를 강퇴하시겠습니까?")) return;
+        setKickLoading(userId);
+        try {
+            await api.delete(`/communities/${communityId}/admin/manage/kick/${userId}`);
+            alert("멤버가 강퇴되었습니다.");
+            fetchInfo();
+        } catch (e: any) {
+            alert(e?.response?.data || "강퇴에 실패했습니다.");
+        } finally {
+            setKickLoading(null);
+        }
+    };
 
     return (
         <div className="bg-white min-h-screen flex justify-center py-10 px-4">
@@ -57,7 +69,143 @@ const CommunityManagement = () => {
                     <span role="img" aria-label="manage">🛠️</span>
                     커뮤니티 관리
                 </h1>
-                {/* 이하 동일 */}
+
+                {/* 멤버 리스트 */}
+                <section className="mb-16">
+                    <h2 className="text-2xl font-semibold mb-4">멤버 리스트</h2>
+                    <div className="border rounded-xl shadow p-4">
+                        <div className="grid grid-cols-4 font-medium text-gray-600 border-b py-2">
+                            <span>멤버</span>
+                            <span>역할</span>
+                            <span>가입일</span>
+                            <span>작업</span>
+                        </div>
+                        {communityInfo.members.map((m: any) => (
+                            <div
+                                key={m.userId}
+                                className="grid grid-cols-4 items-center border-b py-3 text-sm"
+                            >
+                                <div className="flex items-center gap-2">
+                                    {roleIcon(m.role)}
+                                    <img
+                                        src={m.profileImageUrl || "/avatar-default.png"}
+                                        alt="프로필"
+                                        className="w-7 h-7 rounded-full object-cover border"
+                                    />
+                                    <span>{m.nickname}</span>
+                                </div>
+                                <div className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded w-fit">
+                                    {m.role === "OWNER"
+                                        ? <FaCrown className="text-yellow-500 text-xs mr-1" />
+                                        : <FaUser className="text-gray-500 text-xs mr-1" />}
+                                    <span className={m.role === "OWNER" ? "font-bold text-yellow-800" : ""}>
+                                        {m.role === "OWNER" ? "운영자" : "일반 멤버"}
+                                    </span>
+                                </div>
+                                <span className="text-gray-500">{m.joinedAt?.slice(0, 10)}</span>
+                                <button
+                                    className="bg-red-600 text-white px-2 py-1 text-sm w-fit flex items-center rounded gap-1 disabled:opacity-50"
+                                    disabled={!isOwner || m.role === "OWNER" || kickLoading === m.userId}
+                                    onClick={() => handleKick(m.userId)}
+                                >
+                                    {kickLoading === m.userId
+                                        ? <span className="animate-spin mr-1"><FaUserSlash /></span>
+                                        : <FaUserSlash className="inline-block" />}
+                                    강퇴
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+
+                {/* 게시판 관리 */}
+                <section className="mb-16">
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-2xl font-semibold">게시판 관리</h2>
+                        <button
+                            onClick={() => isOwner && navigate(`/communities/${communityId}/board/create`)}
+                            className="bg-purple-600 text-white px-4 py-2 rounded-md flex items-center gap-2 disabled:opacity-50"
+                            disabled={!isOwner}
+                        >
+                            <FaPlus /> 게시판 생성
+                        </button>
+                    </div>
+                    {communityInfo.boards.map((board: any) => (
+                        <div
+                            key={board.boardId}
+                            className="flex items-center justify-between border px-4 py-3 rounded-lg mb-3"
+                        >
+                            <div>
+                                <span className="font-semibold mr-3">{board.name}</span>
+                                <span className="text-gray-500 text-sm">{board.description}</span>
+                            </div>
+                            <div className="flex gap-2">
+                                <button
+                                    className="border px-3 py-1 rounded text-sm flex items-center gap-1 disabled:opacity-50"
+                                    disabled={!isOwner}
+                                >
+                                    <FaEdit /> 수정
+                                </button>
+                                <button
+                                    className="bg-red-600 text-white px-3 py-1 rounded text-sm flex items-center gap-1 disabled:opacity-50"
+                                    disabled={!isOwner}
+                                >
+                                    <FaTrashAlt /> 삭제
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </section>
+
+                {/* 플랜 관리 */}
+                <section>
+                    <h2 className="text-2xl font-semibold mb-4">플랜 관리</h2>
+                    <div className="border rounded-xl shadow p-6 relative">
+                        <div className="flex justify-between items-center mb-4">
+                            <div>
+                                <p className="font-medium text-lg">현재 플랜</p>
+                                <p className={`${getPlanColor(communityInfo.plan.levelCode)} font-semibold text-xl`}>
+                                    {communityInfo.plan.levelName}
+                                </p>
+                                {communityInfo.plan.endDate && (
+                                    <p className="text-gray-500 text-sm mt-1">
+                                        만료일: {communityInfo.plan.endDate}
+                                    </p>
+                                )}
+                            </div>
+                            <Button
+                                className="bg-purple-600 text-white px-5 py-2 rounded-md hover:bg-purple-700 transition-colors disabled:opacity-50"
+                                onClick={() => navigate(`/communities/${communityId}/upgrade`)}
+                                disabled={!isOwner || isPremium}
+                            >
+                                플랜 전환
+                            </Button>
+                        </div>
+
+                        <div className="bg-orange-50 border-l-4 border-orange-400 rounded p-4 mb-4 text-sm text-gray-700 flex gap-2 items-center">
+                            <span className="text-2xl">✨</span>
+                            <span>
+                                프리미엄 플랜에서는 <b>무제한 게시판 생성</b>, <b>AI 기능</b>, <b>파일 첨부</b> 등을 사용할 수 있습니다.
+                            </span>
+                        </div>
+
+                        {isPremium ? (
+                            <div className="bg-green-50 border border-green-300 rounded p-4 text-sm text-gray-700 flex gap-2 items-center">
+                                <span className="text-2xl">🥇</span>
+                                <span>
+                                    현재 <b>프리미엄 플랜</b> 사용 중입니다. 다양한 고급 기능이 활성화되어 있습니다.
+                                </span>
+                            </div>
+                        ) : (
+                            <div className="bg-yellow-50 border border-yellow-300 rounded p-4 text-sm text-gray-700 flex gap-2 items-center">
+                                <span className="text-2xl">💡</span>
+                                <span>
+                                    <b>베이직 플랜</b> 사용 중입니다. 프리미엄으로 업그레이드하면 더 많은 기능을 이용할 수 있습니다.
+                                </span>
+                            </div>
+                        )}
+                    </div>
+                </section>
             </div>
         </div>
     );
