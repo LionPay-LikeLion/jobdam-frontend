@@ -3,22 +3,20 @@ import { getTokens, clearTokens, isTokenValid, setTokens } from '../lib/auth';
 import { getUserFromToken } from '../lib/auth';
 import { logout as logoutApi, getUserProfile } from '../lib/authApi';
 
-
 export interface User {
   userId?: string;
   email: string;
   name?: string;
   nickname?: string;
-  memberTypeCode?: string;  // memberType -> memberTypeCode로 변경
+  memberTypeCode?: string;
   subscriptionLevel?: string;
   remainingPoints?: number;
-  role?: string;
+  role?: string; // "USER" | "ADMIN"
+  roleCodeId?: number; // 숫자
   phone?: string;
   profileImageUrl?: string;
   createdAt?: string;
 }
-
-
 
 interface AuthContextType {
   user: User | null;
@@ -51,33 +49,32 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const isAuthenticated = !!user;
 
-  // 앱 시작 시 토큰 검증 및 사용자 정보 가져오기
+  // 서버 응답이 snake_case로 올 수도 있으니 camelCase로 맞춰줌
+  const normalizeUser = (data: any): User => ({
+    ...data,
+    roleCodeId: data.roleCodeId ?? data.role_code_id,
+    userId: data.userId ?? data.user_id,
+    // 필요한 경우 추가 변환
+  });
+
   useEffect(() => {
     const initializeAuth = async () => {
       try {
         const tokens = getTokens();
-        
         if (tokens && isTokenValid(tokens.accessToken)) {
-          // JWT에서 기본 사용자 정보 추출
           const userData = getUserFromToken(tokens.accessToken);
           if (userData) {
-            // 기본 정보로 먼저 설정
-            setUser(userData);
-            
-            // 상세 정보를 API로 가져오기
+            setUser(normalizeUser(userData));
             try {
               const detailedUser = await getUserProfile();
-              console.log('API user profile:', detailedUser); // 디버깅용
-              setUser(detailedUser);
+              setUser(normalizeUser(detailedUser));
             } catch (error) {
               console.error('Failed to get detailed user info:', error);
-              // 상세 정보 가져오기 실패해도 기본 정보는 유지
             }
           } else {
             clearTokens();
           }
         } else {
-          // 토큰이 없거나 만료된 경우
           clearTokens();
         }
       } catch (error) {
@@ -87,12 +84,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setIsLoading(false);
       }
     };
-
     initializeAuth();
   }, []);
 
   const login = (userData: User) => {
-    setUser(userData);
+    setUser(normalizeUser(userData));
   };
 
   const logout = async () => {
@@ -107,7 +103,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const updateUser = (userData: User) => {
-    setUser(userData);
+    setUser(normalizeUser(userData));
   };
 
   const refreshUserInfo = async () => {
@@ -115,11 +111,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const tokens = getTokens();
       if (tokens && isTokenValid(tokens.accessToken)) {
         const userData = await getUserProfile();
-        if (userData) {
-          setUser(userData);
-        } else {
-          clearTokens();
-        }
+        setUser(normalizeUser(userData));
       } else {
         clearTokens();
       }
@@ -130,23 +122,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const authLogin = async (token: string) => {
-  try {
-    // Store tokens in localStorage or your method
-    setTokens({ accessToken: token }); // replaces localStorage.setItem()
-
-    // Decode user info from token
-    const basicUser = getUserFromToken(token);
-    if (basicUser) {
-      setUser(basicUser);
-    }
-
-    // Fetch detailed profile
     try {
-      const detailedUser = await getUserProfile();
-      setUser(detailedUser);
-    } catch (error) {
-      console.error("Failed to fetch user profile after login", error);
-    }
+      setTokens({ accessToken: token });
+      const basicUser = getUserFromToken(token);
+      if (basicUser) {
+        setUser(normalizeUser(basicUser));
+      }
+      try {
+        const detailedUser = await getUserProfile();
+        setUser(normalizeUser(detailedUser));
+      } catch (error) {
+        console.error("Failed to fetch user profile after login", error);
+      }
     } catch (error) {
       console.error("authLogin error", error);
     }
@@ -160,12 +147,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     logout,
     updateUser,
     refreshUserInfo,
-    authLogin
+    authLogin,
   };
 
   return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
+      <AuthContext.Provider value={value}>
+        {children}
+      </AuthContext.Provider>
   );
-}; 
+};
