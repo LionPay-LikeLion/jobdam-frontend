@@ -99,9 +99,9 @@ export default function CommunityMemberList(): JSX.Element {
     }
 
     return (
-        <div className="min-h-screen flex flex-col bg-white font-korean px-4 py-12">
-            <div className="w-full max-w-4xl mx-auto">
-                <h1 className="text-3xl font-bold mb-6">멤버 목록</h1>
+        <>
+            <div className="container mx-auto mt-12 mb-8 px-4 text-left max-w-4xl">
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">멤버 목록</h1>
                 <div className="mb-4 text-sm text-gray-500">
                     총 {members.length}명의 멤버
                 </div>
@@ -140,7 +140,7 @@ export default function CommunityMemberList(): JSX.Element {
                             </div>
 
                             <div className="flex gap-3">
-                                <button 
+                                <button
                                     className="flex items-center gap-1 px-3 py-1 bg-purple-600 text-white text-sm rounded hover:bg-purple-700"
                                     onClick={() => {
                                         setSelectedMember(member);
@@ -148,7 +148,7 @@ export default function CommunityMemberList(): JSX.Element {
                                     }}
                                 >
                                     <FiMessageSquare />
-                                    메시지 전송
+                                    메시지
                                 </button>
                             </div>
                         </div>
@@ -190,6 +190,6 @@ export default function CommunityMemberList(): JSX.Element {
                     </div>
                 </div>
             )}
-        </div>
+        </>
     );
 }
