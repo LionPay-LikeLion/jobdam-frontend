@@ -9,6 +9,7 @@ type UserItem = {
     email: string;
     nickname: string;
     isActive: boolean;
+    roleCodeId: number; // 1: 회원, 2: 관리자
 };
 
 const statusColors: Record<string, string> = {
@@ -21,7 +22,6 @@ const AdminUserManagement: React.FC = () => {
     const [allUsers, setAllUsers] = useState<UserItem[]>([]);
     const [loading, setLoading] = useState(false);
 
-    // 1. 최초 전체 유저 받아오기 (서버는 딱 1번 호출)
     useEffect(() => {
         fetchAllUsers();
     }, []);
@@ -39,7 +39,7 @@ const AdminUserManagement: React.FC = () => {
         }
     };
 
-    // 2. 프론트에서 필터링된 값만 노출
+    // 프론트 필터
     const filteredUsers = allUsers.filter(user => {
         const matchesNickname = filters.nickname.trim() === "" || user.nickname.includes(filters.nickname.trim());
         const matchesEmail = filters.email.trim() === "" || user.email.includes(filters.email.trim());
@@ -68,6 +68,23 @@ const AdminUserManagement: React.FC = () => {
         await api.patch(`/admin/user/${user.userId}/deactivate`);
         setAllUsers(allUsers.map(u => u.userId === user.userId ? { ...u, isActive: false } : u));
         alert("회원이 정지되었습니다.");
+    };
+
+    // **하나의 버튼으로 역할 토글**
+    const handleToggleRole = async (user: UserItem) => {
+        if (user.roleCodeId === 2) {
+            // 현재 관리자 → 회원으로
+            if (!window.confirm(`${user.nickname}님을 '회원'으로 변경하시겠습니까?`)) return;
+            await api.patch(`/admin/user/${user.userId}/revoke-admin`);
+            setAllUsers(allUsers.map(u => u.userId === user.userId ? { ...u, roleCodeId: 1 } : u));
+            alert("회원으로 변경되었습니다.");
+        } else {
+            // 현재 회원 → 관리자로
+            if (!window.confirm(`${user.nickname}님을 '관리자'로 변경하시겠습니까?`)) return;
+            await api.patch(`/admin/user/${user.userId}/grant-admin`);
+            setAllUsers(allUsers.map(u => u.userId === user.userId ? { ...u, roleCodeId: 2 } : u));
+            alert("관리자로 변경되었습니다.");
+        }
     };
 
     return (
@@ -127,7 +144,6 @@ const AdminUserManagement: React.FC = () => {
                                 type="button"
                                 className="bg-black text-white px-8 py-2 rounded-xl hover:bg-gray-800 h-11 text-sm font-semibold shadow mt-[22px]"
                                 disabled={loading}
-                                // 필터는 자동, 버튼은 리셋용으로만 둬도 됨
                                 onClick={() => setFilters({ nickname: "", email: "", status: "전체" })}
                             >
                                 초기화
@@ -139,70 +155,86 @@ const AdminUserManagement: React.FC = () => {
                             <div className="bg-white rounded-2xl shadow border overflow-x-auto px-0 py-0">
                                 <table className="w-full text-sm text-left whitespace-nowrap">
                                     <colgroup>
-                                        <col style={{ width: "30%" }} />
-                                        <col style={{ width: "50%" }} />
+                                        <col style={{ width: "25%" }} />
+                                        <col style={{ width: "35%" }} />
                                         <col style={{ width: "10%" }} />
                                         <col style={{ width: "10%" }} />
+                                        <col style={{ width: "20%" }} />
                                     </colgroup>
                                     <thead>
-                                        <tr className="border-b bg-gray-50">
-                                            <th className="py-3 px-4 text-sm font-medium">닉네임</th>
-                                            <th className="px-4 text-sm font-medium">이메일</th>
-                                            <th className="px-4 text-sm font-medium">상태</th>
-                                            <th className="px-4 text-sm font-medium">관리</th>
-                                        </tr>
+                                    <tr className="border-b bg-gray-50">
+                                        <th className="py-3 px-4 text-sm font-medium">닉네임</th>
+                                        <th className="px-4 text-sm font-medium">이메일</th>
+                                        <th className="px-4 text-sm font-medium">상태</th>
+                                        <th className="px-4 text-sm font-medium">역할</th>
+                                        <th className="px-4 text-sm font-medium">관리</th>
+                                    </tr>
                                     </thead>
                                     <tbody>
-                                        {loading ? (
-                                            <tr>
-                                                <td colSpan={4} className="text-center py-8 text-gray-400">로딩 중...</td>
-                                            </tr>
-                                        ) : filteredUsers.length === 0 ? (
-                                            <tr>
-                                                <td colSpan={4} className="text-center py-8 text-gray-400">검색 결과가 없습니다.</td>
-                                            </tr>
-                                        ) : (
-                                            filteredUsers.map((user) => (
-                                                <tr key={user.userId} className="border-b last:border-b-0 hover:bg-gray-50 text-[15px]">
-                                                    <td className="py-3 px-4 flex items-center gap-2">
+                                    {loading ? (
+                                        <tr>
+                                            <td colSpan={5} className="text-center py-8 text-gray-400">로딩 중...</td>
+                                        </tr>
+                                    ) : filteredUsers.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={5} className="text-center py-8 text-gray-400">검색 결과가 없습니다.</td>
+                                        </tr>
+                                    ) : (
+                                        filteredUsers.map((user) => (
+                                            <tr key={user.userId} className="border-b last:border-b-0 hover:bg-gray-50 text-[15px]">
+                                                <td className="py-3 px-4 flex items-center gap-2">
                                                         <span className="inline-block w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
                                                             <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
                                                                 <circle cx="12" cy="8" r="4" fill="#cbd5e1" />
                                                                 <path d="M4 20c0-2.21 3.582-4 8-4s8 1.79 8 4" fill="#cbd5e1" />
                                                             </svg>
                                                         </span>
-                                                        <span>{user.nickname}</span>
-                                                    </td>
-                                                    <td className="px-4 align-middle">{user.email}</td>
-                                                    <td className="px-4 align-middle">
+                                                    <span>{user.nickname}</span>
+                                                </td>
+                                                <td className="px-4 align-middle">{user.email}</td>
+                                                <td className="px-4 align-middle">
                                                         <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-semibold ${statusColors[user.isActive ? "활성" : "정지"]}`}>
                                                             {user.isActive
                                                                 ? <CheckCircle size={15} className="inline text-green-500" />
                                                                 : <XCircle size={15} className="inline text-red-500" />}
                                                             {user.isActive ? "활성" : "정지"}
                                                         </span>
-                                                    </td>
-                                                    <td className="px-4 align-middle">
-                                                        <div className="flex gap-1">
-                                                            <button
-                                                                className="px-3 h-8 rounded-lg border border-green-300 text-xs bg-green-50 text-green-700 hover:bg-green-100 min-w-[64px]"
-                                                                onClick={() => handleActivate(user)}
-                                                                disabled={user.isActive}
-                                                            >
-                                                                활성화
-                                                            </button>
-                                                            <button
-                                                                className="px-3 h-8 rounded-lg border border-red-200 text-xs bg-red-50 text-red-500 hover:bg-red-100 min-w-[64px]"
-                                                                onClick={() => handleDeactivate(user)}
-                                                                disabled={!user.isActive}
-                                                            >
-                                                                정지
-                                                            </button>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            ))
-                                        )}
+                                                </td>
+                                                <td className="px-4 align-middle">
+                                                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-semibold 
+                                                            ${user.roleCodeId === 2 ? "bg-yellow-50 text-yellow-700 border border-yellow-200" : "bg-blue-50 text-blue-600 border border-blue-200"}`}>
+                                                            {user.roleCodeId === 2 ? "관리자" : "회원"}
+                                                        </span>
+                                                </td>
+                                                <td className="px-4 align-middle">
+                                                    <div className="flex gap-1">
+                                                        <button
+                                                            className={user.roleCodeId === 2
+                                                                ? "px-3 h-8 rounded-lg border border-yellow-200 text-xs bg-yellow-50 text-yellow-700 hover:bg-yellow-100 min-w-[88px]"
+                                                                : "px-3 h-8 rounded-lg border border-blue-200 text-xs bg-blue-50 text-blue-700 hover:bg-blue-100 min-w-[88px]"}
+                                                            onClick={() => handleToggleRole(user)}
+                                                        >
+                                                            {user.roleCodeId === 2 ? "회원으로 변경" : "관리자로 변경"}
+                                                        </button>
+                                                        <button
+                                                            className="px-3 h-8 rounded-lg border border-green-300 text-xs bg-green-50 text-green-700 hover:bg-green-100 min-w-[64px]"
+                                                            onClick={() => handleActivate(user)}
+                                                            disabled={user.isActive}
+                                                        >
+                                                            활성화
+                                                        </button>
+                                                        <button
+                                                            className="px-3 h-8 rounded-lg border border-red-200 text-xs bg-red-50 text-red-500 hover:bg-red-100 min-w-[64px]"
+                                                            onClick={() => handleDeactivate(user)}
+                                                            disabled={!user.isActive}
+                                                        >
+                                                            정지
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
                                     </tbody>
                                 </table>
                             </div>
