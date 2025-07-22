@@ -20,8 +20,8 @@ export const fetchSnsPostDetail = async (postId: number) => {
   return response.data;
 };
 
-export const fetchFilteredPosts = async (memberType: string, sort: string, userId: number) => {
-  const res = await api.get("/sns/posts/filter", { params: { memberType, sort, userId }, });
+export const fetchFilteredPosts = async (memberType: string, sort: string) => {
+  const res = await api.get("/sns/posts/filter", { params: { memberType, sort }, });
   return res.data;
 };
 
