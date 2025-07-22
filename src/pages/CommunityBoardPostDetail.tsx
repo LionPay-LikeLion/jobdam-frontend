@@ -105,7 +105,7 @@ export default function CommunityBoardPostDetail(): JSX.Element {
   };
 
   const handleEditPost = () => {
-    navigate(`/community/${id}/board/${boardId}/post/edit/${postId}`);
+    navigate(`/communities/${id}/board/${boardId}/post/edit/${postId}`);
   };
 
   const handleDeletePost = async () => {
@@ -130,7 +130,7 @@ export default function CommunityBoardPostDetail(): JSX.Element {
         description: "게시글이 삭제되었습니다.",
       });
       
-      navigate(`/community/${id}/board/${boardId}`);
+      navigate(`/communities/${id}/board/${boardId}`);
     } catch (error: any) {
       console.error('게시글 삭제 실패:', error);
       

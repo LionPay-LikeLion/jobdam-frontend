@@ -20,12 +20,6 @@ const statusIcon: Record<number, React.ReactNode> = {
     1: <XCircle size={15} className="inline mr-1 text-red-500" />,
     2: <CheckCircle size={15} className="inline mr-1 text-green-500" />,
 };
-const statusMap: Record<string, number | undefined> = {
-    "전체": undefined,
-    "대기중": 0,
-    "반려": 1,
-    "정지처리": 2,
-};
 
 // === 신고 유형 라벨 ===
 const reportTypeLabel: Record<number, string> = {
@@ -52,33 +46,28 @@ const AdminReport: React.FC = () => {
         reporter: "",
         date: "",
     });
-    const [reportList, setReportList] = useState<ReportItem[]>([]);
+    const [allReportList, setAllReportList] = useState<ReportItem[]>([]);
     const [loading, setLoading] = useState(false);
 
     const [processingId, setProcessingId] = useState<number | null>(null);
-
     const [showModal, setShowModal] = useState(false);
     const [modalMessage, setModalMessage] = useState("");
 
-    // === 신고 리스트 불러오기 ===
+    // === 최초 1회 전체 데이터만 받아오기 ===
     const fetchList = async () => {
         setLoading(true);
         try {
-            const params: Record<string, string | number> = {};
-            if (filters.status !== "전체") params.status = statusMap[filters.status] as number;
-            if (filters.reporter) params.reporter = filters.reporter;
-            if (filters.date) params.date = filters.date;
-            const res = await api.get("/admin/report", { params });
+            const res = await api.get("/admin/report");
             let list: ReportItem[] = [];
             if (res.data && Array.isArray(res.data.content)) {
                 list = res.data.content;
             } else if (Array.isArray(res.data)) {
                 list = res.data;
             }
-            setReportList(list);
+            setAllReportList(list);
         } catch (e) {
             console.error("신고 목록 조회 실패", e);
-            setReportList([]);
+            setAllReportList([]);
         } finally {
             setLoading(false);
         }
@@ -86,12 +75,26 @@ const AdminReport: React.FC = () => {
 
     useEffect(() => { fetchList(); }, []);
 
+    // === 프론트에서만 필터링 ===
+    const filteredList = allReportList.filter(item => {
+        const matchStatus =
+            filters.status === "전체" ||
+            (filters.status === "대기중" && item.status === 0) ||
+            (filters.status === "반려" && item.status === 1) ||
+            (filters.status === "정지처리" && item.status === 2);
+        const matchReporter = !filters.reporter.trim() || (item.reporterNickname ?? "").includes(filters.reporter.trim());
+        const matchDate = !filters.date ||
+            (item.createdAt && item.createdAt.slice(0, 10) === filters.date);
+        return matchStatus && matchReporter && matchDate;
+    });
+
     // === 필터 핸들러 ===
     const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         setFilters({ ...filters, [e.target.name]: e.target.value });
     };
     const handleSearch = () => {
-        fetchList();
+        // UX용 (실제로 입력할 때마다 필터링 됨)
+        setFilters({ ...filters });
     };
 
     // === 승인/거절 처리 ===
@@ -117,7 +120,7 @@ const AdminReport: React.FC = () => {
     // === 모달 닫기 ===
     const handleCloseModal = () => {
         setShowModal(false);
-        fetchList();
+        fetchList(); // 처리 후에는 전체 리스트 갱신
     };
 
     return (
@@ -195,14 +198,14 @@ const AdminReport: React.FC = () => {
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    {(reportList?.length ?? 0) === 0 && !loading && (
+                                    {(filteredList?.length ?? 0) === 0 && !loading && (
                                         <tr>
                                             <td colSpan={7} className="py-10 text-center text-gray-400">
                                                 신고 내역이 없습니다.
                                             </td>
                                         </tr>
                                     )}
-                                    {Array.isArray(reportList) && reportList.map((item) => (
+                                    {Array.isArray(filteredList) && filteredList.map((item) => (
                                         <tr
                                             key={item.reportId}
                                             className="border-b last:border-b-0 hover:bg-gray-50 text-[15px] align-middle"

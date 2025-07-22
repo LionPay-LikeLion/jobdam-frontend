@@ -48,7 +48,6 @@ import ActivityHistoryPage from "@/pages/ActivityHistoryPage";
 
 const queryClient = new QueryClient();
 
-// 루트 경로 컴포넌트 - 로그인 상태에 따라 다른 페이지 렌더링
 const RootComponent = () => {
     const { isAuthenticated, isLoading } = useAuth();
 
@@ -70,29 +69,29 @@ const AppRoutes = () => {
 
     return (
         <Routes>
-            {/* 루트 경로 - 로그인 상태에 따라 다르게 처리 */}
+            {/* 루트 경로 */}
             <Route path="/" element={<RootComponent />}>
                 {isAuthenticated && (
                     <>
                         <Route index element={<SNSFeedHome />} />
                         <Route path="mine" element={<SNSFeedMy />} />
                         <Route path=":postId" element={<SNSFeedPost />} />
-                        <Route path="messages" element={<SNSMessage />} />
                         <Route path="sns-post-write" element={<SNSPostWrite />} />
                         <Route path="sns/posts/:postId/edit" element={<SNSPostEdit />} />
+                        <Route path="/activity-history" element={<ActivityHistoryPage />} />
                     </>
                 )}
             </Route>
 
-            {/* 로그인된 사용자만 접근 가능한 라우트들 */}
+            {/* 로그인 후 접근 */}
             {isAuthenticated && (
                 <>
                     <Route path="/mypage" element={<MyPage />} />
                     <Route path="/point-purchase" element={<PointPurchase />} />
                     <Route path="/premium-upgrade" element={<PremiumUpgrade />} />
-                    <Route path="/community" element={<CommunityPage />} />
-                    <Route path="/community/create" element={<CommunityCreate />} />
-                    <Route path="/community/:id" element={<CommunityLayout />}>
+                    <Route path="/communities" element={<CommunityPage />} />
+                    <Route path="/communities/create" element={<CommunityCreate />} />
+                    <Route path="/communities/:id" element={<CommunityLayout />}>
                         <Route index element={<CommunityHome />} />
                         <Route path="board" element={<CommunityBoardList />} />
                         <Route path="board/:boardId" element={<CommunityBoardMain />} />
@@ -109,7 +108,8 @@ const AppRoutes = () => {
                     <Route path="/membership-type-request" element={<MembershipTypeRequest />} />
                     <Route path="/mypage/payments" element={<PaymentHistoryPage />} />
                     <Route path="/mypage/points" element={<PointHistoryPage />} />
-                    <Route path="/mypage/activity" element={<ActivityHistoryPage />} />
+                    <Route path="messages" element={<SNSMessage />} />
+
                     {/* ------ 어드민 영역 ------ */}
                     <Route path="/admin/users" element={<AdminUserManagement />} />
                     <Route path="/admin/report" element={<AdminReport />} />
@@ -117,7 +117,7 @@ const AppRoutes = () => {
                 </>
             )}
 
-            {/* 비로그인 유저만 접근 가능한 라우트 */}
+            {/* 비로그인 전용 */}
             {!isAuthenticated && (
                 <>
                     <Route path="/login" element={<LoginPage />} />
@@ -127,9 +127,8 @@ const AppRoutes = () => {
                 </>
             )}
 
-            {/* Google Redirect */}
+            {/* 구글 OAuth 콜백 */}
             <Route path="/api/oauth/google/callback" element={<GoogleRedirectHandler />} />
-
             {/* 404 */}
             <Route path="*" element={<NotFound />} />
         </Routes>
