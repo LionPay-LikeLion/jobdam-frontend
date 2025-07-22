@@ -36,6 +36,15 @@ export interface RegisterResponse {
   message: string;
 }
 
+export interface SendVerificationRequest {
+  email: string;
+}
+
+export interface VerifyEmailRequest {
+  email: string;
+  code: string;
+}
+
 export interface GoogleLoginResponse {
   accessToken: string;
   refreshToken: string;
@@ -207,6 +216,26 @@ export const refreshToken = async (): Promise<AuthTokens> => {
 export const withdrawUser = async (): Promise<void> => {
   try {
     await api.delete('/user/withdraw');
+  } catch (error) {
+    throw error;
+  }
+};
+
+// 이메일 인증코드 발송
+export const sendVerificationCode = async (email: string): Promise<string> => {
+  try {
+    const response = await api.post('/auth/send-verification', { email });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// 이메일 인증코드 확인
+export const verifyEmailCode = async (email: string, code: string): Promise<boolean> => {
+  try {
+    const response = await api.post('/auth/check-verification', { email, code });
+    return response.data;
   } catch (error) {
     throw error;
   }
