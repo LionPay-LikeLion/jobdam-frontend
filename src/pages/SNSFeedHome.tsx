@@ -1,7 +1,8 @@
+import ReportModal from "@/components/ReportModal";
 import React, { useEffect, useState, useRef } from "react";
 import { FaHeart, FaComment, FaBookmark, FaPlus, FaCrown, FaClock } from "react-icons/fa";
 import { FiSearch } from "react-icons/fi";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import clsx from "clsx";
 import {
     fetchSnsPostsFiltered,
@@ -47,10 +48,16 @@ export default function SNSFeedHome() {
     const [fetching, setFetching] = useState(false);
     const [offset, setOffset] = useState(0);
     const [hasMore, setHasMore] = useState(true);
+    const [reportOpen, setReportOpen] = useState(false);
+    const [reportTargetId, setReportTargetId] = useState<number | null>(null);
     const commentInputRefs = useRef<{ [key: number]: HTMLInputElement | null }>({});
     const menuButtonRefs = useRef<{ [key: number]: HTMLButtonElement | null }>({});
-    const navigate = useRef<any>(null);
+    const navigate = useNavigate();
     const { user } = useAuth();
+
+    // 1. 상태 추가
+    const [showSearchInput, setShowSearchInput] = useState(false);
+    const [searchValue, setSearchValue] = useState("");
 
     // 필터/검색/초기 로딩
     useEffect(() => {
@@ -91,33 +98,24 @@ export default function SNSFeedHome() {
     // 댓글 2개 미리보기
     useEffect(() => {
       if (!posts.length) return;
-      const previews: Record<number, any[]> = {};
+    
       const fetchAll = async () => {
-          for (const post of posts) {
-              if (!post.snsPostId) continue;
-              const comments = await fetchComments(post.snsPostId);
-              previews[post.snsPostId] = (comments || []).filter(c => c.boardStatusCode !== "DELETED").slice(0, 2);
-          }
-          setPreviewComments(previews);
+        // Promise.all로 동시 호출(성능 ↑)
+        const entries = await Promise.all(
+          posts.map(async (post) => {
+            if (!post.snsPostId) return [post.snsPostId, []];
+            const comments = await fetchComments(post.snsPostId);
+            return [
+              post.snsPostId,
+              (comments || []).filter(c => c.boardStatusCode !== "DELETED").slice(0, 2)
+            ];
+          })
+        );
+        setPreviewComments(Object.fromEntries(entries));
       };
       fetchAll();
-      // eslint-disable-next-line
-  }, []);
+    }, [posts]);
     // 바깥 클릭시 더보기 메뉴 닫기
-    useEffect(() => {
-        function handleClick(e: any) {
-            if (!showMenuId) return;
-            if (
-                menuButtonRefs.current[showMenuId] &&
-                !menuButtonRefs.current[showMenuId]!.contains(e.target)
-            ) {
-                setShowMenuId(null);
-            }
-        }
-        if (showMenuId) document.addEventListener("mousedown", handleClick);
-        return () => document.removeEventListener("mousedown", handleClick);
-    }, [showMenuId]);
-
     const handleCreateComment = async (postId: number) => {
         const val = commentInputRefs.current[postId]?.value ?? "";
         if (!val.trim()) return;
@@ -239,7 +237,7 @@ export default function SNSFeedHome() {
                         {/* 검색 버튼 */}
                         <button
                             className="h-12 w-12 flex items-center justify-center rounded-full bg-gray-200 text-gray-700 border border-gray-300 text-2xl ml-2"
-                            onClick={() => {/* 검색 모달/창 열기 함수 */}}
+                            onClick={() => setShowSearchInput(true)}
                             title="검색"
                         >
                             <FiSearch />
@@ -275,35 +273,60 @@ export default function SNSFeedHome() {
                                         }}
                                         className="text-gray-400 hover:text-gray-700 text-base px-1"
                                     >⋯</button>
-                                    {showMenuId === post.snsPostId && (
-                                        <>
-                                            {/* 오버레이 클릭시 메뉴 닫힘 */}
-                                            <div className="fixed inset-0 z-30" onClick={() => setShowMenuId(null)} />
-                                            <div className="absolute right-0 top-8 z-40 bg-white border border-gray-200 rounded shadow-lg py-1 min-w-[120px]">
-                                                {isMine && (
-                                                    <>
-                                                        <Link
-                                                            to={`/sns-posts/${post.snsPostId}/edit`}
-                                                            className="block px-5 py-2 hover:bg-gray-100 text-sm text-gray-800"
-                                                        >수정</Link>
-                                                        <button
-                                                            onClick={() => {
-                                                                setShowMenuId(null);
-                                                                handleDeletePost(post.snsPostId);
-                                                            }}
-                                                            className="block w-full text-left px-5 py-2 hover:bg-gray-100 text-sm text-red-500"
-                                                        >삭제</button>
-                                                    </>
-                                                )}
-                                                {!isMine && (
-                                                    <button
-                                                        onClick={() => setShowMenuId(null)}
-                                                        className="block w-full text-left px-5 py-2 hover:bg-gray-100 text-sm text-gray-700"
-                                                    >신고</button>
-                                                )}
+                                        {showMenuId === post.snsPostId && (
+                                          <>
+                                            {/* 밖 클릭용 오버레이 */}
+                                            <div
+                                              className="fixed inset-0 z-[999] bg-transparent" // or pointer-events-auto(default)
+                                              onClick={() => setShowMenuId(null)}
+                                            />
+
+                                            {/* 실제 메뉴 */}
+                                            <div
+                                              className="absolute right-0 top-8 z-[1000] bg-white border border-gray-200 rounded shadow-lg py-1 min-w-[120px]"
+                                              onClick={(e) => e.stopPropagation()}  // ★ 중요
+                                            >
+                                              {isMine ? (
+                                                <>
+                                                  <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                      setShowMenuId(null);
+                                                      navigate(`/sns/posts/${post.snsPostId}/edit`);
+                                                    }}
+                                                    className="block w-full text-left px-5 py-2 hover:bg-gray-100 text-sm text-gray-800"
+                                                  >
+                                                    수정
+                                                  </button>
+
+                                                  <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                      setShowMenuId(null);
+                                                      handleDeletePost(post.snsPostId);
+                                                    }}
+                                                    className="block w-full text-left px-5 py-2 hover:bg-gray-100 text-sm text-red-500"
+                                                  >
+                                                    삭제
+                                                  </button>
+                                                </>
+                                              ) : (
+                                                <button
+                                                  type="button"
+                                                  onClick={() => {
+                                                    setShowMenuId(null);
+                                                    setReportTargetId(post.userId); // ← 작성자 id
+                                                    setReportOpen(true);            // ← 모달 열기
+                                                  }}
+                                                  className="block w-full text-left px-5 py-2 hover:bg-gray-100 text-sm text-gray-700"
+                                                >
+                                                  신고
+                                                </button>
+                                              )}
                                             </div>
-                                        </>
-                                    )}
+                                          </>
+                                        )}
+
                                 </div>
                                 {/* 프로필/뱃지/프리미엄/왕관 */}
                                 <div className="flex items-center px-5 pt-4 pb-2 relative" style={{ minHeight: 50 }}>
@@ -418,6 +441,12 @@ export default function SNSFeedHome() {
                         <div className="py-7 text-center text-gray-400 text-sm">더 이상 불러올 게시글이 없습니다.</div>
                     )}
                 </div>
+                <ReportModal
+                      open={reportOpen}
+                      onClose={() => setReportOpen(false)}
+                      targetId={reportTargetId ?? 0}
+                      reportTypeCodeId={1}
+                    />
             </div>
         </div>
     );
