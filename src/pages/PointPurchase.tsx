@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
+import TopBar from "@/components/TopBar";
 
 // 충전 옵션 정의 (추천/이벤트 표시용 필드 추가)
 const chargeOptions = [
@@ -160,6 +161,7 @@ export default function PointPurchase(): JSX.Element {
 
     return (
         <div className="min-h-screen flex flex-col bg-white font-korean">
+            <TopBar />
             <main className="flex-1 flex justify-center items-start py-24 bg-white">
                 <div className="w-[900px] px-10 py-12 shadow-md border rounded-xl bg-white relative">
                     <h1 className="text-4xl font-bold text-black mb-2 text-center">포인트 충전</h1>
