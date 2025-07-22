@@ -145,6 +145,16 @@ const SNSFeedHome = () => {
                     <div className="ml-6 flex flex-col justify-between w-full">
                       <div className="flex justify-between items-center">
                         <div className="relative flex items-center gap-3">
+                          {/* 프로필 이미지 */}
+                          {post.profileImageUrl ? (
+                            <img
+                              src={post.profileImageUrl}
+                              alt={post.nickname}
+                              className="w-8 h-8 rounded-full object-cover border border-gray-300 bg-gray-100 mr-2"
+                            />
+                          ) : (
+                            <span className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 text-gray-400 text-xl mr-2">👤</span>
+                          )}
                           <p className={clsx("font-bold text-xl text-black", isPremiumUser && "pr-8")}>{post.nickname}</p>
                           {/* PREMIUM 왕관 아이콘 */}
                           {isPremiumUser && (
@@ -182,7 +192,6 @@ const SNSFeedHome = () => {
                                 post.liked ? "w-7 h-7" : "w-5 h-5"
                               )}
                             />
-                            <span className={clsx("font-bold", post.liked && "text-red-500 text-lg")}>{post.likeCount}</span>
                           </div>
                           {/* 북마크 아이콘 - 내가 했으면 큼지막하고 진하게 */}
                           <div className="flex items-center gap-1">
@@ -205,7 +214,7 @@ const SNSFeedHome = () => {
                       </div>
                       <div className="flex items-center gap-4 mt-4 text-sm text-gray-600">
                         <div className="flex items-center gap-1">
-                          <FaHeart className={post.liked ? "text-red-500" : "text-gray-400"} />
+                          <FaHeart className="text-red-500" />
                           {post.likeCount}
                         </div>
                         <div className="flex items-center gap-1">
