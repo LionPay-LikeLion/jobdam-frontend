@@ -45,7 +45,7 @@ import AdminUserManagement from "@/pages/AdminUserManagement.tsx";
 import AdminReport from "@/pages/AdminReport.tsx";
 import AdminRoleChange from "@/pages/AdminRoleChange.tsx";
 import ActivityHistoryPage from "@/pages/ActivityHistoryPage";
-
+import AdminSalesStatsPage from "@/pages/AdminSalesStatsPage";
 const queryClient = new QueryClient();
 
 const RootComponent = () => {
@@ -114,6 +114,7 @@ const AppRoutes = () => {
                     <Route path="/admin/users" element={<AdminUserManagement />} />
                     <Route path="/admin/report" element={<AdminReport />} />
                     <Route path="/admin/type-request" element={<AdminRoleChange />} />
+                    <Route path="/admin/sales-stats" element={<AdminSalesStatsPage />} />
                 </>
             )}
 
