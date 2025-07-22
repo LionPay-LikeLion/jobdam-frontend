@@ -21,13 +21,6 @@ const statusIcon: Record<number, React.ReactNode> = {
     2: <CheckCircle size={15} className="inline mr-1 text-green-500" />,
 };
 
-const statusMap: Record<string, number | undefined> = {
-    "전체": undefined,
-    "대기중": 0,
-    "거절됨": 1,
-    "승인됨": 2,
-};
-
 type RoleChangeItem = {
     requestId: number;
     name: string;           // 닉네임
@@ -52,28 +45,23 @@ const AdminRoleChange: React.FC = () => {
         requestedRole: "",
         status: "전체",
     });
-    const [roleChangeList, setRoleChangeList] = useState<RoleChangeItem[]>([]);
+    const [allRoleChangeList, setAllRoleChangeList] = useState<RoleChangeItem[]>([]);
     const [loading, setLoading] = useState(false);
 
     const [processingId, setProcessingId] = useState<number | null>(null);
     const [showModal, setShowModal] = useState(false);
     const [modalMessage, setModalMessage] = useState("");
 
-    // ==== 역할 전환 요청 목록 불러오기 ====
+    // ==== 전체 데이터 1회만 받아오기 ====
     const fetchList = async () => {
         setLoading(true);
         try {
-            const params: any = {};
-            if (filters.name) params.nickname = filters.name; // 닉네임 기준
-            if (filters.email) params.email = filters.email;
-            if (filters.requestedRole) params.requestedRole = filters.requestedRole;
-            if (filters.status !== "전체") params.statusCode = statusMap[filters.status];
-            const res = await api.get("/membertype-change", { params });
+            const res = await api.get("/membertype-change");
             let list: RoleChangeItem[] = [];
             if (res.data && Array.isArray(res.data)) {
                 list = res.data.map((item: any) => ({
                     requestId: item.requestId,
-                    name: item.userNickname, // 닉네임!
+                    name: item.userNickname,
                     email: item.userEmail,
                     requestedRole: item.requestedRole || item.requestedMemberTypeCode,
                     createdAt: item.requestedAt,
@@ -81,10 +69,10 @@ const AdminRoleChange: React.FC = () => {
                     statusCode: item.requestStatusCode,
                 }));
             }
-            setRoleChangeList(list);
+            setAllRoleChangeList(list);
         } catch (e) {
             console.error("역할 전환 요청 목록 조회 실패", e);
-            setRoleChangeList([]);
+            setAllRoleChangeList([]);
         } finally {
             setLoading(false);
         }
@@ -92,20 +80,32 @@ const AdminRoleChange: React.FC = () => {
 
     useEffect(() => { fetchList(); }, []);
 
-    // ==== 필터 핸들러 ====
+    // ==== 프론트에서만 필터링 ====
+    const filteredList = allRoleChangeList.filter(item => {
+        const matchName = filters.name.trim() === "" || item.name?.includes(filters.name.trim());
+        const matchEmail = filters.email.trim() === "" || item.email?.includes(filters.email.trim());
+        const matchRole = !filters.requestedRole || item.requestedRole === filters.requestedRole;
+        const matchStatus =
+            filters.status === "전체" ||
+            (filters.status === "대기중" && item.statusCode === 0) ||
+            (filters.status === "거절됨" && item.statusCode === 1) ||
+            (filters.status === "승인됨" && item.statusCode === 2);
+        return matchName && matchEmail && matchRole && matchStatus;
+    });
+
     const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         setFilters({ ...filters, [e.target.name]: e.target.value });
     };
+
     const handleSearch = () => {
-        fetchList();
+        // 필요없지만 UX 위해 setState 트리거
+        setFilters({ ...filters });
     };
 
     // ==== 승인/거절 처리 ====
     const handleProcess = async (item: RoleChangeItem, action: "승인" | "거절") => {
         setProcessingId(item.requestId);
         try {
-            // 기존: const statusCode = action === "승인" ? 2 : 1;
-            // 수정:
             const statusCode = action === "승인" ? "APPROVED" : "REJECTED";
             await api.patch(`/membertype-change/${item.requestId}`, { statusCode });
             setModalMessage(action === "승인" ? "해당 요청이 승인되었습니다." : "해당 요청이 거절되었습니다.");
@@ -117,7 +117,6 @@ const AdminRoleChange: React.FC = () => {
             setProcessingId(null);
         }
     };
-
 
     // ==== 모달 닫기 ====
     const handleCloseModal = () => {
@@ -217,14 +216,14 @@ const AdminRoleChange: React.FC = () => {
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    {(roleChangeList?.length ?? 0) === 0 && !loading && (
+                                    {(filteredList?.length ?? 0) === 0 && !loading && (
                                         <tr>
                                             <td colSpan={7} className="py-10 text-center text-gray-400">
                                                 전환 요청 내역이 없습니다.
                                             </td>
                                         </tr>
                                     )}
-                                    {Array.isArray(roleChangeList) && roleChangeList.map((item) => (
+                                    {Array.isArray(filteredList) && filteredList.map((item) => (
                                         <tr
                                             key={item.requestId}
                                             className="border-b last:border-b-0 hover:bg-gray-50 text-[15px] align-middle"
