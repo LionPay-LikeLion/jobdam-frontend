@@ -98,7 +98,7 @@ export default function CreateBoardPage(): JSX.Element {
               <SelectValue placeholder="게시판 유형 선택" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="BASIC">자유 게시판</SelectItem>
+              <SelectItem value="GENERAL">자유 게시판</SelectItem>
               <SelectItem value="NOTICE">공지사항</SelectItem>
               <SelectItem value="QNA">Q&A</SelectItem>
               <SelectItem value="ANNOUNCEMENT">자료 공유</SelectItem>
