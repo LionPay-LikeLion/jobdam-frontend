@@ -128,12 +128,6 @@ const SNSFeedMy = () => {
                     {!post.isDeleted ? (
                       <div className="absolute top-0 right-0 flex gap-2">
                         <button
-                          onClick={() => handleEditPost(post.snsPostId)}
-                          className="bg-gray-100 px-3 py-1 rounded hover:bg-gray-200 text-sm"
-                        >
-                          수정
-                        </button>
-                        <button
                           onClick={() => handleDeletePost(post.snsPostId)}
                           className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm"
                         >
