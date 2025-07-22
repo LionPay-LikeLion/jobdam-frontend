@@ -10,6 +10,7 @@ import React, { useEffect, useState } from "react";
 import { fetchMessageBoxes, fetchConversation, sendMessage } from "@/lib/messageApi";
 import { searchUsers } from "@/lib/snsApi";
 import { useAuth } from "@/contexts/AuthContext";
+import TopBar from "@/components/TopBar";
 
 export default function SNSMessage(): JSX.Element {
   const { user } = useAuth();
@@ -139,6 +140,7 @@ export default function SNSMessage(): JSX.Element {
 
   return (
     <>
+      <TopBar />
       <div className="flex border border-[#0000001a] rounded-xl overflow-hidden w-full max-w-5xl mx-auto bg-white">
         {/* Left Message List */}
         <div className="w-[400px] border-r border-[#0000001a] flex flex-col">
