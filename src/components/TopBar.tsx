@@ -56,7 +56,7 @@ export default function TopBar() {
               <Button
                 variant="ghost"
                 className="font-normal text-base"
-                onClick={() => navigate("/community")}
+                onClick={() => navigate("/communities")}
               >
                 커뮤니티
               </Button>
