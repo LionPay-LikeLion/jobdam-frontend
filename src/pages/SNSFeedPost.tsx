@@ -1,25 +1,31 @@
+// src/pages/SNSFeedPost.tsx
+
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useParams } from "react-router-dom";
-import { fetchSnsPostDetail, fetchComments, createComment, updateComment, deleteComment,
-        likeSnsPost, unlikeSnsPost, addBookmark, removeBookmark, deleteSnsPost } from "@/lib/snsApi";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  fetchSnsPostDetail,
+  fetchComments,
+  createComment,
+  updateComment,
+  deleteComment,
+  likeSnsPost,
+  unlikeSnsPost,
+  addBookmark,
+  removeBookmark,
+  deleteSnsPost,
+} from "@/lib/snsApi";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Bookmark, Flag, Heart, MessageSquare, Download } from "lucide-react";
-
 import ReportModal from "@/components/ReportModal";
-
-import TopBar from "@/components/TopBar";
-
 
 const postTags = ["#면접후기", "#포트폴리오", "#이직준비", "#마케팅"];
 
 const SNSFeedPost = () => {
   const navigate = useNavigate();
-
   const { postId } = useParams();
   const [post, setPost] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -39,7 +45,7 @@ const SNSFeedPost = () => {
   useEffect(() => {
     if (postId) {
       fetchSnsPostDetail(Number(postId))
-          .then(data => setPost(data))
+          .then((data) => setPost(data))
           .finally(() => setLoading(false));
     }
   }, [postId]);
@@ -99,7 +105,7 @@ const SNSFeedPost = () => {
     }
     const updatedPost = await fetchSnsPostDetail(post.snsPostId);
     setPost(updatedPost);
-  }
+  };
 
   // 게시글 수정 페이지 이동
   const handleEditPost = () => {
@@ -122,16 +128,16 @@ const SNSFeedPost = () => {
   // 첨부파일 다운로드
   const handleDownloadAttachment = async (url: string) => {
     try {
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      link.download = url.split('/').pop() || 'attachment';
-      link.target = '_blank';
-      link.style.display = 'none';
+      link.download = url.split("/").pop() || "attachment";
+      link.target = "_blank";
+      link.style.display = "none";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     } catch (error) {
-      window.open(url, '_blank');
+      window.open(url, "_blank");
     }
   };
 
@@ -142,8 +148,11 @@ const SNSFeedPost = () => {
   const snsPostId = post.snsPostId ?? post.id ?? post.postId ?? null;
 
   return (
-      <div className="bg-white min-h-screen w-full">
-        <main className="flex-1 px-8 py-8">
+      <div className="bg-white min-h-screen w-full flex">
+        {/* === SNS 사이드바 영역이 따로 있다면 여기에 컴포넌트 삽입(생략) === */}
+
+        {/* 메인 */}
+        <main className="flex-1 flex flex-col items-center px-8 py-8">
           <div className="flex flex-col items-center mb-8">
             <h1 className="text-[40px] font-bold leading-[48px] text-center">피드 상세</h1>
             <p className="text-base mt-2 text-center">게시글을 자세히 보고 소통할 수 있습니다.</p>
@@ -195,7 +204,7 @@ const SNSFeedPost = () => {
                       <div>
                         <span className="font-bold text-[#856404] text-sm">첨부파일:</span>
                         <span className="ml-2 text-sm text-[#856404]">
-                      {post.attachmentUrl.split('/').pop() || '첨부파일'}
+                      {post.attachmentUrl.split("/").pop() || "첨부파일"}
                     </span>
                       </div>
                       <div className="flex gap-2">
@@ -209,7 +218,7 @@ const SNSFeedPost = () => {
                         <Button
                             onClick={() => {
                               const url = post.attachmentUrl;
-                              if (url) window.open(url, '_blank');
+                              if (url) window.open(url, "_blank");
                             }}
                             variant="outline"
                             className="px-3 py-1 rounded text-sm border-[#856404] text-[#856404] hover:bg-[#856404] hover:text-white transition-colors"
@@ -224,87 +233,161 @@ const SNSFeedPost = () => {
                   </div>
               )}
             </CardContent>
-          </Card>
-          <CardFooter className="px-8 pt-4 pb-6 border-t border-[#0000001a]">
-            <div className="flex items-center gap-4 w-full">
-              <Button variant="outline" className="bg-[#f0f0f0] h-[43px] gap-2 rounded-md" onClick={handleToggleLike}>
-                <Heart className={post.liked ? "text-red-500" : "text-gray-400"} />
-                <span className="text-sm font-medium">{post.likeCount}</span>
-              </Button>
-              <Button variant="outline" className="bg-[#f0f0f0] h-[43px] gap-2 rounded-md">
-                <MessageSquare className="h-5 w-5" />
-                <span className="text-sm font-medium">{post.commentCount}</span>
-              </Button>
-              <Button variant="outline" className="bg-[#f0f0f0] h-[43px] gap-2 rounded-md" onClick={handleToggleBookmark}>
-                <Bookmark className={post.bookmarked ? "text-blue-500" : "text-gray-400"} />
-                <span className="text-sm font-medium">북마크</span>
-              </Button>
-              <div className="ml-auto flex gap-2">
-                <Button variant="outline" className="bg-[#f0f0f0] h-[37px] rounded-md" onClick={handleEditPost}>수정</Button>
-                <Button variant="destructive" className="bg-[#ff3b30] h-[37px] rounded-md" onClick={() => handleDeletePost(post.snsPostId)}>삭제</Button>
-                <Button variant="outline" className="bg-[#f0f0f0] h-[37px] gap-1 rounded-md">
-                  <Flag className="h-4 w-4" />
-                  <span className="text-sm font-medium">신고</span>
+
+            <CardFooter className="px-8 pt-4 pb-6 border-t border-[#0000001a]">
+              <div className="flex items-center gap-4 w-full">
+                <Button
+                    variant="outline"
+                    className="bg-[#f0f0f0] h-[43px] gap-2 rounded-md"
+                    onClick={handleToggleLike}
+                >
+                  <Heart className={post.liked ? "text-red-500" : "text-gray-400"} />
+                  <span className="text-sm font-medium">{post.likeCount}</span>
                 </Button>
+                <Button variant="outline" className="bg-[#f0f0f0] h-[43px] gap-2 rounded-md">
+                  <MessageSquare className="h-5 w-5" />
+                  <span className="text-sm font-medium">{post.commentCount}</span>
+                </Button>
+                <Button
+                    variant="outline"
+                    className="bg-[#f0f0f0] h-[43px] gap-2 rounded-md"
+                    onClick={handleToggleBookmark}
+                >
+                  <Bookmark className={post.bookmarked ? "text-blue-500" : "text-gray-400"} />
+                  <span className="text-sm font-medium">북마크</span>
+                </Button>
+                <div className="ml-auto flex gap-2">
+                  <Button
+                      variant="outline"
+                      className="bg-[#f0f0f0] h-[37px] rounded-md"
+                      onClick={handleEditPost}
+                  >
+                    수정
+                  </Button>
+                  <Button
+                      variant="destructive"
+                      className="bg-[#ff3b30] h-[37px] rounded-md"
+                      onClick={() => handleDeletePost(post.snsPostId)}
+                  >
+                    삭제
+                  </Button>
+                  <Button
+                      variant="outline"
+                      className="bg-[#f0f0f0] h-[37px] gap-1 rounded-md"
+                      onClick={() => {
+                        setReportTargetId(snsPostId);
+                        setReportTypeCodeId(1); // 게시글(커뮤니티/SNS 모두 1)
+                        setShowReport(true);
+                      }}
+                      disabled={!snsPostId}
+                  >
+                    <Flag className="h-4 w-4" />
+                    <span className="text-sm font-medium">신고</span>
+                  </Button>
+                </div>
               </div>
-            </div>
+            </CardFooter>
+          </Card>
 
-            <div className="space-y-4">
-              {comments.map((comment) => {
-                // 댓글 PK명 자동 추론
-                const commentId =
-                    comment.snsCommentId ?? comment.communityCommentId ?? comment.commentId ?? null;
+          {/* === 댓글 목록 및 입력 === */}
+          <div className="w-[736px] mx-auto mb-12">
+            {/* 댓글 목록 */}
+            {comments.map((comment) => {
+              // 댓글 PK명 자동 추론
+              const commentId =
+                  comment.snsCommentId ??
+                  comment.communityCommentId ??
+                  comment.commentId ??
+                  null;
 
-                return (
-                    <Card key={commentId} className="p-6">
-                      <div className="flex">
-                        <Avatar className="h-10 w-10 bg-[#0000001a]" />
-                        <div className="ml-4 flex-1">
-                          <div className="flex items-center">
-                            <span className="font-medium text-base">{comment.nickname}</span>
-                            <span className="ml-4 text-sm text-[#00000080]">
-                          {new Date(comment.createdAt).toLocaleString()}
-                        </span>
-                          </div>
-                          {editingCommentId === commentId ? (
-                              <div className="flex gap-2 mt-2">
-                                <Input
-                                    value={editingContent}
-                                    onChange={e => setEditingContent(e.target.value)}
-                                    className="flex-1"
-                                />
-                                <Button size="sm" onClick={() => handleUpdateComment(commentId)}>저장</Button>
-                                <Button size="sm" variant="outline" onClick={() => setEditingCommentId(null)}>취소</Button>
-                              </div>
-                          ) : (
-                              <p className="mt-2 text-sm text-black">{comment.content}</p>
-                          )}
-                          <div className="flex gap-2 mt-2">
-                            <Button size="sm" variant="outline" onClick={() => {
-                              setEditingCommentId(commentId);
-                              setEditingContent(comment.content);
-                            }}>수정</Button>
-                            <Button size="sm" variant="destructive" onClick={() => handleDeleteComment(commentId)}>삭제</Button>
-                            {/* 댓글 신고 버튼 → reportTypeCodeId는 무조건 2 */}
-                            <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => {
-                                  setReportTargetId(commentId);
-                                  setReportTypeCodeId(2); // 댓글(커뮤니티/SNS 모두 2)
-                                  setShowReport(true);
-                                }}
-                            >
-                              <Flag className="h-4 w-4" /> 신고
-                            </Button>
-                          </div>
+              return (
+                  <Card key={commentId} className="p-6 mb-4">
+                    <div className="flex">
+                      <Avatar className="h-10 w-10 bg-[#0000001a]" />
+                      <div className="ml-4 flex-1">
+                        <div className="flex items-center">
+                          <span className="font-medium text-base">{comment.nickname}</span>
+                          <span className="ml-4 text-sm text-[#00000080]">
+                        {new Date(comment.createdAt).toLocaleString()}
+                      </span>
+                        </div>
+                        {editingCommentId === commentId ? (
+                            <div className="flex gap-2 mt-2">
+                              <Input
+                                  value={editingContent}
+                                  onChange={(e) => setEditingContent(e.target.value)}
+                                  className="flex-1"
+                              />
+                              <Button size="sm" onClick={() => handleUpdateComment(commentId)}>
+                                저장
+                              </Button>
+                              <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => setEditingCommentId(null)}
+                              >
+                                취소
+                              </Button>
+                            </div>
+                        ) : (
+                            <p className="mt-2 text-sm text-black">{comment.content}</p>
+                        )}
+                        <div className="flex gap-2 mt-2">
+                          <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setEditingCommentId(commentId);
+                                setEditingContent(comment.content);
+                              }}
+                          >
+                            수정
+                          </Button>
+                          <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => handleDeleteComment(commentId)}
+                          >
+                            삭제
+                          </Button>
+                          <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setReportTargetId(commentId);
+                                setReportTypeCodeId(2); // 댓글(커뮤니티/SNS 모두 2)
+                                setShowReport(true);
+                              }}
+                          >
+                            <Flag className="h-4 w-4" /> 신고
+                          </Button>
                         </div>
                       </div>
-                    </Card>
-                );
-              })}
-            </div>
-          </CardFooter>
+                    </div>
+                  </Card>
+              );
+            })}
+
+            {/* 댓글 입력창 */}
+            <form
+                className="flex mt-6"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleCreateComment();
+                }}
+            >
+              <Input
+                  className="flex-1"
+                  placeholder="댓글을 입력하세요"
+                  value={commentInput}
+                  onChange={(e) => setCommentInput(e.target.value)}
+                  maxLength={300}
+              />
+              <Button type="submit" className="ml-2 px-8">
+                등록
+              </Button>
+            </form>
+          </div>
         </main>
 
         {/* 신고 모달 */}
