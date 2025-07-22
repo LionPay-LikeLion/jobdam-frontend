@@ -5,7 +5,7 @@ import { Eye } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { register, checkEmail, checkNickname } from "@/lib/authApi";
+import { register, checkEmail, checkNickname, sendVerificationCode, verifyEmailCode } from "@/lib/authApi";
 import { toast } from "sonner";
 
 export default function SignUp() {
@@ -27,6 +27,14 @@ export default function SignUp() {
   const [nicknameChecked, setNicknameChecked] = useState(false);
   const [isCheckingEmail, setIsCheckingEmail] = useState(false);
   const [isCheckingNickname, setIsCheckingNickname] = useState(false);
+  
+  // 이메일 인증 상태
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [verificationCode, setVerificationCode] = useState("");
+  const [isVerificationSent, setIsVerificationSent] = useState(false);
+  const [isSendingVerification, setIsSendingVerification] = useState(false);
+  const [isVerifyingCode, setIsVerifyingCode] = useState(false);
+  const [registrationCompleted, setRegistrationCompleted] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -38,6 +46,9 @@ export default function SignUp() {
     // 입력값이 변경되면 중복 확인 상태 초기화
     if (name === 'email') {
       setEmailChecked(false);
+      setEmailVerified(false);
+      setIsVerificationSent(false);
+      setVerificationCode("");
     }
     if (name === 'nickname') {
       setNicknameChecked(false);
@@ -123,6 +134,60 @@ export default function SignUp() {
     }
   };
 
+  // 이메일 인증코드 발송
+  const handleSendVerification = async () => {
+    if (!formData.email) {
+      toast.error("이메일을 입력해주세요.");
+      return;
+    }
+
+    if (!emailChecked) {
+      toast.error("먼저 이메일 중복 확인을 해주세요.");
+      return;
+    }
+
+    setIsSendingVerification(true);
+    try {
+      await sendVerificationCode(formData.email);
+      setIsVerificationSent(true);
+      toast.success("인증코드가 이메일로 발송되었습니다.");
+    } catch (error: any) {
+      console.error("Send verification error:", error);
+      toast.error("인증코드 발송에 실패했습니다. 다시 시도해주세요.");
+    } finally {
+      setIsSendingVerification(false);
+    }
+  };
+
+  // 이메일 인증코드 확인
+  const handleVerifyCode = async () => {
+    if (!verificationCode) {
+      toast.error("인증코드를 입력해주세요.");
+      return;
+    }
+
+    if (verificationCode.length !== 6) {
+      toast.error("인증코드는 6자리 숫자입니다.");
+      return;
+    }
+
+    setIsVerifyingCode(true);
+    try {
+      const isValid = await verifyEmailCode(formData.email, verificationCode);
+      if (isValid) {
+        setEmailVerified(true);
+        toast.success("이메일 인증이 완료되었습니다!");
+      } else {
+        toast.error("인증코드가 올바르지 않습니다. 다시 확인해주세요.");
+      }
+    } catch (error: any) {
+      console.error("Verify code error:", error);
+      toast.error("인증 확인에 실패했습니다. 다시 시도해주세요.");
+    } finally {
+      setIsVerifyingCode(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -153,6 +218,12 @@ export default function SignUp() {
       return;
     }
 
+    // 이메일 인증 확인
+    if (!emailVerified) {
+      toast.error("이메일 인증을 완료해주세요.");
+      return;
+    }
+
     if (!nicknameChecked) {
       toast.error("닉네임 중복 확인을 해주세요.");
       return;
@@ -168,8 +239,11 @@ export default function SignUp() {
         phone: formData.phone || undefined,
       });
       
-      toast.success("회원가입이 완료되었습니다! 로그인해주세요.");
-      navigate("/login");
+      setRegistrationCompleted(true);
+      toast.success("회원가입이 완료되었습니다! 이제 로그인할 수 있습니다.");
+      setTimeout(() => {
+        navigate("/login");
+      }, 2000);
     } catch (error: any) {
       console.error("Register error:", error);
       
@@ -215,6 +289,58 @@ export default function SignUp() {
                 {isCheckingEmail ? "확인 중..." : "중복 확인"}
               </Button>
             </div>
+
+            {/* 이메일 인증 섹션 */}
+            {emailChecked && !emailVerified && (
+              <div className="mb-6">
+                <label className="text-sm text-black">이메일 인증</label>
+                <div className="flex gap-2 mb-2">
+                  <Button 
+                    type="button"
+                    className="w-full h-[49px] bg-blue-600 text-white hover:bg-blue-700"
+                    onClick={handleSendVerification}
+                    disabled={isSendingVerification || isLoading}
+                  >
+                    {isSendingVerification ? "발송 중..." : "인증코드 발송"}
+                  </Button>
+                </div>
+                
+                {isVerificationSent && (
+                  <div className="flex gap-2">
+                    <Input 
+                      type="text"
+                      className="h-[49px] flex-1" 
+                      placeholder="6자리 인증코드를 입력하세요"
+                      value={verificationCode}
+                      onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      disabled={isLoading || emailVerified}
+                      maxLength={6}
+                    />
+                    <Button 
+                      type="button"
+                      className="w-[95px] h-[49px] bg-green-600 text-white hover:bg-green-700"
+                      onClick={handleVerifyCode}
+                      disabled={isVerifyingCode || isLoading || emailVerified}
+                    >
+                      {isVerifyingCode ? "확인 중..." : "인증 확인"}
+                    </Button>
+                  </div>
+                )}
+                
+                {isVerificationSent && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    인증코드를 받지 못하셨나요? 스팸함도 확인해주세요.
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* 이메일 인증 완료 표시 */}
+            {emailVerified && (
+              <div className="mb-6 p-3 bg-green-50 border border-green-200 rounded-md">
+                <p className="text-sm text-green-700 font-medium">✓ 이메일 인증이 완료되었습니다!</p>
+              </div>
+            )}
 
             {/* 비밀번호 */}
             <label className="text-sm text-black">비밀번호</label>
