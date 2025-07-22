@@ -105,3 +105,12 @@ export const searchSnsPosts = async (keyword: string) => {
   const response = await api.get("/sns/posts/search", { params: { keyword } });
   return response.data;
 }; 
+
+export const createReport = async (payload: {
+  reportTypeCodeId: number; // 1=게시글, 2=댓글
+  targetId: number;         // 서버 요구대로: post.userId or postId 등
+  reason: string;
+}) => {
+  // api.ts의 baseURL이 '/api' 라면 path는 '/report' 로 충분
+  return (await api.post("/report", payload)).data;
+};

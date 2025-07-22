@@ -17,7 +17,7 @@ import { Image as ImageIcon, Paperclip, Upload, X } from "lucide-react";
 import React, { useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-export default function SNSPostEditPage() {
+export default function SNSPostEdit() {
   const navigate = useNavigate();
   const { postId } = useParams();
   const fileInputRef = useRef<HTMLInputElement>(null);
