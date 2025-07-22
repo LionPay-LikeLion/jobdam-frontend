@@ -1,507 +1,372 @@
-// src/pages/SNSFeedPost.tsx
-
-import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import React, { useEffect, useState, useRef } from "react";
+import { FaHeart, FaComment, FaBookmark, FaPlus } from "react-icons/fa";
+import { FiSearch } from "react-icons/fi";
+import { BsThreeDots } from "react-icons/bs";
+import { Link } from "react-router-dom";
+import clsx from "clsx";
 import {
-  fetchSnsPostDetail,
+  fetchSnsPostsFiltered,
   fetchComments,
+  searchByKeyword,
+  fetchSnsPosts,
   createComment,
-  updateComment,
-  deleteComment,
-  likeSnsPost,
-  unlikeSnsPost,
-  addBookmark,
-  removeBookmark,
-  deleteSnsPost,
+  deleteSnsPost
 } from "@/lib/snsApi";
-import { Avatar } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Bookmark, Flag, Heart, MessageSquare, Download } from "lucide-react";
-import ReportModal from "@/components/ReportModal";
 import { useAuth } from "@/contexts/AuthContext";
-import { FiEdit, FiTrash2, FiFlag } from "react-icons/fi";
 
-// 간단한 커스텀 모달 컴포넌트
-function ConfirmModal({ open, message, onConfirm, onCancel }: { open: boolean, message: string, onConfirm: () => void, onCancel: () => void }) {
-  if (!open) return null;
-  return (
-    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-lg p-8 min-w-[300px]">
-        <p className="mb-6 text-lg text-center">{message}</p>
-        <div className="flex gap-4 justify-center">
-          <Button variant="outline" onClick={onCancel}>취소</Button>
-          <Button onClick={onConfirm}>확인</Button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-const postTags = ["#면접후기", "#포트폴리오", "#이직준비", "#마케팅"];
-
-const SNSFeedPost = () => {
-  const navigate = useNavigate();
-  const { postId } = useParams();
-  const { user } = useAuth();
-  const [post, setPost] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  // 댓글 관련 state
-  const [comments, setComments] = useState<any[]>([]);
-  const [commentInput, setCommentInput] = useState("");
-  const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
-  const [editingContent, setEditingContent] = useState<{ [key: number]: string }>({});
-
-  // 신고 모달 state
-  const [showReport, setShowReport] = useState(false);
-  const [reportTargetId, setReportTargetId] = useState<number | null>(null);
-  const [reportTypeCodeId, setReportTypeCodeId] = useState<number>(1); // 게시글=1, 댓글=2
-
-  // 좋아요 확인 모달 state
-  const [showLikeConfirm, setShowLikeConfirm] = useState(false);
-  const [showBookmarkConfirm, setShowBookmarkConfirm] = useState(false);
-
-  // 게시글 상세
-  useEffect(() => {
-    if (postId) {
-      fetchSnsPostDetail(Number(postId))
-          .then((data) => setPost(data))
-          .finally(() => setLoading(false));
-    }
-  }, [postId]);
-
-  // 댓글 목록
-  useEffect(() => {
-    if (postId) {
-      fetchComments(Number(postId)).then(setComments);
-    }
-  }, [postId]);
-
-  // 댓글 등록
-  const handleCreateComment = async () => {
-    if (!commentInput.trim() || !postId) return;
-    await createComment(Number(postId), commentInput);
-    setCommentInput("");
-    fetchComments(Number(postId)).then(setComments);
-  };
-
-  // 댓글 수정
-  const handleUpdateComment = async (commentId: number) => {
-    if (!editingContent[commentId]?.trim() || !postId) return;
-    await updateComment(commentId, editingContent[commentId]);
-    setEditingCommentId(null);
-    setEditingContent(prev => ({ ...prev, [commentId]: "" })); // 수정 후 내용 초기화
-    fetchComments(Number(postId)).then(setComments);
-  };
-
-  // 댓글 삭제
-  const handleDeleteComment = async (commentId: number) => {
-    if (!commentId) {
-      alert("댓글 ID가 올바르지 않습니다.");
-      return;
-    }
-    await deleteComment(commentId);
-    fetchComments(Number(postId)).then(setComments);
-  };
-
-  // 좋아요 토글
-  const handleToggleLike = async () => {
-    if (!post) return;
-    if (post.liked) {
-      await unlikeSnsPost(post.snsPostId);
-    } else {
-      await likeSnsPost(post.snsPostId);
-    }
-    const updatedPost = await fetchSnsPostDetail(post.snsPostId);
-    setPost(updatedPost);
-  };
-
-  // 북마크 토글
-  const handleToggleBookmark = async () => {
-    if (!post || typeof post.snsPostId !== "number") {
-      console.error("post 또는 postId가 유효하지 않음:", post);
-      return;
-    }
-    if (post.bookmarked) {
-      await removeBookmark(post.snsPostId);
-    } else {
-      await addBookmark(post.snsPostId);
-    }
-    const updatedPost = await fetchSnsPostDetail(post.snsPostId);
-    setPost(updatedPost);
-  };
-
-  // 게시글 수정 페이지 이동
-  const handleEditPost = () => {
-    navigate(`/sns/posts/${postId}/edit`);
-  };
-
-  // 게시글 삭제
-  const handleDeletePost = async (postId: number) => {
-    if (!window.confirm("정말 게시글을 삭제하시겠습니까?")) return;
-
-    try {
-      await deleteSnsPost(postId);
-      navigate("/"); // 삭제 후 루트로 이동
-    } catch (err) {
-      console.error("게시글 삭제 실패:", err);
-      alert("게시글 삭제 중 오류가 발생했습니다.");
-    }
-  };
-
-  // 첨부파일 다운로드
-  const handleDownloadAttachment = async (url: string) => {
-    try {
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = url.split("/").pop() || "attachment";
-      link.target = "_blank";
-      link.style.display = "none";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (error) {
-      window.open(url, "_blank");
-    }
-  };
-
-  if (loading) return <div className="text-center py-10">로딩중...</div>;
-  if (!post) return <div className="text-center py-10">게시글을 찾을 수 없습니다.</div>;
-
-  // post의 실제 PK명 자동 추론
-  const snsPostId = post.snsPostId ?? post.id ?? post.postId ?? null;
-
-  return (
-      <div className="bg-white min-h-screen w-full flex">
-        {/* === SNS 사이드바 영역이 따로 있다면 여기에 컴포넌트 삽입(생략) === */}
-
-        {/* 메인 */}
-        <main className="flex-1 flex flex-col items-center px-8 py-8">
-          <div className="flex flex-col items-center mb-8">
-            <h1 className="text-[40px] font-bold leading-[48px] text-center">피드 상세</h1>
-            <p className="text-base mt-2 text-center">게시글을 자세히 보고 소통할 수 있습니다.</p>
-          </div>
-
-          {/* ===== 게시글 ===== */}
-          <Card className="w-[736px] mx-auto mb-8 relative">
-            {/* 오른쪽 상단 아이콘 */}
-            <div className="absolute top-6 right-8 flex gap-4 z-10">
-              <button onClick={() => setShowLikeConfirm(true)}>
-                <Heart
-                  className={post.liked ? "text-red-500 w-8 h-8" : "text-gray-300 w-8 h-8"}
-                  fill={post.liked ? "red" : "none"}
-                />
-              </button>
-              <button onClick={() => setShowBookmarkConfirm(true)}>
-                <Bookmark
-                  className={post.bookmarked ? "text-blue-500 w-8 h-8" : "text-gray-300 w-8 h-8"}
-                  fill={post.bookmarked ? "#2563eb" : "none"}
-                />
-              </button>
-            </div>
-            <CardHeader className="px-8 pt-8 pb-4">
-              <CardTitle className="text-[32px] font-bold">{post.title}</CardTitle>
-              <div className="flex items-center mt-6">
-                <Avatar className="h-12 w-12 bg-[#0000001a]">
-                  {post.profileImageUrl ? (
-                    <img
-                      src={post.profileImageUrl}
-                      alt={post.nickname}
-                      className="w-full h-full object-cover rounded-full"
-                    />
-                  ) : (
-                    <span className="text-gray-400 text-2xl">👤</span>
-                  )}
-                </Avatar>
-                <div className="ml-4">
-                  <div className="flex items-center">
-                    <span className="font-medium text-lg">{post.nickname}</span>
-                    <span className="ml-4 text-sm text-[#00000080]">
-                    {new Date(post.createdAt).toLocaleString()}
-                  </span>
-                  </div>
-                  <div className="flex mt-4 gap-2">
-                    {postTags.map((tag, index) => (
-                        <Badge
-                            key={`tag-${index}`}
-                            className="bg-[#f0f0f0] text-black rounded-[20px] px-3 py-1 text-sm"
-                        >
-                          {tag}
-                        </Badge>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </CardHeader>
-
-            <CardContent className="px-8 space-y-4">
-              <div className="w-full h-[373px] bg-[#d8d8d880] mb-7 flex items-center justify-center">
-                {post.imageUrl && post.imageUrl !== "string" ? (
-                    <img
-                        src={post.imageUrl}
-                        alt="썸네일"
-                        className="max-h-full max-w-full object-cover rounded-md"
-                    />
-                ) : (
-                    <span className="text-gray-400">이미지 없음</span>
-                )}
-              </div>
-              <p className="text-lg">{post.content}</p>
-              {post.attachmentUrl && post.attachmentUrl !== "string" && (
-                  <div className="bg-[#fff3cd] border border-[#ffeaa7] p-4 rounded-lg">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <span className="font-bold text-[#856404] text-sm">첨부파일:</span>
-                        <span className="ml-2 text-sm text-[#856404]">
-                      {post.attachmentUrl.split("/").pop() || "첨부파일"}
-                    </span>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                            onClick={() => handleDownloadAttachment(post.attachmentUrl)}
-                            className="bg-[#856404] text-white px-3 py-1 rounded text-sm hover:bg-[#6c5b3b] transition-colors flex items-center gap-1"
-                        >
-                          <Download className="w-4 h-4" />
-                          다운로드
-                        </Button>
-                        <Button
-                            onClick={() => {
-                              const url = post.attachmentUrl;
-                              if (url) window.open(url, "_blank");
-                            }}
-                            variant="outline"
-                            className="px-3 py-1 rounded text-sm border-[#856404] text-[#856404] hover:bg-[#856404] hover:text-white transition-colors"
-                        >
-                          새 창에서 열기
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="mt-2 text-xs text-[#856404]">
-                      백엔드 서버가 실행되지 않은 경우 "새 창에서 열기" 버튼을 사용하세요.
-                    </div>
-                  </div>
-              )}
-            </CardContent>
-
-            <CardFooter className="px-8 pt-4 pb-6 border-t border-[#0000001a]">
-              <div className="flex items-center gap-4 w-full">
-                <Button
-                    variant="outline"
-                    className="bg-[#f0f0f0] h-[43px] gap-2 rounded-md">
-                  <MessageSquare className="h-5 w-5" />
-                  <span className="text-sm font-medium">{post.commentCount}</span>
-                </Button>
-                <div className="ml-auto flex gap-2">
-                  {post.userId === user?.id && (
-                    <>
-                      <Button
-                          variant="outline"
-                          className="bg-[#f0f0f0] h-[37px] rounded-md"
-                          onClick={handleEditPost}
-                      >
-                        수정
-                      </Button>
-                      <Button
-                          variant="destructive"
-                          className="bg-[#ff3b30] h-[37px] rounded-md"
-                          onClick={() => handleDeletePost(post.snsPostId)}
-                      >
-                        삭제
-                      </Button>
-                    </>
-                  )}
-                  <Button
-                      variant="outline"
-                      className="bg-[#f0f0f0] h-[37px] gap-1 rounded-md"
-                      onClick={() => {
-                        setReportTargetId(snsPostId);
-                        setReportTypeCodeId(1); // 게시글(커뮤니티/SNS 모두 1)
-                        setShowReport(true);
-                      }}
-                      disabled={!snsPostId}
-                  >
-                    <Flag className="h-4 w-4" />
-                    <span className="text-sm font-medium">신고</span>
-                  </Button>
-                </div>
-              </div>
-            </CardFooter>
-          </Card>
-
-          {/* === 댓글 목록 및 입력 === */}
-          <div className="w-[736px] mx-auto mb-12">
-            {/* 댓글 목록 */}
-            {comments.map((comment) => {
-              // 삭제된 댓글 처리
-              if (comment.boardStatusCode === "DELETED") {
-                return (
-                  <Card key={comment.commentId} className="p-6 mb-4 bg-gray-100 text-gray-400">
-                    <div className="text-center py-4 text-base font-semibold">
-                      삭제된 댓글입니다.
-                    </div>
-                  </Card>
-                );
-              }
-
-              // 댓글의 실제 PK 추출
-              const commentId =
-                comment.snsCommentId ??
-                comment.communityCommentId ??
-                comment.commentId ??
-                null;
-
-              // 정상 댓글 렌더링 (기존 코드)
-              return (
-                <Card key={commentId} className="p-6 mb-4 relative">
-                  {/* 신고 버튼: 오른쪽 위, 빨간색 */}
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="absolute top-2 right-2 text-red-500"
-                    onClick={() => {
-                      setReportTargetId(commentId);
-                      setReportTypeCodeId(2);
-                      setShowReport(true);
-                    }}
-                    title="신고"
-                  >
-                    <FiFlag />
-                  </Button>
-                  <div className="flex">
-                    <Avatar className="h-10 w-10 bg-[#0000001a]">
-                      {comment.profileImageUrl ? (
-                        <img
-                          src={comment.profileImageUrl}
-                          alt={comment.nickname}
-                          className="w-full h-full object-cover rounded-full"
-                        />
-                      ) : (
-                        <span className="text-gray-400 text-xl">👤</span>
-                      )}
-                    </Avatar>
-                    <div className="ml-4 flex-1">
-                      <div className="flex items-center">
-                        <span className="font-medium text-base">{comment.nickname}</span>
-                        <span className="ml-4 text-sm text-[#00000080]">
-                          {new Date(comment.createdAt).toLocaleString()}
-                        </span>
-                      </div>
-                      {String(editingCommentId) === String(commentId) ? (
-                        <div className="flex gap-2 mt-2">
-                          <Input
-                            value={editingContent[commentId] ?? ""}
-                            onChange={e =>
-                              setEditingContent(prev => ({
-                                ...prev,
-                                [commentId]: e.target.value,
-                              }))
-                            }
-                            className="flex-1"
-                          />
-                          <Button size="sm" onClick={() => handleUpdateComment(commentId)}>
-                            저장
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setEditingCommentId(null)}
-                          >
-                            취소
-                          </Button>
-                        </div>
-                      ) : (
-                        <p className="mt-2 text-sm text-black">{comment.content}</p>
-                      )}
-                      {/* 수정/삭제 버튼: 오른쪽 아래 */}
-                      <div className="flex gap-2 mt-2 justify-end">
-                        {String(comment.userId) === String(user?.id) && (
-                          <>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              onClick={() => {
-                                setEditingCommentId(commentId);
-                                setEditingContent(prev => ({
-                                  ...prev,
-                                  [commentId]: comment.content,
-                                }));
-                              }}
-                              title="수정"
-                            >
-                              <FiEdit />
-                            </Button>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              onClick={() => handleDeleteComment(commentId)}
-                              title="삭제"
-                            >
-                              <FiTrash2 />
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              );
-            })}
-
-            {/* 댓글 입력창 */}
-            <form
-                className="flex mt-6"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleCreateComment();
-                }}
-            >
-              <Input
-                  className="flex-1"
-                  placeholder="댓글을 입력하세요"
-                  value={commentInput}
-                  onChange={(e) => setCommentInput(e.target.value)}
-                  maxLength={300}
-              />
-              <Button type="submit" className="ml-2 px-8">
-                등록
-              </Button>
-            </form>
-          </div>
-        </main>
-
-        {/* 신고 모달 */}
-        <ReportModal
-            open={showReport}
-            onClose={() => setShowReport(false)}
-            targetId={reportTargetId}
-            reportTypeCodeId={reportTypeCodeId}
-        />
-
-        {/* 좋아요 확인 모달 */}
-        <ConfirmModal
-          open={showLikeConfirm}
-          message={post.liked ? "좋아요를 취소하시겠습니까?" : "좋아요 하시겠습니까?"}
-          onCancel={() => setShowLikeConfirm(false)}
-          onConfirm={async () => {
-            setShowLikeConfirm(false);
-            await handleToggleLike();
-          }}
-        />
-        {/* 북마크 확인 모달 */}
-        <ConfirmModal
-          open={showBookmarkConfirm}
-          message={post.bookmarked ? "북마크를 취소하시겠습니까?" : "북마크 하시겠습니까?"}
-          onCancel={() => setShowBookmarkConfirm(false)}
-          onConfirm={async () => {
-            setShowBookmarkConfirm(false);
-            await handleToggleBookmark();
-          }}
-        />
-      </div>
-  );
+const BADGE_MAP = {
+  GENERAL: { label: "구직자", className: "bg-blue-100 text-blue-700 border border-blue-300" },
+  HUNTER: { label: "컨설턴트", className: "bg-green-100 text-green-700 border border-green-300" },
+  EMPLOYEE: { label: "기업", className: "bg-yellow-100 text-yellow-700 border border-yellow-300" }
 };
 
-export default SNSFeedPost;
+function formatRelativeTime(dateString: string): string {
+  if (!dateString) return "";
+  const now = new Date();
+  const past = new Date(dateString);
+  const diffSec = Math.floor((now.getTime() - past.getTime()) / 1000);
+  if (diffSec < 60) return `${diffSec}초 전`;
+  if (diffSec < 3600) return `${Math.floor(diffSec / 60)}분 전`;
+  if (diffSec < 86400) return `${Math.floor(diffSec / 3600)}시간 전`;
+  if (diffSec < 86400 * 7) return `${Math.floor(diffSec / 86400)}일 전`;
+  return past.toLocaleDateString("ko-KR");
+}
+
+export default function SNSFeedHome() {
+  const [posts, setPosts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [memberType, setMemberType] = useState<string>("");
+  const [sort, setSort] = useState<string>("latest");
+  const [keyword, setKeyword] = useState("");
+  const [previewComments, setPreviewComments] = useState<Record<number, any[]>>({});
+  const [showMenuId, setShowMenuId] = useState<number | null>(null);
+  const [fetching, setFetching] = useState(false);
+  const [offset, setOffset] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+
+  const commentInputRefs = useRef<{ [key: number]: HTMLInputElement | null }>({});
+
+  const { user } = useAuth();
+
+  // 점세개 바깥 클릭시 메뉴 닫힘
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (!(e.target as HTMLElement).closest(".feed-menu-dropdown")) {
+        setShowMenuId(null);
+      }
+    };
+    if (showMenuId !== null) document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [showMenuId]);
+
+  // 최초/필터/검색시 첫페이지 로딩
+  useEffect(() => {
+    setLoading(true);
+    setOffset(0);
+    setHasMore(true);
+    fetchSnsPostsFiltered(memberType, sort, 0, 7)
+        .then(data => {
+          setPosts(data);
+          setOffset(7);
+        })
+        .catch(() => setPosts([]))
+        .finally(() => setLoading(false));
+  }, [memberType, sort, keyword]);
+
+  // 무한스크롤
+  useEffect(() => {
+    const onScroll = () => {
+      if (fetching || loading || !hasMore) return;
+      if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
+        setFetching(true);
+        fetchSnsPostsFiltered(memberType, sort, offset, 7)
+            .then(data => {
+              if (!data || data.length === 0) {
+                setHasMore(false);
+              } else {
+                setPosts(prev => [...prev, ...data]);
+                setOffset(prev => prev + data.length);
+              }
+            })
+            .finally(() => setFetching(false));
+      }
+    };
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [fetching, loading, hasMore, offset, memberType, sort]);
+
+  // 댓글 2개만 미리보기 (최신순)
+  useEffect(() => {
+    if (!posts.length) return;
+    setPreviewComments({});
+    posts.forEach(post => {
+      if (!post.snsPostId) return;
+      fetchComments(post.snsPostId)
+          .then(comments => {
+            const filtered = (comments || [])
+                .filter(c => c.boardStatusCode !== "DELETED")
+                .slice(0, 2);
+            setPreviewComments(prev => ({
+              ...prev,
+              [post.snsPostId]: filtered
+            }));
+          });
+    });
+  }, [posts]);
+
+  const handleCreateComment = async (postId: number) => {
+    const val = commentInputRefs.current[postId]?.value ?? "";
+    if (!val.trim()) return;
+    await createComment(postId, val);
+    commentInputRefs.current[postId]!.value = "";
+    fetchComments(postId).then(comments => {
+      setPreviewComments(prev => ({
+        ...prev,
+        [postId]: (comments || []).filter(c => c.boardStatusCode !== "DELETED").slice(0, 2)
+      }));
+    });
+  };
+
+  const handleDeletePost = async (postId: number) => {
+    if (!window.confirm("정말 게시글을 삭제하시겠습니까?")) return;
+    await deleteSnsPost(postId);
+    setPosts(prev => prev.filter(post => post.snsPostId !== postId));
+  };
+
+  const isPremium = (subscriptionLevelCode: string) => subscriptionLevelCode === "PREMIUM";
+  const visiblePosts = posts.filter(post => post.boardStatusCode !== "DELETED");
+
+  if (loading) return <div className="text-center py-10 text-lg">로딩중...</div>;
+
+  return (
+      <div className="bg-[#f6f6f7] min-h-screen pb-10 w-full flex justify-center">
+        <div className="w-full max-w-[540px] mx-auto flex flex-col px-1 sm:px-0">
+          {/* 필터 바 */}
+          <div className="flex items-center gap-2 mt-8 mb-5 w-full bg-white rounded-2xl shadow border border-[#ececec] px-4 py-3 justify-between">
+            <div className="flex gap-2 flex-1">
+              <select
+                  className="h-10 w-[90px] border border-gray-300 rounded px-3 text-sm bg-white"
+                  value={memberType}
+                  onChange={e => setMemberType(e.target.value)}
+              >
+                <option value="">전체</option>
+                <option value="GENERAL">구직자</option>
+                <option value="HUNTER">컨설턴트</option>
+                <option value="EMPLOYEE">기업</option>
+              </select>
+              <select value={sort} onChange={e => setSort(e.target.value)}
+                      className="h-10 w-[90px] border border-gray-300 rounded px-3 text-sm bg-white">
+                <option value="latest">최신순</option>
+                <option value="likes">인기순</option>
+              </select>
+              <input
+                  type="text"
+                  value={keyword}
+                  onChange={e => setKeyword(e.target.value)}
+                  placeholder="검색"
+                  className="border border-gray-300 bg-white px-3 py-2 rounded w-[140px] text-sm"
+              />
+              {/* 검색 버튼 */}
+              <button
+                  className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-800 text-white ml-1"
+                  onClick={async () => {
+                    if (!keyword.trim()) return;
+                    let data: any[] = await searchByKeyword(keyword);
+                    setPosts(
+                        data.map(post => ({
+                          ...post,
+                          profileImageUrl: post.profileImageUrl ?? ""
+                        }))
+                    );
+                  }}
+                  title="검색"
+              >
+                <FiSearch className="w-5 h-5" />
+              </button>
+            </div>
+            <button
+                onClick={() => window.location.href = '/sns-post-write'}
+                className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-800 text-white"
+                title="글 작성"
+            >
+              <FaPlus />
+            </button>
+          </div>
+          {/* 피드 카드 */}
+          <div className="flex flex-col gap-8 w-full">
+            {visiblePosts.map(post => {
+              const isMine = user?.id === post.userId;
+              const isPremiumUser = isPremium(post.subscriptionLevelCode);
+              const badgeInfo = BADGE_MAP[post.memberTypeCode] || null;
+              return (
+                  <div
+                      key={post.snsPostId}
+                      className={clsx(
+                          "w-full rounded-2xl shadow-lg bg-white overflow-hidden flex flex-col relative",
+                          isPremiumUser
+                              ? "border-2 border-yellow-400"
+                              : "border border-[#ececec]",
+                          "transition hover:shadow-2xl"
+                      )}
+                      style={{ minWidth: 0 }}
+                  >
+                    {/* --- 점세개 메뉴(더보기) --- */}
+                    <div className="absolute top-5 right-7 feed-menu-dropdown">
+                      <button
+                          className="text-gray-400 hover:text-gray-700 text-xl"
+                          onClick={e => {
+                            e.stopPropagation();
+                            setShowMenuId(showMenuId === post.snsPostId ? null : post.snsPostId);
+                          }}
+                          title="더보기"
+                      >
+                        <BsThreeDots />
+                      </button>
+                      {/* 드롭다운 메뉴 */}
+                      {showMenuId === post.snsPostId && (
+                          <div
+                              className="absolute right-0 mt-2 z-40 bg-white border border-gray-200 rounded shadow-lg py-1 min-w-[120px]"
+                          >
+                            {isMine && (
+                                <>
+                                  <Link
+                                      to={`/sns-posts/${post.snsPostId}/edit`}
+                                      className="block px-5 py-2 hover:bg-gray-100 text-sm text-gray-800"
+                                      onClick={() => setShowMenuId(null)}
+                                  >
+                                    수정
+                                  </Link>
+                                  <button
+                                      onClick={() => {
+                                        setShowMenuId(null);
+                                        handleDeletePost(post.snsPostId);
+                                      }}
+                                      className="block w-full text-left px-5 py-2 hover:bg-gray-100 text-sm text-red-500"
+                                  >
+                                    삭제
+                                  </button>
+                                </>
+                            )}
+                            {!isMine && (
+                                <button
+                                    onClick={() => setShowMenuId(null)}
+                                    className="block w-full text-left px-5 py-2 hover:bg-gray-100 text-sm text-gray-700"
+                                >
+                                  신고
+                                </button>
+                            )}
+                          </div>
+                      )}
+                    </div>
+                    {/* 상단 프로필/닉네임/뱃지/프리미엄/시간/왕관 */}
+                    <div className="flex items-center px-5 pt-4 pb-2 relative">
+                      <div className="relative">
+                        {isPremiumUser && (
+                            <span className="absolute -top-2 -left-2 z-10 animate-pulse">
+                                                <svg width="26" height="26" viewBox="0 0 32 32">
+                                                    <g>
+                                                        <circle cx="16" cy="16" r="13" fill="gold" opacity="0.28"/>
+                                                        <path d="M16 6l3.2 7.2 7.8.8-6 5.2 1.6 7.8L16 21l-6.6 3.9 1.6-7.8-6-5.2 7.8-.8z"
+                                                              fill="#ffd700" stroke="#ffea00" strokeWidth="1"/>
+                                                    </g>
+                                                </svg>
+                                            </span>
+                        )}
+                        {post.profileImageUrl ? (
+                            <img
+                                src={post.profileImageUrl}
+                                alt={post.nickname}
+                                className="w-10 h-10 rounded-full object-cover border-2 border-[#ededed] mr-3"
+                            />
+                        ) : (
+                            <span className="w-10 h-10 flex items-center justify-center rounded-full bg-[#e3e3e3] text-xl text-gray-400 mr-3">👤</span>
+                        )}
+                      </div>
+                      <span className="font-semibold text-black text-base mr-2">{post.nickname}</span>
+                      {badgeInfo && (
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ml-1 mr-1 ${badgeInfo.className}`}>
+                                            {badgeInfo.label}
+                                        </span>
+                      )}
+                      {isPremiumUser && (
+                          <span className="ml-1 text-yellow-500 text-xs font-bold tracking-wider border border-yellow-400 px-1 rounded">PREMIUM</span>
+                      )}
+                      <span className="ml-auto text-xs text-gray-400">{formatRelativeTime(post.createdAt)}</span>
+                    </div>
+                    {/* 제목 */}
+                    <div className="px-5 pb-1 pt-2">
+                      <div className="font-bold text-xl text-black leading-tight mb-1">
+                        {post.title}
+                      </div>
+                    </div>
+                    {/* 이미지 */}
+                    <Link to={`/${post.snsPostId}`} className="block">
+                      <div className="bg-[#eaeaea] w-full h-[410px] flex items-center justify-center">
+                        {post.imageUrl && post.imageUrl !== "string" && post.imageUrl !== "" ? (
+                            <img src={post.imageUrl} alt="썸네일"
+                                 className="object-contain w-full h-full max-h-[410px] bg-white" />
+                        ) : (
+                            <div className="w-full h-full flex items-center justify-center text-gray-600 bg-[#f3f3f3]">
+                              <span className="text-4xl">📷</span>
+                            </div>
+                        )}
+                      </div>
+                    </Link>
+                    {/* 좋아요/댓글/북마크 */}
+                    <div className="flex items-center px-5 py-2 gap-6">
+                      <FaHeart className={clsx(post.liked ? "text-red-500" : "text-gray-400", "w-6 h-6 cursor-pointer")} />
+                      <FaComment className="text-blue-500 w-6 h-6" />
+                      <FaBookmark className={clsx(post.bookmarked ? "text-yellow-400" : "text-gray-400", "w-6 h-6 ml-auto cursor-pointer")} />
+                    </div>
+                    {/* 좋아요/댓글수/본문/댓글 */}
+                    <div className="px-5 pb-3">
+                      <div className="text-gray-700 text-sm font-semibold mb-1">
+                        {post.likeCount > 0 && <>{post.likeCount.toLocaleString()}명이 좋아합니다</>}
+                      </div>
+                      <div className="flex items-center mb-1">
+                        <span className="font-semibold text-black">{post.nickname}</span>
+                        <span className="ml-2 text-gray-800 line-clamp-2">{post.content}</span>
+                      </div>
+                      {/* 댓글 2개 미리보기 */}
+                      <div className="mt-2">
+                        {(previewComments[post.snsPostId] || []).map(comment => (
+                            <div key={comment.commentId} className="flex items-center text-gray-600 text-sm mb-1">
+                              <span className="font-bold mr-2 text-black">{comment.nickname}</span>
+                              <span>{comment.content}</span>
+                            </div>
+                        ))}
+                        {post.commentCount > 2 && (
+                            <Link to={`/${post.snsPostId}`} className="text-gray-400 text-xs hover:underline mt-1 block">
+                              댓글 {post.commentCount}개 모두 보기
+                            </Link>
+                        )}
+                      </div>
+                      {/* --- 댓글 입력 바로 작성 --- */}
+                      <form
+                          className="flex mt-3 gap-2"
+                          onSubmit={e => {
+                            e.preventDefault();
+                            handleCreateComment(post.snsPostId);
+                          }}
+                      >
+                        <input
+                            ref={el => (commentInputRefs.current[post.snsPostId] = el)}
+                            type="text"
+                            placeholder="댓글 달기..."
+                            className="flex-1 border border-gray-200 rounded px-3 py-2 text-sm"
+                            maxLength={200}
+                        />
+                        <button type="submit" className="px-5 rounded bg-gray-800 text-white text-sm font-bold">등록</button>
+                      </form>
+                    </div>
+                  </div>
+              );
+            })}
+            {!loading && !hasMore && (
+                <div className="py-7 text-center text-gray-400 text-sm">더 이상 불러올 게시글이 없습니다.</div>
+            )}
+          </div>
+        </div>
+      </div>
+  );
+}
