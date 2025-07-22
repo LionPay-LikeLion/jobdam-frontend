@@ -104,6 +104,51 @@ export default function CommunityBoardPostDetail(): JSX.Element {
     }
   };
 
+  const handleEditPost = () => {
+    navigate(`/communities/${id}/board/${boardId}/post/edit/${postId}`);
+  };
+
+  const handleDeletePost = async () => {
+    if (!confirm("정말로 이 게시글을 삭제하시겠습니까?")) {
+      return;
+    }
+
+    if (!user?.id) {
+      toast({
+        title: "인증 오류",
+        description: "사용자 정보를 가져올 수 없습니다.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await api.delete(`/communities/${id}/boards/${boardId}/posts/${postId}?userId=${user.id}`);
+      
+      toast({
+        title: "성공",
+        description: "게시글이 삭제되었습니다.",
+      });
+      
+      navigate(`/communities/${id}/board/${boardId}`);
+    } catch (error: any) {
+      console.error('게시글 삭제 실패:', error);
+      
+      let errorMessage = "게시글 삭제에 실패했습니다.";
+      if (error.response?.status === 403) {
+        errorMessage = "게시글을 삭제할 권한이 없습니다.";
+      } else if (error.response?.data) {
+        errorMessage = error.response.data;
+      }
+      
+      toast({
+        title: "오류",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    }
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
@@ -244,11 +289,17 @@ export default function CommunityBoardPostDetail(): JSX.Element {
             <div className="flex gap-4">
               {user?.nickname === post.userNickname && (
                 <>
-                  <button className="px-4 py-2 border rounded-md text-sm flex items-center gap-1">
+                  <button 
+                    className="px-4 py-2 border rounded-md text-sm flex items-center gap-1 hover:bg-gray-50"
+                    onClick={handleEditPost}
+                  >
                     <FiEdit />
                     수정
                   </button>
-                  <button className="px-4 py-2 border rounded-md text-sm flex items-center gap-1">
+                  <button 
+                    className="px-4 py-2 border rounded-md text-sm flex items-center gap-1 hover:bg-red-50 text-red-600"
+                    onClick={handleDeletePost}
+                  >
                     <FiTrash2 />
                     삭제
                   </button>

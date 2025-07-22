@@ -17,6 +17,7 @@ import SNSFeedPost from "@/pages/SNSFeedPost";
 import SNSFeedMy from "@/pages/SNSFeedMy";
 import SNSMessage from "@/pages/SNSMessage";
 import SNSPostWrite from "@/pages/SNSPostWrite";
+import SNSPostEdit from "@/pages/SNSPostEdit";
 import CommunityPage from "@/pages/CommunityPage";
 import CommunityCreate from "@/pages/CommunityCreate";
 import CommunityLayout from "@/pages/layouts/CommunityLayout";
@@ -28,23 +29,25 @@ import CommunityMemberList from "@/pages/CommunityMemberList";
 import CommunityMessenger from "@/pages/CommunityMessenger";
 import CommunityManagement from "@/pages/CommunityManagement";
 import CommunityBoardCreate from "@/pages/CommunityBoardCreate";
+import CommunityPostWrite from "@/pages/CommunityPostWrite";
+import CommunityPostEdit from "@/pages/CommunityPostEdit";
 import PointPurchase from "@/pages/PointPurchase";
 import MyPage from "@/pages/MyPage";
 import PremiumUpgrade from "@/pages/PremiumUpgrade";
+import CommunityPremiumUpgrade from "@/pages/CommunityPremiumUpgrade";
 import NotFound from "./pages/NotFound";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import PaymentSuccess from "@/pages/PaymentSuccess.tsx";
 import MembershipTypeRequest from "@/pages/MembershipTypeRequest";
-import MyPageLayout from "@/pages/MyPageLayout";
 import PaymentHistoryPage from "@/pages/PaymentHistoryPage";
 import PointHistoryPage from "@/pages/PointHistoryPage";
 import AdminUserManagement from "@/pages/AdminUserManagement.tsx";
 import AdminReport from "@/pages/AdminReport.tsx";
-// Admin 관련 페이지 추가 시 import!
+import AdminRoleChange from "@/pages/AdminRoleChange.tsx";
+import ActivityHistoryPage from "@/pages/ActivityHistoryPage";
 
 const queryClient = new QueryClient();
 
-// 루트 경로 컴포넌트 - 로그인 상태에 따라 다른 페이지 렌더링
 const RootComponent = () => {
     const { isAuthenticated, isLoading } = useAuth();
 
@@ -66,7 +69,7 @@ const AppRoutes = () => {
 
     return (
         <Routes>
-            {/* 루트 경로 - 로그인 상태에 따라 다르게 처리 */}
+            {/* 루트 경로 */}
             <Route path="/" element={<RootComponent />}>
                 {isAuthenticated && (
                     <>
@@ -75,41 +78,45 @@ const AppRoutes = () => {
                         <Route path=":postId" element={<SNSFeedPost />} />
                         <Route path="messages" element={<SNSMessage />} />
                         <Route path="sns-post-write" element={<SNSPostWrite />} />
+                        <Route path="sns/posts/:postId/edit" element={<SNSPostEdit />} />
                     </>
                 )}
             </Route>
 
-            {/* 로그인된 사용자만 접근 가능한 라우트들 */}
+            {/* 로그인 후 접근 */}
             {isAuthenticated && (
                 <>
                     <Route path="/mypage" element={<MyPage />} />
                     <Route path="/point-purchase" element={<PointPurchase />} />
                     <Route path="/premium-upgrade" element={<PremiumUpgrade />} />
-                    <Route path="/community" element={<CommunityPage />} />
-                    <Route path="/community/create" element={<CommunityCreate />} />
-                    <Route path="/community/:id" element={<CommunityLayout />}>
+                    <Route path="/communities" element={<CommunityPage />} />
+                    <Route path="/communities/create" element={<CommunityCreate />} />
+                    <Route path="/communities/:id" element={<CommunityLayout />}>
                         <Route index element={<CommunityHome />} />
                         <Route path="board" element={<CommunityBoardList />} />
                         <Route path="board/:boardId" element={<CommunityBoardMain />} />
+                        <Route path="board/:boardId/post/write" element={<CommunityPostWrite />} />
+                        <Route path="board/:boardId/post/edit/:postId" element={<CommunityPostEdit />} />
                         <Route path="board/detail/:postId" element={<CommunityBoardPostDetail />} />
                         <Route path="members" element={<CommunityMemberList />} />
                         <Route path="messenger" element={<CommunityMessenger />} />
                         <Route path="management" element={<CommunityManagement />} />
                         <Route path="board/create" element={<CommunityBoardCreate />} />
+                        <Route path="upgrade" element={<CommunityPremiumUpgrade />} />
                     </Route>
                     <Route path="/payment-success" element={<PaymentSuccess />} />
                     <Route path="/membership-type-request" element={<MembershipTypeRequest />} />
                     <Route path="/mypage/payments" element={<PaymentHistoryPage />} />
                     <Route path="/mypage/points" element={<PointHistoryPage />} />
-
+                    <Route path="/activity-history" element={<ActivityHistoryPage />} />
                     {/* ------ 어드민 영역 ------ */}
                     <Route path="/admin/users" element={<AdminUserManagement />} />
                     <Route path="/admin/report" element={<AdminReport />} />
-                    {/* 신고 관리, 전환요청 등은 아래처럼 확장 가능! */}
-                    {/* <Route path="/admin/report" element={<AdminReportManagement />} /> */}
+                    <Route path="/admin/type-request" element={<AdminRoleChange />} />
                 </>
             )}
 
+            {/* 비로그인 전용 */}
             {!isAuthenticated && (
                 <>
                     <Route path="/login" element={<LoginPage />} />
@@ -119,29 +126,28 @@ const AppRoutes = () => {
                 </>
             )}
 
-      {/* ✅ Add this for Google redirect */}
-      <Route path="/api/oauth/google/callback" element={<GoogleRedirectHandler />} />
-
-      {/* 404 */}
-      <Route path="*" element={<NotFound />} />
-    </Routes>
-  );
+            {/* 구글 OAuth 콜백 */}
+            <Route path="/api/oauth/google/callback" element={<GoogleRedirectHandler />} />
+            {/* 404 */}
+            <Route path="*" element={<NotFound />} />
+        </Routes>
+    );
 };
 
 const App = () => (
-  <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
-    <BrowserRouter> {/* Moved up here */}
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <AppRoutes />
-          </TooltipProvider>
-        </AuthProvider>
-      </QueryClientProvider>
-    </BrowserRouter>
-  </GoogleOAuthProvider>
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+        <BrowserRouter>
+            <QueryClientProvider client={queryClient}>
+                <AuthProvider>
+                    <TooltipProvider>
+                        <Toaster />
+                        <Sonner />
+                        <AppRoutes />
+                    </TooltipProvider>
+                </AuthProvider>
+            </QueryClientProvider>
+        </BrowserRouter>
+    </GoogleOAuthProvider>
 );
 
 export default App;

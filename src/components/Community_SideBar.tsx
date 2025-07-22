@@ -27,11 +27,10 @@ const Community_SideBar = () => {
   };
 
   const menuItems = [
-    { label: "커뮤니티 홈", path: `/community/${id}`, alwaysEnabled: true },
-    { label: "게시판", path: `/community/${id}/board`, alwaysEnabled: false },
-    { label: "멤버 목록", path: `/community/${id}/members`, alwaysEnabled: false },
-    { label: "메신저", path: `/community/${id}/messenger`, alwaysEnabled: false },
-    { label: "관리", path: `/community/${id}/management`, alwaysEnabled: false },
+    { label: "커뮤니티 홈", path: `/communities/${id}`, alwaysEnabled: true },
+    { label: "게시판", path: `/communities/${id}/board`, alwaysEnabled: false },
+    { label: "멤버 목록", path: `/communities/${id}/members`, alwaysEnabled: false },
+    { label: "관리", path: `/communities/${id}/management`, alwaysEnabled: false },
   ];
 
   const getIsActive = (path: string) => {

@@ -9,9 +9,6 @@ const SNS_SideBar = () => {
   const menuItems = [
     { label: "피드 보기", path: "/" },
     { label: "내 피드", path: "/mine" },
-    { label: "메시지함", path: "/messages" },
-    { label: "통계", path: "/stats" },
-    { label: "설정", path: "/settings" },
   ];
 
   const getIsActive = (path: string) => {
@@ -19,9 +16,9 @@ const SNS_SideBar = () => {
   };
 
   return (
-    <aside className="w-[291px] border-r border-gray-200 px-6 pt-6">
+    <aside className="w-[291px] border-r border-gray-200 px-6 pt-6 sticky top-0 h-screen flex flex-col">
       <h2 className="text-2xl font-medium mb-6">SNS 피드</h2>
-      <nav className="space-y-2">
+      <nav className="space-y-2 flex-1 overflow-y-auto">
         {menuItems.map((item) => (
           <button
             key={item.path}
