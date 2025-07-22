@@ -58,6 +58,23 @@ const getBoardTypeColor = (boardTypeCode: string) => {
     }
 };
 
+const getBoardTypeName = (boardTypeCode: string) => {
+    switch (boardTypeCode) {
+        case "GENERAL":
+            return "자유 게시판";
+        case "NOTICE":
+            return "공지사항";
+        case "QNA":
+            return "Q&A";
+        case "ANNOUNCEMENT":
+            return "자료공유";
+        case "FEEDBACK":
+            return "스터디 모집";
+        default:
+            return "기타";
+    }
+};
+
 export const CommunityBoardList = () => {
     const { id } = useParams();
     const navigate = useNavigate();
