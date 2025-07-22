@@ -48,7 +48,7 @@ const CommunityManagement = () => {
     if (!communityInfo) return null;
 
     // 소유자 여부
-    const isOwner = String(user?.userId) === String(communityInfo.members?.find((m: any) => m.role === "OWNER")?.userId);
+    const isOwner = String(user?.id) === String(communityInfo.members?.find((m: any) => m.role === "OWNER")?.userId);
     const isPremium = communityInfo?.plan?.levelCode === "PREMIUM" || communityInfo?.plan?.levelName?.includes("프리미엄");
     const getPlanColor = (code: string) => code === "PREMIUM" ? "text-orange-500" : "text-purple-600";
     const roleIcon = (role: string) =>

@@ -211,7 +211,7 @@ export default function SNSMessage(): JSX.Element {
               <CardContent className="p-6">
                 <div className="space-y-4 max-h-96 overflow-y-auto">
                   {conversation.map((msg) => {
-                    const isMine = user && (String(msg.senderUserId ?? msg.senderId) === String(user.userId));
+                    const isMine = user && (String(msg.senderUserId ?? msg.senderId) === String(user.id));
                     return (
                       <div
                         key={msg.messageId}
