@@ -26,6 +26,7 @@ export default function PaymentHistoryPage() {
     const [loading, setLoading] = useState(true);
     const [currentPoint, setCurrentPoint] = useState<number>(0);
     const [refundLoading, setRefundLoading] = useState<string>(""); // merchantUid
+    const [showFullUid, setShowFullUid] = useState<string | null>(null);
 
     useEffect(() => {
         api.get<UserProfile>("/user/profile").then(res => {
@@ -86,7 +87,7 @@ export default function PaymentHistoryPage() {
     const formatDate = (iso: string) => {
         if (!iso) return "-";
         const d = new Date(iso);
-        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}\n${pad(d.getHours())}:${pad(d.getMinutes())}`;
     };
     const pad = (n: number) => (n < 10 ? "0" + n : n);
 
@@ -132,50 +133,52 @@ export default function PaymentHistoryPage() {
                         <div className="overflow-x-auto">
                             <table className="min-w-full border rounded-xl text-center">
                                 <thead>
-                                <tr className="bg-gray-50">
-                                    <th className="py-3 px-2">일자</th>
-                                    <th className="py-3 px-2">결제금액</th>
-                                    <th className="py-3 px-2">포인트변동</th>
-                                    <th className="py-3 px-2">결제수단</th>
-                                    <th className="py-3 px-2">상태</th>
-                                    <th className="py-3 px-2">결제번호</th>
-                                    <th className="py-3 px-2">환불</th>
-                                </tr>
+                                    <tr className="bg-gray-50">
+                                        <th className="py-3 px-2">일자</th>
+                                        <th className="py-3 px-2">결제금액</th>
+                                        <th className="py-3 px-2">포인트변동</th>
+                                        <th className="py-3 px-2">결제수단</th>
+                                        <th className="py-3 px-2">상태</th>
+                                        <th className="py-3 px-2">결제번호</th>
+                                        <th className="py-3 px-2">환불</th>
+                                    </tr>
                                 </thead>
                                 <tbody>
-                                {list.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={7} className="text-gray-400 py-10">내역 없음</td>
-                                    </tr>
-                                ) : (
-                                    list.map((item, idx) => {
-                                        const bgClass = idx % 2 === 0 ? "bg-white" : "bg-gray-50";
-                                        return (
-                                            <tr key={item.merchantUid} className={bgClass}>
-                                                <td>{formatDate(item.createdAt)}</td>
-                                                <td>{item.amount ? item.amount.toLocaleString() + "원" : "-"}</td>
-                                                <td>
-                                                    {pointCell(item)}
-                                                </td>
-                                                <td>{item.method || "-"}</td>
-                                                <td>{statusLabel(item.paymentStatus)}</td>
-                                                <td>{item.impUid || item.merchantUid}</td>
-                                                <td>
-                                                    <Button
-                                                        size="sm"
-                                                        className="rounded px-4"
-                                                        variant="outline"
-                                                        disabled={!canRefund(item) || refundLoading === item.merchantUid}
-                                                        onClick={() => handleRefund(item)}
-                                                        title={!canRefund(item) ? refundDisabledReason(item) : ""}
-                                                    >
-                                                        {refundLoading === item.merchantUid ? "환불중..." : "환불"}
-                                                    </Button>
-                                                </td>
-                                            </tr>
-                                        )
-                                    })
-                                )}
+                                    {list.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={7} className="text-gray-400 py-10">내역 없음</td>
+                                        </tr>
+                                    ) : (
+                                        list.map((item, idx) => {
+                                            const bgClass = idx % 2 === 0 ? "bg-white" : "bg-gray-50";
+                                            return (
+                                                <tr key={item.merchantUid} className={bgClass}>
+                                                    <td className="whitespace-pre-line text-center">{formatDate(item.createdAt)}</td>
+                                                    <td>{item.amount ? item.amount.toLocaleString() + "원" : "-"}</td>
+                                                    <td>
+                                                        {pointCell(item)}
+                                                    </td>
+                                                    <td>{item.method || "-"}</td>
+                                                    <td>{statusLabel(item.paymentStatus)}</td>
+                                                    <td className="break-all whitespace-pre-line text-center min-w-[80px] max-w-[160px]">
+                                                        {(item.impUid || item.merchantUid)?.replace(/(.{16})/g, "$1\n")}
+                                                    </td>
+                                                    <td>
+                                                        <Button
+                                                            size="sm"
+                                                            className="rounded px-4"
+                                                            variant="outline"
+                                                            disabled={!canRefund(item) || refundLoading === item.merchantUid}
+                                                            onClick={() => handleRefund(item)}
+                                                            title={!canRefund(item) ? refundDisabledReason(item) : ""}
+                                                        >
+                                                            {refundLoading === item.merchantUid ? "환불중..." : "환불"}
+                                                        </Button>
+                                                    </td>
+                                                </tr>
+                                            )
+                                        })
+                                    )}
                                 </tbody>
                             </table>
                         </div>

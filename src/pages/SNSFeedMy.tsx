@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FaRegThumbsUp, FaRegCommentDots } from "react-icons/fa";
+import { FaHeart, FaComment } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { fetchMySnsPosts, deleteSnsPost } from "@/lib/snsApi";
 import { useAuth } from "@/contexts/AuthContext";
@@ -22,7 +22,7 @@ const SNSFeedMy = () => {
   if (loading) return <div className="text-center py-10">로딩중...</div>;
 
   const handleEditPost = (id: number) => {
-    console.log("Edit post:", id);
+    navigate(`/sns-post-edit/${id}`);
   };
 
   const handleDeletePost = async (postId: number) => {
@@ -30,7 +30,7 @@ const SNSFeedMy = () => {
 
     try {
       await deleteSnsPost(postId);
-      navigate("/"); // 삭제 후 루트로 이동
+      setPosts(posts.filter((p) => p.snsPostId !== postId));
     } catch (err) {
       console.error("게시글 삭제 실패:", err);
       alert("게시글 삭제 중 오류가 발생했습니다.");
@@ -42,17 +42,20 @@ const SNSFeedMy = () => {
   };
 
   return (
-    <div className="w-full bg-white min-h-screen">
-      <div className="max-w-[1280px] mx-auto flex px-4 md:px-6">
+    <div className="w-full bg-gray-50 min-h-screen">
+      {/* 상단 타이틀/설명 영역 (SNSFeedHome과 동일) */}
+      <div className="w-full py-10 px-4 md:px-0 bg-white shadow-sm border-b border-gray-100">
+        <div className="max-w-[900px] mx-auto flex flex-col items-center justify-center text-center">
+          <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight">내 피드</h1>
+          <p className="text-base md:text-lg text-gray-500 mt-2 font-medium">작성한 글을 관리하고 편집할 수 있습니다.</p>
+        </div>
+      </div>
+      <div className="max-w-[900px] mx-auto flex flex-col px-2 md:px-0">
         <main className="flex-1 w-full py-10">
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <h2 className="text-3xl font-bold">내 피드</h2>
-              <p className="text-gray-600 mt-1">작성한 글을 관리하고 편집할 수 있습니다.</p>
-            </div>
+          <div className="flex justify-end items-center mb-6">
             <button
               onClick={handleNewPost}
-              className="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800"
+              className="px-4 py-2 rounded-md border border-blue-300 text-blue-600 bg-white hover:bg-blue-50 font-medium transition"
             >
               + 새 글 작성
             </button>
