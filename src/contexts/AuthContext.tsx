@@ -26,7 +26,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   updateUser: (user: User) => void;
   refreshUserInfo: () => Promise<void>;
-  authLogin: (token: string) => Promise<void>;
+  authLogin: (tokens: { accessToken: string; refreshToken?: string }) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -127,13 +127,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const authLogin = async (token: string) => {
+  const authLogin = async (tokens: { accessToken: string; refreshToken?: string }) => {
   try {
-    // Store tokens in localStorage or your method
-    setTokens({ accessToken: token }); // replaces localStorage.setItem()
+    // Store tokens in localStorage
+    setTokens({
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken
+    });
 
     // Decode user info from token
-    const basicUser = getUserFromToken(token);
+    const basicUser = getUserFromToken(tokens.accessToken);
     if (basicUser) {
       setUser(basicUser);
     }
