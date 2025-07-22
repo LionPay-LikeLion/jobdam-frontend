@@ -1,5 +1,5 @@
 import api from "./api";
-import { setTokens, AuthTokens } from "./auth";
+import { setTokens, getTokens, AuthTokens } from "./auth";
 
 export interface LoginRequest {
   email: string;
@@ -37,11 +37,15 @@ export interface RegisterResponse {
 
 export interface GoogleLoginResponse {
   accessToken: string;
+  refreshToken: string;
   user: User;
 }
 
 export const googleLogin = async (code: string): Promise<GoogleLoginResponse> => {
-  const response = await api.post('/oauth/login', { code });
+  const response = await api.post('/oauth/login', { 
+    code,
+    providerType: 'GOOGLE',
+  });
   return response.data;
 };
 
@@ -51,39 +55,40 @@ export const login = async (credentials: LoginRequest): Promise<LoginResponse> =
     const response = await api.post<any>('/auth/login', credentials);
     console.log('Login response:', response.data); // 디버깅용
     
-    // 백엔드 응답 형식에 따라 토큰 추출
     let accessToken = '';
     let refreshToken = '';
     let user = null;
     
-    // 백엔드가 토큰 문자열만 반환하는 경우
-    if (typeof response.data === 'string') {
-      accessToken = response.data;
-    } else if (response.data.accessToken) {
+    // 새로운 백엔드 응답 형식 처리 (LoginResponseDto)
+    if (response.data.accessToken && response.data.refreshToken) {
       accessToken = response.data.accessToken;
-    } else if (response.data.token) {
-      accessToken = response.data.token;
-    }
-    
-    // JWT에서 사용자 정보 추출
-    if (accessToken) {
-      try {
-        const payload = JSON.parse(atob(accessToken.split('.')[1]));
-        console.log('JWT payload:', payload); // 디버깅용
-        
-        // 이메일에서 이름 추출 (숫자 제거)
-        const emailName = payload.email.split('@')[0];
-        const cleanName = emailName.replace(/[0-9]/g, ''); // 숫자 제거
-        const displayName = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
-        
-        user = {
-          id: payload.sub,
-          email: payload.email,
-          name: displayName
-        };
-      } catch (error) {
-        console.error('JWT decode error:', error);
+      refreshToken = response.data.refreshToken;
+      user = response.data.user; // 백엔드에서 제공하는 user 정보 사용
+    } 
+    // 이전 형식 (토큰 문자열만) 호환성을 위한 fallback
+    else if (typeof response.data === 'string') {
+      accessToken = response.data;
+      // JWT에서 사용자 정보 추출 (fallback)
+      if (accessToken) {
+        try {
+          const payload = JSON.parse(atob(accessToken.split('.')[1]));
+          console.log('JWT payload:', payload); // 디버깅용
+          
+          const emailName = payload.email.split('@')[0];
+          const cleanName = emailName.replace(/[0-9]/g, '');
+          const displayName = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
+          
+          user = {
+            id: payload.sub,
+            email: payload.email,
+            name: displayName
+          };
+        } catch (error) {
+          console.error('JWT decode error:', error);
+        }
       }
+    } else if (response.data.accessToken || response.data.token) {
+      accessToken = response.data.accessToken || response.data.token;
     }
     
     // 토큰 저장
@@ -173,9 +178,22 @@ export const getUserProfile = async () => {
 // 토큰 갱신
 export const refreshToken = async (): Promise<AuthTokens> => {
   try {
-    const response = await api.post<AuthTokens>('/auth/refresh');
-    setTokens(response.data);
-    return response.data;
+    const currentTokens = getTokens();
+    if (!currentTokens?.refreshToken) {
+      throw new Error('No refresh token available');
+    }
+
+    const response = await api.post('/auth/reissue', {
+      refreshToken: currentTokens.refreshToken
+    });
+    
+    const newTokens: AuthTokens = {
+      accessToken: response.data.accessToken,
+      refreshToken: currentTokens.refreshToken // Keep the same refresh token
+    };
+    
+    setTokens(newTokens);
+    return newTokens;
   } catch (error) {
     throw error;
   }
