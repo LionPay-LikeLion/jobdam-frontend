@@ -98,13 +98,23 @@ const HomePage = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-white font-korean">
-      
+
       <TopBar />
 
       {/* Main */}
       <main className="flex-1">
         {/* Hero */}
-        <section className="w-full bg-[#ffbc83] py-24 text-center">
+        <section
+          className="w-full min-h-screen flex flex-col justify-start items-center text-center pt-[10vh]"
+          style={{
+            backgroundImage: "url('/images/landing-bg.png')",
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            backgroundColor: '#ffbc83', // 기존 주황색을 보조로 남김
+            position: 'relative',
+          }}
+        >
           <div className="flex flex-col items-center max-w-[786px] mx-auto">
             <img
               className="w-[200px] h-[200px] object-contain mb-6"

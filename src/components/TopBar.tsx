@@ -11,7 +11,7 @@ export default function TopBar() {
   const navigate = useNavigate();
   const { isAuthenticated, user, logout } = useAuth();
   const { toast } = useToast();
-  
+
   const handleLogout = async () => {
     try {
       await logout();
@@ -72,7 +72,7 @@ export default function TopBar() {
               {/* 사용자 정보 및 포인트 표시 */}
               <div className="flex items-center gap-4">
                 {/* 사용자 정보 섹션 - 클릭하면 마이페이지로 */}
-                <div 
+                <div
                   className="flex items-center gap-3 px-4 py-2 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200"
                   onClick={() => navigate("/mypage")}
                 >
@@ -82,9 +82,9 @@ export default function TopBar() {
                       {user?.nickname || user?.name || "사용자"}
                     </span>
                     <span className="text-xs text-gray-500">
-                      {user?.memberTypeCode === 'EMPLOYEE' ? '기업회원' : 
-                       user?.memberTypeCode === 'HUNTER' ? '컨설턴트' : 
-                       user?.memberTypeCode === 'GENERAL' ? '일반회원' : '회원'}
+                      {user?.memberTypeCode === 'EMPLOYEE' ? '기업회원' :
+                        user?.memberTypeCode === 'HUNTER' ? '컨설턴트' :
+                          user?.memberTypeCode === 'GENERAL' ? '일반회원' : '회원'}
                     </span>
                     <span className="text-xs text-gray-500">
                       {user?.subscriptionLevel || "BASIC"}
@@ -93,7 +93,7 @@ export default function TopBar() {
                 </div>
 
                 {/* 포인트 섹션 */}
-                <div 
+                <div
                   className="flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors"
                   onClick={() => navigate("/point-purchase")}
                 >

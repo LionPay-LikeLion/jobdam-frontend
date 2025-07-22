@@ -19,7 +19,7 @@ const Community_SideBar = () => {
 
   const checkMemberStatus = async () => {
     try {
-      const response = await api.get(`/communities/${id}/members/${user?.id}/exist`);
+      const response = await api.get(`/communities/${id}/members/${user?.userId}/exist`);
       setIsMember(response.data); 
     } catch (error) {
       setIsMember(false);

@@ -17,6 +17,7 @@ import SNSFeedPost from "@/pages/SNSFeedPost";
 import SNSFeedMy from "@/pages/SNSFeedMy";
 import SNSMessage from "@/pages/SNSMessage";
 import SNSPostWrite from "@/pages/SNSPostWrite";
+import SNSPostEdit from "@/pages/SNSPostEdit";
 import CommunityPage from "@/pages/CommunityPage";
 import CommunityCreate from "@/pages/CommunityCreate";
 import CommunityLayout from "@/pages/layouts/CommunityLayout";
@@ -38,12 +39,12 @@ import NotFound from "./pages/NotFound";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import PaymentSuccess from "@/pages/PaymentSuccess.tsx";
 import MembershipTypeRequest from "@/pages/MembershipTypeRequest";
-import MyPageLayout from "@/pages/MyPageLayout";
 import PaymentHistoryPage from "@/pages/PaymentHistoryPage";
 import PointHistoryPage from "@/pages/PointHistoryPage";
 import AdminUserManagement from "@/pages/AdminUserManagement.tsx";
 import AdminReport from "@/pages/AdminReport.tsx";
-// Admin 관련 페이지 추가 시 import!
+import AdminRoleChange from "@/pages/AdminRoleChange.tsx";
+import ActivityHistoryPage from "@/pages/ActivityHistoryPage";
 
 const queryClient = new QueryClient();
 
@@ -78,6 +79,7 @@ const AppRoutes = () => {
                         <Route path=":postId" element={<SNSFeedPost />} />
                         <Route path="messages" element={<SNSMessage />} />
                         <Route path="sns-post-write" element={<SNSPostWrite />} />
+                        <Route path="sns/posts/:postId/edit" element={<SNSPostEdit />} />
                     </>
                 )}
             </Route>
@@ -107,15 +109,15 @@ const AppRoutes = () => {
                     <Route path="/membership-type-request" element={<MembershipTypeRequest />} />
                     <Route path="/mypage/payments" element={<PaymentHistoryPage />} />
                     <Route path="/mypage/points" element={<PointHistoryPage />} />
-
+                    <Route path="/mypage/activity" element={<ActivityHistoryPage />} />
                     {/* ------ 어드민 영역 ------ */}
                     <Route path="/admin/users" element={<AdminUserManagement />} />
                     <Route path="/admin/report" element={<AdminReport />} />
-                    {/* 신고 관리, 전환요청 등은 아래처럼 확장 가능! */}
-                    {/* <Route path="/admin/report" element={<AdminReportManagement />} /> */}
+                    <Route path="/admin/type-request" element={<AdminRoleChange />} />
                 </>
             )}
 
+            {/* 비로그인 유저만 접근 가능한 라우트 */}
             {!isAuthenticated && (
                 <>
                     <Route path="/login" element={<LoginPage />} />
@@ -125,29 +127,29 @@ const AppRoutes = () => {
                 </>
             )}
 
-      {/* ✅ Add this for Google redirect */}
-      <Route path="/api/oauth/google/callback" element={<GoogleRedirectHandler />} />
+            {/* Google Redirect */}
+            <Route path="/api/oauth/google/callback" element={<GoogleRedirectHandler />} />
 
-      {/* 404 */}
-      <Route path="*" element={<NotFound />} />
-    </Routes>
-  );
+            {/* 404 */}
+            <Route path="*" element={<NotFound />} />
+        </Routes>
+    );
 };
 
 const App = () => (
-  <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
-    <BrowserRouter> {/* Moved up here */}
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <AppRoutes />
-          </TooltipProvider>
-        </AuthProvider>
-      </QueryClientProvider>
-    </BrowserRouter>
-  </GoogleOAuthProvider>
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+        <BrowserRouter>
+            <QueryClientProvider client={queryClient}>
+                <AuthProvider>
+                    <TooltipProvider>
+                        <Toaster />
+                        <Sonner />
+                        <AppRoutes />
+                    </TooltipProvider>
+                </AuthProvider>
+            </QueryClientProvider>
+        </BrowserRouter>
+    </GoogleOAuthProvider>
 );
 
 export default App;

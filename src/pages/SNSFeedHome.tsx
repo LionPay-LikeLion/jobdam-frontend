@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { FaHeart, FaComment, FaEye } from "react-icons/fa";
 import { FiSearch } from "react-icons/fi";
 import { Link } from "react-router-dom";
-import { fetchSnsPosts } from "@/lib/snsApi";
+import { fetchSnsPosts, searchByKeyword , fetchSnsPostsFiltered} from "@/lib/snsApi";
 import { useAuth } from "@/contexts/AuthContext";
 import clsx from "clsx";
 
@@ -10,21 +10,17 @@ const SNSFeedHome = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const { isLoading } = useAuth();
+  const [memberType, setMemberType] = useState<string>("");
+  const [sort, setSort] = useState<string>("latest");
+  const [keyword, setKeyword] = useState("");
 
   useEffect(() => {
-    if (!isLoading) {
-      fetchSnsPosts()
-        .then(data => {
-          console.log('SNS Posts:', data); // 디버깅용
-          setPosts(data);
-        })
-        .catch(err => {
-          console.error('SNS Posts Error:', err); // 디버깅용
-          setPosts([]);
-        })
-        .finally(() => setLoading(false));
-    }
-  }, [isLoading]);
+    setLoading(true);
+    fetchSnsPostsFiltered(memberType, sort)
+      .then(data => setPosts(data))
+      .catch(() => setPosts([]))
+      .finally(() => setLoading(false));  
+  }, [memberType, sort]);
 
   const isPremium = (subscriptionLevelCode: string) => {
     return subscriptionLevelCode === "PREMIUM";
@@ -44,22 +40,57 @@ const SNSFeedHome = () => {
         <div className="flex items-center gap-4 bg-white border rounded-lg shadow p-4 mb-8">
           <label className="text-sm font-medium">작성자 유형:</label>
           <select className="h-[42px] w-[100px] border border-gray-300 rounded-md px-3 text-sm">
-            <option>전체</option>
-            <option>구직자</option>
-            <option>컨설턴트</option>
-            <option>기업</option>
+            <option value="">전체</option>
+            <option value="GENERAL">구직자</option>
+            <option value="HUNTER">컨설턴트</option>
+            <option value="EMPLOYEE">기업</option>
           </select>
           <label className="text-sm font-medium ml-4">정렬 기준:</label>
-          <select className="h-[42px] w-[100px] border border-gray-300 rounded-md px-3 text-sm">
-            <option>최신순</option>
-            <option>인기순</option>
+          <select value={sort} onChange={(e) => setSort(e.target.value)} className="h-[42px] w-[100px] border border-gray-300 rounded-md px-3 text-sm">
+            <option value="latest">최신순</option>
+            <option value="likes">인기순</option>
           </select>
+          <span className="ml-8 mr-2 font-bold text-blue-600 text-base">제목/내용</span>
           <input
             type="text"
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
             placeholder="키워드 검색"
-            className="ml-auto border px-3 py-1 rounded-md w-[280px] text-sm"
+            className="border px-3 py-1 rounded-md w-[280px] text-sm"
           />
-          <button className="bg-black text-white px-4 py-1 rounded-md text-sm">검색</button>
+          <button
+            className="bg-black text-white px-4 py-1 rounded-md text-sm"
+            onClick={async () => {
+              try {
+                let data = [];
+
+                if (keyword.trim() !== "") {
+                  data = await searchByKeyword(keyword);
+                } else {
+                  data = await fetchSnsPosts();
+                }
+
+                const filtered = data
+                  .filter(post => {
+                    return memberType === "" || post.memberTypeCode === memberType;
+                  })
+                  .sort((a, b) => {
+                    if (sort === "likes") {
+                      return b.likeCount - a.likeCount;
+                    } else {
+                      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+                    }
+                  });
+
+                setPosts(filtered);
+              } catch (err) {
+                console.error("통합 검색 실패:", err);
+                setPosts([]);
+              }
+            }}
+          >
+            검색
+          </button>
         </div>
 
         {/* 게시글 카드 */}
