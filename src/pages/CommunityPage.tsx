@@ -15,6 +15,7 @@ interface Community {
   currentMember: number;
   enterPoint: number;
   profileImageUrl?: string; // 커뮤니티 이미지 URL 추가
+  ownerProfileImageUrl?: string; // 생성자 프로필 이미지 URL 추가
 }
 
 const CommunityPage = () => {
@@ -47,7 +48,8 @@ const CommunityPage = () => {
           ownerNickname: "김개발",
           maxMember: 100,
           currentMember: 85,
-          enterPoint: 1000
+          enterPoint: 1000,
+          ownerProfileImageUrl: "https://via.placeholder.com/50" // 임시 이미지
         },
         {
           communityId: 2,
@@ -57,7 +59,8 @@ const CommunityPage = () => {
           ownerNickname: "박서버",
           maxMember: 50,
           currentMember: 32,
-          enterPoint: 500
+          enterPoint: 500,
+          ownerProfileImageUrl: "https://via.placeholder.com/50" // 임시 이미지
         }
       ]);
     } finally {
@@ -139,15 +142,31 @@ const CommunityPage = () => {
             return (
               <div
                 key={community.communityId}
-                className={`flex gap-4 border rounded-lg p-4 items-start bg-white shadow-sm relative transition-all
-                ${isPremium ? "border-2 border-yellow-400 shadow-[0_0_16px_#ffe066]" : "border"}
-              `}
-                style={isPremium ? { boxShadow: "0 0 16px #ffe066, 0 0 0 4px #fffbe6" } : {}}
+                className={`
+                  flex gap-4 border rounded-lg p-8 items-start relative transition-all
+                  ${isPremium
+                    ? "border-4 border-yellow-400 bg-gradient-to-br from-yellow-50 via-white to-yellow-100 shadow-[0_0_24px_#ffe066] ring-2 ring-yellow-200/80"
+                    : "border bg-white shadow-sm"
+                  }
+                  min-h-[180px] md:min-h-[200px]
+                `}
+                style={isPremium ? { boxShadow: "0 0 24px #ffe066, 0 0 0 6px #fffbe6" } : {}}
               >
+                {/* 오른쪽 위 왕관 */}
+                {isPremium && (
+                  <span className="absolute top-[-28px] right-6 animate-bounce z-20">
+                    <FaCrown
+                      className="text-yellow-400 drop-shadow-lg"
+                      style={{
+                        fontSize: 48,
+                        filter: "drop-shadow(0 0 12px gold)",
+                        textShadow: "0 0 8px #ffe066, 0 0 16px #ffd700"
+                      }}
+                    />
+                  </span>
+                )}
+                {/* 커뮤니티 이미지 */}
                 <div className="w-[120px] h-[120px] bg-gray-200 rounded flex items-center justify-center overflow-hidden relative">
-                  {isPremium && (
-                    <FaCrown className="absolute -top-4 left-1/2 -translate-x-1/2 text-yellow-400 text-3xl drop-shadow" />
-                  )}
                   {community.profileImageUrl ? (
                     <img
                       src={community.profileImageUrl}
@@ -159,23 +178,16 @@ const CommunityPage = () => {
                         target.nextElementSibling?.classList.remove('hidden');
                       }}
                     />
-                  ) : null}
-                  <div className={`absolute inset-0 flex items-center justify-center ${community.profileImageUrl ? 'hidden' : ''}`}>
+                  ) : (
                     <span className="text-gray-500 text-sm">이미지</span>
-                  </div>
+                  )}
                 </div>
-                <div className="flex-1 pr-24">
+                {/* 본문 */}
+                <div className="flex-1 pr-24 flex flex-col justify-between">
                   <div className="flex items-center gap-2 mb-2">
                     <h2 className="text-xl font-semibold flex items-center">
-                      {isPremium && <FaCrown className="text-yellow-400 mr-1" />}
                       {community.name}
                     </h2>
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${isPremium
-                      ? 'bg-yellow-100 text-yellow-800 border border-yellow-400'
-                      : 'bg-gray-100 text-gray-800'
-                      }`}>
-                      {community.subscriptionLevelCode}
-                    </span>
                   </div>
                   <p className="text-sm text-gray-600 mt-1 leading-5 mb-4">{community.description}</p>
                   <div className="flex items-center gap-4 text-sm text-gray-500">
@@ -185,16 +197,34 @@ const CommunityPage = () => {
                     </div>
                     <span>입장 포인트: {community.enterPoint.toLocaleString()}P</span>
                   </div>
-                  <div className="text-xs text-gray-400 mt-1">
-                    생성자: {community.ownerNickname}
-                  </div>
                 </div>
-                <button
-                  onClick={() => navigate(`/communities/${community.communityId}`)}
-                  className="absolute bottom-4 right-4 px-4 py-2 bg-black text-white text-sm rounded-md hover:bg-gray-800 transition-colors"
-                >
-                  입장
-                </button>
+                {/* 오른쪽 위 생성자(닉네임 + 프사, 가로 정렬, 크기 맞춤) */}
+                <div className="absolute top-6 right-6 flex items-center gap-2 z-20">
+                  <span className="font-bold text-gray-700 text-base">{community.ownerNickname}</span>
+                  {community.profileImageUrl ? (
+                    <img
+                      src={community.profileImageUrl}
+                      alt={community.ownerNickname}
+                      className="w-10 h-10 rounded-full object-cover border-2 border-gray-300"
+                    />
+                  ) : (
+                    <span className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-200 text-gray-400 text-xl">👤</span>
+                  )}
+                </div>
+                {/* 프리미엄 뱃지 + 입장 버튼 */}
+                <div className="absolute bottom-4 right-4 flex items-center gap-2">
+                  {isPremium && (
+                    <span className="px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 border border-yellow-400 text-xs font-bold mr-2">
+                      <FaCrown className="inline-block mr-1" /> 프리미엄
+                    </span>
+                  )}
+                  <button
+                    onClick={() => navigate(`/communities/${community.communityId}`)}
+                    className="px-4 py-2 bg-black text-white text-sm rounded-md hover:bg-gray-800 transition-colors"
+                  >
+                    입장
+                  </button>
+                </div>
               </div>
             );
           })}

@@ -129,13 +129,6 @@ export default function TopBar() {
                   로그인
                 </Button>
             )}
-            <div className="flex items-center w-[200px] border border-[#0000001a] rounded-md">
-              <Input
-                  className="border-0 text-[#00000080] text-sm"
-                  placeholder="Search in site"
-              />
-              <Search className="w-5 h-5 mr-2 text-gray-400" />
-            </div>
           </div>
         </div>
       </header>

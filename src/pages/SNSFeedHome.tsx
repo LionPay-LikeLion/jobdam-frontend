@@ -103,6 +103,22 @@ const SNSFeedHome = () => {
           <div className="space-y-6">
             {posts.map((post) => {
               const isPremiumUser = isPremium(post.subscriptionLevelCode);
+
+              // 삭제된 게시글 처리
+              if (post.boardStatusCode === "DELETED") {
+                return (
+                  <div
+                    key={post.snsPostId}
+                    className="flex rounded-lg shadow p-6 border border-gray-200 bg-gray-100 text-gray-400"
+                  >
+                    <div className="w-full text-center py-12 text-lg font-semibold">
+                      삭제된 게시글입니다.
+                    </div>
+                  </div>
+                );
+              }
+
+              // 정상 게시글 렌더링 (기존 코드)
               return (
                 <div
                   key={post.snsPostId}
@@ -129,7 +145,20 @@ const SNSFeedHome = () => {
                     <div className="ml-6 flex flex-col justify-between w-full">
                       <div className="flex justify-between items-center">
                         <div className="relative flex items-center gap-3">
-                          <p className={clsx("font-bold text-xl text-black", isPremiumUser && "pr-8")}>{post.title}</p>
+                          {/* 프로필 이미지 */}
+                          <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center mr-2">
+                            {post.profileImageUrl ? (
+                              <img
+                                src={post.profileImageUrl}
+                                alt={post.nickname}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <span className="text-gray-400 text-xl">👤</span>
+                            )}
+                          </div>
+                          {/* 닉네임 */}
+                          <p className={clsx("font-bold text-xl text-black", isPremiumUser && "pr-8")}>{post.nickname}</p>
                           {/* PREMIUM 왕관 아이콘 */}
                           {isPremiumUser && (
                             <span className="absolute -top-4 right-0 animate-bounce z-10">
@@ -166,6 +195,7 @@ const SNSFeedHome = () => {
                                 post.liked ? "w-7 h-7" : "w-5 h-5"
                               )}
                             />
+                            <span className={clsx("font-bold", post.liked && "text-red-500 text-lg")}>{post.likeCount}</span>
                           </div>
                           {/* 북마크 아이콘 - 내가 했으면 큼지막하고 진하게 */}
                           <div className="flex items-center gap-1">
@@ -180,12 +210,6 @@ const SNSFeedHome = () => {
                               <path strokeLinecap="round" strokeLinejoin="round" d="M17 5a2 2 0 0 1 2 2v12l-7-4-7 4V7a2 2 0 0 1 2-2h10z" />
                             </svg>
                           </div>
-                          {/* PREMIUM 뱃지 강조 */}
-                          {isPremiumUser && (
-                            <span className="ml-2 px-3 py-1 rounded-full bg-gradient-to-r from-yellow-300 via-yellow-100 to-yellow-400 text-yellow-900 font-extrabold border border-yellow-400 shadow animate-pulse">
-                              PREMIUM
-                            </span>
-                          )}
                         </div>
                       </div>
                       <div className="mt-3">
