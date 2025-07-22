@@ -16,9 +16,9 @@ const CommunityManagement = () => {
     const boards = ["자유게시판", "질문답변", "공지사항"];
 
     return (
-        <div className="bg-white min-h-screen flex justify-center py-10 px-4">
-            <div className="w-full max-w-[960px]"> {/* 줄어든 가로폭 */}
-                <h1 className="text-3xl font-bold mb-10">관리</h1>
+        <>
+            <div className="container mx-auto mt-12 mb-8 px-4 text-left max-w-[960px]"> {/* 줄어든 가로폭 */}
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-10">관리</h1>
 
                 {/* 멤버 리스트 */}
                 <section className="mb-16">
@@ -44,7 +44,7 @@ const CommunityManagement = () => {
                                     {m.role}
                                 </div>
                                 <span className="text-gray-500">{m.date}</span>
-                                <button className="bg-red-600 text-white px-2 py-1 text-sm w-fit">
+                                <button className="bg-red-600 text-white px-2 py-1 rounded text-sm w-fit">
                                     <FaUserSlash className="inline-block mr-1" />
                                     강퇴
                                 </button>
@@ -60,7 +60,7 @@ const CommunityManagement = () => {
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-2xl font-semibold">그룹 게시판 관리</h2>
                         <button
-                            onClick={() => navigate(`/community/${id}/board/create`)}
+                            onClick={() => navigate(`/communities/${id}/board/create`)}
                             className="bg-purple-600 text-white px-4 py-2 rounded-md flex items-center gap-2"
                         >
                             <FaPlus /> 게시판 생성
@@ -93,7 +93,10 @@ const CommunityManagement = () => {
                                 <p className="font-medium text-lg">현재 플랜</p>
                                 <p className="text-purple-600 font-semibold text-xl">베이직</p>
                             </div>
-                            <button className="bg-purple-600 text-white px-5 py-2 rounded-md">
+                            <button
+                                className="bg-purple-600 text-white px-5 py-2 rounded-md hover:bg-purple-700 transition-colors"
+                                onClick={() => navigate(`/communities/${id}/upgrade`)}
+                            >
                                 플랜 전환
                             </button>
                         </div>
@@ -108,7 +111,7 @@ const CommunityManagement = () => {
                     </div>
                 </section>
             </div>
-        </div>
+        </>
     );
 };
 export default CommunityManagement;
