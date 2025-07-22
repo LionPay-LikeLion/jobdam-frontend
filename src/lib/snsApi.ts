@@ -75,8 +75,8 @@ export const createComment = async (snsPostId: number, content: string) => {
   return res.data;
 };
 
-export const updateComment = async (commentId: number, snsPostId: number, content: string) => {
-  const res = await api.put(`/sns/comments/${commentId}`, { snsPostId, content });
+export const updateComment = async (commentId: number, content: string) => {
+  const res = await api.put(`/sns/comments/${commentId}`, { content });
   return res.data;
 };
 
