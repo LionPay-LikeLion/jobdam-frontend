@@ -60,6 +60,11 @@ export const removeBookmark = async (postId: number) => {
   return res.data;
 };
 
+export const fetchBookmarks = async () => {
+  const res = await api.get("/sns/bookmarks");
+  return res.data;
+};
+
 export const fetchComments = async (snsPostId: number) => {
   const res = await api.get(`/sns/comments/${snsPostId}`, { params: { snsPostId } });
   return res.data;
