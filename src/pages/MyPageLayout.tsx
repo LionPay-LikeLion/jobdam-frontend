@@ -1,4 +1,3 @@
-// src/pages/mypage/MyPageLayout.tsx
 import React, { useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -12,7 +11,7 @@ const tabs = [
     { label: "내 계정 정보", path: "/mypage" },
     { label: "결제 내역", path: "/mypage/payments" },
     { label: "포인트 관리", path: "/mypage/points" },
-    { label: "활동 내역", path: "/mypage/activity" },
+    // { label: "활동 내역", path: "/mypage/activity" },   // 삭제!
 ];
 
 export default function MyPageLayout({ children }: { children: React.ReactNode }) {
@@ -82,29 +81,29 @@ export default function MyPageLayout({ children }: { children: React.ReactNode }
         <div className="bg-white flex flex-row justify-center w-full min-h-screen">
             <div className="bg-white w-[1440px] relative min-h-screen">
                 <TopBar />
-                
+
                 {/* 프로필 섹션 - 상단 가로 배치 */}
                 <div className="mt-[119px] px-[60px] mb-6">
                     <Card>
                         <CardContent className="p-6">
                             <div className="flex items-center gap-6">
                                 {user?.profileImageUrl ? (
-                                    <img 
-                                        className="w-[120px] h-[120px] rounded-full object-cover bg-gray-100 cursor-pointer hover:opacity-80 transition-opacity" 
-                                        src={user.profileImageUrl} 
+                                    <img
+                                        className="w-[120px] h-[120px] rounded-full object-cover bg-gray-100 cursor-pointer hover:opacity-80 transition-opacity"
+                                        src={user.profileImageUrl}
                                         alt="Profile"
                                         onClick={handleImageClick}
                                     />
                                 ) : (
-                                    <div 
+                                    <div
                                         className="w-[120px] h-[120px] rounded-full bg-gray-200 flex items-center justify-center text-xl text-gray-500 cursor-pointer hover:bg-gray-300 transition-colors"
                                         onClick={handleImageClick}
                                     >
                                         Profile
                                     </div>
                                 )}
-                                <Button 
-                                    className="h-12 bg-black hover:bg-black/90 text-white rounded text-base px-6" 
+                                <Button
+                                    className="h-12 bg-black hover:bg-black/90 text-white rounded text-base px-6"
                                     onClick={handleImageClick}
                                 >
                                     프로필 사진 수정
@@ -141,7 +140,7 @@ export default function MyPageLayout({ children }: { children: React.ReactNode }
                             ))}
                         </CardContent>
                     </Card>
-                    
+
                     {/* 오른쪽 - 메인 영역 */}
                     <div className="flex-1">{children}</div>
                 </div>
