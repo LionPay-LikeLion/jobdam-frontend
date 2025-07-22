@@ -39,7 +39,7 @@ const SNSFeedHome = () => {
         {/* 필터 영역 */}
         <div className="flex items-center gap-4 bg-white border rounded-lg shadow p-4 mb-8">
           <label className="text-sm font-medium">작성자 유형:</label>
-          <select className="h-[42px] w-[100px] border border-gray-300 rounded-md px-3 text-sm">
+          <select value={memberType} onChange={(e) => setMemberType(e.target.value)} className="h-[42px] w-[100px] border border-gray-300 rounded-md px-3 text-sm">
             <option value="">전체</option>
             <option value="GENERAL">구직자</option>
             <option value="HUNTER">컨설턴트</option>
