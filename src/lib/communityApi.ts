@@ -20,6 +20,10 @@ export const fetchMyCommunities = async () => {
   return response.data;
 };
 
+export const fetchMineCommunities = async () => {
+  const response = await api.get("/communities/mine");
+  return response.data;
+};
 // 커뮤니티 가입
 export const joinCommunity = async (communityId: number) => {
   const response = await api.post(`/communities/${communityId}/join`);

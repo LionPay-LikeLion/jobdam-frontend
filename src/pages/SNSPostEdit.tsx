@@ -157,20 +157,25 @@ export default function SNSPostEditPage() {
               </div>
 
               <div className="mb-8">
-                <label className="block text-base font-medium mb-2">태그</label>
-                <Button variant="outline" className="h-[38px] text-sm">+ 태그 추가</Button>
-              </div>
-
-              <div className="mb-8">
                 <label className="block text-base font-medium mb-2">내용</label>
                 <div className="border border-[#0000001a] rounded-md">
                   <div className="flex h-[53px] items-center bg-[#00000005] border-b border-[#0000001a] px-4">
                     {editorButtons.slice(0, 3).map((btn, idx) => (
-                      <Button key={idx} variant="ghost" className={`px-3 text-sm ${btn.style}`}>{btn.label}</Button>
+                      <Button key={idx} variant="ghost" className={`px-3 text-sm ${btn.style}`}
+                        type="button"
+                        tabIndex={-1}
+                        onClick={() => {}} // 클릭해도 아무 동작 없음
+                        style={{ pointerEvents: 'none' }}
+                      >{btn.label}</Button>
                     ))}
                     <Separator orientation="vertical" className="h-6 mx-4" />
                     {editorButtons.slice(3).map((btn, idx) => (
-                      <Button key={idx} variant="ghost" className="px-3 text-sm">{btn.label}</Button>
+                      <Button key={idx} variant="ghost" className="px-3 text-sm"
+                        type="button"
+                        tabIndex={-1}
+                        onClick={() => {}} // 클릭해도 아무 동작 없음
+                        style={{ pointerEvents: 'none' }}
+                      >{btn.label}</Button>
                     ))}
                   </div>
                   <Textarea placeholder="내용을 입력하세요" className="min-h-[300px] border-none rounded-none p-4" value={content} onChange={e => setContent(e.target.value)} />
