@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { FaPaperPlane } from "react-icons/fa";
 import React, { useEffect, useState } from "react";
 import { fetchMessageBoxes, fetchConversation, sendMessage } from "@/lib/messageApi";
 import { searchUsers } from "@/lib/snsApi";
@@ -139,12 +140,12 @@ export default function SNSMessage(): JSX.Element {
   if (loading) return <div className="text-center py-10">로딩중...</div>;
 
   return (
-    <>
+    <><div className="min-h-screen flex flex-col bg-gray-50 font-korean">
       <TopBar />
-      <div className="flex border border-[#0000001a] rounded-xl overflow-hidden w-full max-w-5xl mx-auto bg-white">
+      <div className="flex w-full max-w-5xl mx-auto mt-10 gap-6">
         {/* Left Message List */}
-        <div className="w-[400px] border-r border-[#0000001a] flex flex-col">
-          <div className="h-20 border-b border-[#0000001a] flex items-center justify-between px-6">
+        <div className="w-[340px] bg-white rounded-2xl shadow-lg border border-gray-100 flex flex-col min-h-[600px]">
+          <div className="h-20 border-b border-gray-100 flex items-center justify-between px-6">
             <Tabs defaultValue="received" className="w-full">
               <TabsList className="bg-transparent p-0 h-auto gap-4">
                 <TabsTrigger
@@ -156,35 +157,37 @@ export default function SNSMessage(): JSX.Element {
               </TabsList>
             </Tabs>
             <Button
-              className="bg-black text-white text-sm rounded-md h-9 px-2"
+              className="flex items-center gap-2 px-5 py-2 rounded-md border text-base font-bold shadow transition-all duration-150 bg-blue-500 text-white hover:bg-blue-600 border-blue-400 cursor-pointer"
               onClick={() => setShowNewMessageModal(true)}
             >
-              메시지 보내기
+              <FaPaperPlane className="w-4 h-4" />
+              새 메시지
             </Button>
           </div>
 
-          <div className="flex-1 overflow-auto">
+          <div className="flex-1 overflow-auto scrollbar-thin scrollbar-thumb-gray-200">
             {boxes.length === 0 && (
               <div className="text-center text-gray-400 py-10">쪽지함이 비어 있습니다.</div>
             )}
             {boxes.map((box) => (
               <div
                 key={box.opponentUserId}
-                className={`h-[95px] border-b border-[#0000000d] p-4 flex items-start cursor-pointer ${selectedUserId === box.opponentUserId ? "bg-[#0000000d]" : ""}`}
+                className={`h-[90px] border-b border-gray-100 p-4 flex items-center gap-3 cursor-pointer transition-all select-none
+                  ${selectedUserId === box.opponentUserId ? "bg-blue-50" : "hover:bg-gray-50"}`}
                 onClick={() => setSelectedUserId(box.opponentUserId)}
               >
-                <Avatar className="w-10 h-10 mr-4">
+                <Avatar className="w-10 h-10 mr-2">
                   <AvatarImage src={box.opponentProfileImageUrl} alt={box.opponentNickname} />
                   <AvatarFallback>{box.opponentNickname[0]}</AvatarFallback>
                 </Avatar>
-                <div className="flex-1">
-                  <div className="flex justify-between">
-                    <h3 className="text-sm font-medium leading-5">{box.opponentNickname}</h3>
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-base font-semibold text-gray-900 truncate">{box.opponentNickname}</h3>
                   </div>
-                  <p className="text-[13px] leading-[18px] text-[#00000099] mt-1">
+                  <p className="text-[13px] leading-[18px] text-gray-500 mt-1 truncate">
                     {box.lastMessageContent}
                   </p>
-                  <p className="text-xs leading-4 text-[#00000066] mt-1">
+                  <p className="text-xs leading-4 text-gray-400 mt-1">
                     {box.lastMessageCreatedAt}
                   </p>
                 </div>
@@ -194,40 +197,38 @@ export default function SNSMessage(): JSX.Element {
         </div>
 
         {/* Right Message Detail */}
-        <div className="flex-1 p-8">
-          {selectedUserId && conversation.length > 0 && opponentInfo ? (
-            <Card className="w-full shadow-sm border border-[#0000001a] rounded-xl">
-              <CardHeader className="p-0">
-                <div className="px-6 py-4 border-b border-[#0000001a] flex items-center">
-                  <Avatar className="w-12 h-12 mr-4">
+        <div className="flex-1 min-w-0">
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 h-full flex flex-col min-h-[600px]">
+            {selectedUserId && conversation.length > 0 && opponentInfo ? (
+              <>
+                <div className="px-8 py-6 border-b border-gray-100 flex items-center gap-4">
+                  <Avatar className="w-12 h-12">
                     <AvatarImage src={opponentInfo.profileImageUrl} alt={opponentInfo.nickname} />
                     <AvatarFallback>{opponentInfo.nickname[0]}</AvatarFallback>
                   </Avatar>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-medium leading-6">{opponentInfo.nickname}</h3>
-                  </div>
+                  <h3 className="text-xl font-bold text-gray-900">{opponentInfo.nickname}</h3>
                 </div>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="space-y-4 max-h-96 overflow-y-auto">
+                <div className="flex-1 p-8 overflow-y-auto space-y-4 scrollbar-thin scrollbar-thumb-gray-200">
                   {conversation.map((msg) => {
-                    const isMine = user && (String(msg.senderUserId ?? msg.senderId) === String(user.userId));
+                    const isMine = user && (String(msg.senderUserId ?? msg.senderId) === String(user.id));
                     return (
                       <div
                         key={msg.messageId}
-                        className={`flex items-end mb-2 ${isMine ? "justify-end" : "justify-start"}`}
+                        className={`flex mb-2 ${isMine ? "justify-end" : "justify-start"} items-start`}
                       >
                         {!isMine && (
-                          <Avatar className="w-8 h-8 mr-2">
-                            <AvatarImage src={msg.senderProfileImageUrl} alt={msg.senderNickname} />
-                            <AvatarFallback>{msg.senderNickname[0]}</AvatarFallback>
-                          </Avatar>
+                          <div className="flex-shrink-0 mt-1 mr-2">
+                            <Avatar className="w-8 h-8">
+                              <AvatarImage src={msg.senderProfileImageUrl} alt={msg.senderNickname} />
+                              <AvatarFallback>{msg.senderNickname[0]}</AvatarFallback>
+                            </Avatar>
+                          </div>
                         )}
                         <div className={`flex flex-col ${isMine ? "items-end" : "items-start"}`}>
                           <div
-                            className={`px-4 py-2 max-w-xs break-words text-base mt-1 ${isMine
+                            className={`px-4 py-2 max-w-xs break-words text-base mt-1 shadow-sm ${isMine
                               ? "bg-blue-500 text-white rounded-2xl rounded-br-sm"
-                              : "bg-gray-100 text-black rounded-2xl rounded-bl-sm"
+                              : "bg-gray-100 text-gray-900 rounded-2xl rounded-bl-sm"
                               }`}
                           >
                             {msg.content}
@@ -235,19 +236,21 @@ export default function SNSMessage(): JSX.Element {
                           <span className="text-xs text-gray-400 mt-1">{msg.createdAt}</span>
                         </div>
                         {isMine && (
-                          <Avatar className="w-8 h-8 ml-2">
-                            <AvatarImage src={msg.senderProfileImageUrl} alt={msg.senderNickname} />
-                            <AvatarFallback>{msg.senderNickname[0]}</AvatarFallback>
-                          </Avatar>
+                          <div className="flex-shrink-0 mt-1 ml-2">
+                            <Avatar className="w-8 h-8">
+                              <AvatarImage src={msg.senderProfileImageUrl} alt={msg.senderNickname} />
+                              <AvatarFallback>{msg.senderNickname[0]}</AvatarFallback>
+                            </Avatar>
+                          </div>
                         )}
                       </div>
                     );
                   })}
                 </div>
                 {/* 메시지 입력창 */}
-                <div className="flex items-center gap-2 mt-6">
+                <div className="flex items-center gap-3 border-t border-gray-100 px-8 py-6 bg-gray-50 rounded-b-2xl">
                   <input
-                    className="flex-1 border rounded px-3 py-2 text-sm"
+                    className="flex-1 border border-gray-200 rounded-lg px-4 py-2 text-base bg-white focus:ring-2 focus:ring-blue-200 outline-none shadow-sm"
                     placeholder="메시지를 입력하세요"
                     value={message}
                     onChange={e => setMessage(e.target.value)}
@@ -255,32 +258,34 @@ export default function SNSMessage(): JSX.Element {
                     disabled={sending}
                   />
                   <Button
-                    className="h-10 px-6 bg-blue-500 text-white text-sm font-medium"
+                    className="h-11 px-8 bg-blue-600 text-white text-base font-bold rounded-lg shadow hover:bg-blue-700 transition"
                     onClick={handleSend}
                     disabled={sending || !message.trim()}
                   >
                     {sending ? "전송중..." : "전송"}
                   </Button>
                 </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="text-center text-gray-400 py-20">대화할 메시지를 선택하세요.</div>
-          )}
+              </>
+            ) : (
+              <div className="flex-1 flex items-center justify-center text-center text-gray-400 text-lg">대화할 메시지를 선택하세요.</div>
+            )}
+          </div>
         </div>
       </div>
+    </div>
 
       {/* 새로운 메시지 모달 */}
       <Dialog open={showNewMessageModal} onOpenChange={setShowNewMessageModal}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md rounded-2xl shadow-lg border border-gray-100">
           <DialogHeader>
-            <DialogTitle>새 메시지 보내기</DialogTitle>
+            <DialogTitle className="text-xl font-bold text-gray-900">새 메시지 보내기</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             {/* 유저 검색 */}
             <div>
               <label className="text-sm font-medium mb-2 block">받는 사람 검색</label>
               <Input
+                className="border border-gray-200 rounded-lg px-3 py-2 text-base bg-white focus:ring-2 focus:ring-blue-200 outline-none shadow-sm"
                 placeholder="닉네임으로 검색하세요"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -293,13 +298,14 @@ export default function SNSMessage(): JSX.Element {
             )}
 
             {!searching && searchResults.length > 0 && (
-              <div className="max-h-40 overflow-y-auto border rounded-md">
+              <div className="max-h-40 overflow-y-auto border rounded-md bg-white shadow-sm">
                 {searchResults.map((user) => (
                   <div
                     key={user.userId}
-                    className={`p-3 cursor-pointer transition-colors duration-200 flex items-center gap-3 ${selectedReceiver?.userId === user.userId
-                      ? "bg-blue-100 border-l-4 border-blue-500 shadow-sm"
-                      : "hover:bg-gray-50 border-l-4 border-transparent"
+                    className={`p-3 cursor-pointer transition-colors duration-200 flex items-center gap-3 rounded-lg
+                      ${selectedReceiver?.userId === user.userId
+                        ? "bg-blue-50 border-l-4 border-blue-500 shadow"
+                        : "hover:bg-gray-50 border-l-4 border-transparent"
                       }`}
                     onClick={() => setSelectedReceiver(user)}
                   >
@@ -339,7 +345,7 @@ export default function SNSMessage(): JSX.Element {
 
             {/* 선택된 유저 표시 */}
             {selectedReceiver && (
-              <div className="p-4 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg shadow-sm">
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg shadow">
                 <div className="flex items-center gap-3">
                   <div className="relative">
                     <Avatar className="w-10 h-10 ring-2 ring-blue-300">
@@ -375,7 +381,7 @@ export default function SNSMessage(): JSX.Element {
               <div>
                 <label className="text-sm font-medium mb-2 block">메시지</label>
                 <textarea
-                  className="w-full border rounded-md px-3 py-2 text-sm min-h-[80px] resize-none"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-base min-h-[80px] resize-none bg-white focus:ring-2 focus:ring-blue-200 outline-none shadow-sm"
                   placeholder="메시지를 입력하세요"
                   value={newMessageContent}
                   onChange={(e) => setNewMessageContent(e.target.value)}
@@ -385,9 +391,10 @@ export default function SNSMessage(): JSX.Element {
             )}
 
             {/* 전송 버튼 */}
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-2 mt-2">
               <Button
                 variant="outline"
+                className="rounded-lg px-5 py-2 text-base"
                 onClick={() => {
                   setShowNewMessageModal(false);
                   setSelectedReceiver(null);
@@ -399,6 +406,7 @@ export default function SNSMessage(): JSX.Element {
                 취소
               </Button>
               <Button
+                className="bg-blue-600 text-white rounded-lg px-6 py-2 text-base font-bold hover:bg-blue-700 transition"
                 onClick={handleSendNewMessage}
                 disabled={!selectedReceiver || !newMessageContent.trim() || sending}
               >

@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { fetchSnsPosts, searchByKeyword, fetchSnsPostsFiltered } from "@/lib/snsApi";
 import { useAuth } from "@/contexts/AuthContext";
 import clsx from "clsx";
-import { FaCrown } from "react-icons/fa";
+import { FaCrown, FaPlus } from "react-icons/fa";
 
 const SNSFeedHome = () => {
   const [posts, setPosts] = useState([]);
@@ -34,8 +34,12 @@ const SNSFeedHome = () => {
       <div className="max-w-[1280px] mx-auto flex px-4 md:px-6">
         <main className="flex-1 w-full">
           <div className="container mx-auto mt-12 mb-8 px-4 text-left">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900">SNS 피드</h1>
-            <p className="text-base text-gray-500 mt-2">사용자들이 공유한 소중한 의견입니다.</p>
+            <div className="flex justify-between items-center">
+              <div>
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-900">SNS 피드</h1>
+                <p className="text-base text-gray-500 mt-2">사용자들이 공유한 소중한 의견입니다.</p>
+              </div>
+            </div>
           </div>
           
           {/* 필터 영역 */}
@@ -65,7 +69,7 @@ const SNSFeedHome = () => {
               className="border px-3 py-1 rounded-md w-[180px] text-sm min-w-0 flex-shrink"
             />
             <button
-              className="bg-black text-white px-4 py-1 rounded-md text-sm"
+              className="w-12 h-12 flex items-center justify-center rounded-full bg-black text-white shadow hover:bg-gray-800 transition-all text-2xl"
               onClick={async () => {
                 try {
                   let data = [];
@@ -94,8 +98,17 @@ const SNSFeedHome = () => {
                   setPosts([]);
                 }
               }}
+              title="검색"
             >
-              검색
+              <FiSearch className="w-5 h-5" />
+            </button>
+            {/* + 버튼을 검색창 오른쪽에 배치 */}
+            <button
+              onClick={() => window.location.href = '/sns-post-write'}
+              className="w-12 h-12 flex items-center justify-center rounded-full bg-black text-white shadow hover:bg-gray-800 transition-all text-2xl"
+              title="글 작성하기"
+            >
+              <FaPlus />
             </button>
           </div>
 
@@ -103,6 +116,22 @@ const SNSFeedHome = () => {
           <div className="space-y-6">
             {posts.map((post) => {
               const isPremiumUser = isPremium(post.subscriptionLevelCode);
+
+              // 삭제된 게시글 처리
+              if (post.boardStatusCode === "DELETED") {
+                return (
+                  <div
+                    key={post.snsPostId}
+                    className="flex rounded-lg shadow p-6 border border-gray-200 bg-gray-100 text-gray-400"
+                  >
+                    <div className="w-full text-center py-12 text-lg font-semibold">
+                      삭제된 게시글입니다.
+                    </div>
+                  </div>
+                );
+              }
+
+              // 정상 게시글 렌더링 (기존 코드)
               return (
                 <div
                   key={post.snsPostId}
@@ -129,7 +158,17 @@ const SNSFeedHome = () => {
                     <div className="ml-6 flex flex-col justify-between w-full">
                       <div className="flex justify-between items-center">
                         <div className="relative flex items-center gap-3">
-                          <p className={clsx("font-bold text-xl text-black", isPremiumUser && "pr-8")}>{post.title}</p>
+                          {/* 프로필 이미지 */}
+                          {post.profileImageUrl ? (
+                            <img
+                              src={post.profileImageUrl}
+                              alt={post.nickname}
+                              className="w-8 h-8 rounded-full object-cover border border-gray-300 bg-gray-100 mr-2"
+                            />
+                          ) : (
+                            <span className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 text-gray-400 text-xl mr-2">👤</span>
+                          )}
+                          <p className={clsx("font-bold text-xl text-black", isPremiumUser && "pr-8")}>{post.nickname}</p>
                           {/* PREMIUM 왕관 아이콘 */}
                           {isPremiumUser && (
                             <span className="absolute -top-4 right-0 animate-bounce z-10">
@@ -180,12 +219,6 @@ const SNSFeedHome = () => {
                               <path strokeLinecap="round" strokeLinejoin="round" d="M17 5a2 2 0 0 1 2 2v12l-7-4-7 4V7a2 2 0 0 1 2-2h10z" />
                             </svg>
                           </div>
-                          {/* PREMIUM 뱃지 강조 */}
-                          {isPremiumUser && (
-                            <span className="ml-2 px-3 py-1 rounded-full bg-gradient-to-r from-yellow-300 via-yellow-100 to-yellow-400 text-yellow-900 font-extrabold border border-yellow-400 shadow animate-pulse">
-                              PREMIUM
-                            </span>
-                          )}
                         </div>
                       </div>
                       <div className="mt-3">
@@ -194,7 +227,7 @@ const SNSFeedHome = () => {
                       </div>
                       <div className="flex items-center gap-4 mt-4 text-sm text-gray-600">
                         <div className="flex items-center gap-1">
-                          <FaHeart className={post.liked ? "text-red-500" : "text-gray-400"} />
+                          <FaHeart className="text-red-500" />
                           {post.likeCount}
                         </div>
                         <div className="flex items-center gap-1">

@@ -1,5 +1,6 @@
 import React, { useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import { FaCamera } from "react-icons/fa";
 import { useNavigate, useLocation } from "react-router-dom";
 import TopBar from "@/components/TopBar";
 import { useAuth } from "@/contexts/AuthContext";
@@ -78,36 +79,39 @@ export default function MyPageLayout({ children }: { children: React.ReactNode }
     };
 
     return (
-        <div className="bg-white flex flex-row justify-center w-full min-h-screen">
-            <div className="bg-white w-[1440px] relative min-h-screen">
-                <TopBar />
-
-                {/* 프로필 섹션 - 상단 가로 배치 */}
-                <div className="mt-[119px] px-[60px] mb-6">
-                    <Card>
-                        <CardContent className="p-6">
-                            <div className="flex items-center gap-6">
+        <div className="bg-gray-50 min-h-screen w-full flex flex-col">
+            <TopBar />
+            <div className="w-full flex flex-col items-center pt-16 pb-10">
+                {/* 프로필 카드 */}
+                <div className="w-full max-w-6xl mb-8">
+                    <Card className="rounded-2xl shadow-lg border border-gray-100 bg-white">
+                        <CardContent className="p-8 flex items-center gap-8">
+                            <div className="relative w-28 h-28">
                                 {user?.profileImageUrl ? (
                                     <img
-                                        className="w-[120px] h-[120px] rounded-full object-cover bg-gray-100 cursor-pointer hover:opacity-80 transition-opacity"
+                                        className="w-28 h-28 rounded-full object-cover bg-gray-100"
                                         src={user.profileImageUrl}
                                         alt="Profile"
-                                        onClick={handleImageClick}
                                     />
                                 ) : (
                                     <div
-                                        className="w-[120px] h-[120px] rounded-full bg-gray-200 flex items-center justify-center text-xl text-gray-500 cursor-pointer hover:bg-gray-300 transition-colors"
-                                        onClick={handleImageClick}
+                                        className="w-28 h-28 rounded-full bg-gray-200 flex items-center justify-center text-2xl text-gray-500"
                                     >
                                         Profile
                                     </div>
                                 )}
-                                <Button
-                                    className="h-12 bg-black hover:bg-black/90 text-white rounded text-base px-6"
+                                {/* 프로필 사진 수정 버튼 (카메라 아이콘) */}
+                                <button
+                                    type="button"
                                     onClick={handleImageClick}
+                                    className="absolute bottom-2 right-2 w-9 h-9 bg-white border border-gray-300 rounded-full flex items-center justify-center shadow transition"
+                                    title="프로필 사진 변경"
                                 >
-                                    프로필 사진 수정
-                                </Button>
+                                    <FaCamera className="w-5 h-5 text-gray-500" />
+                                </button>
+                            </div>
+                            <div className="flex flex-col gap-2 justify-center min-w-[120px]">
+                                <div className="text-2xl font-bold text-gray-900 mb-1">{user?.nickname || "닉네임"}</div>
                                 <input
                                     ref={fileInputRef}
                                     type="file"
@@ -119,30 +123,35 @@ export default function MyPageLayout({ children }: { children: React.ReactNode }
                         </CardContent>
                     </Card>
                 </div>
-
-                {/* 하단 레이아웃 - 사이드바와 메인 콘텐츠 좌우 배치 */}
-                <div className="flex gap-6 px-[60px]">
-                    {/* 왼쪽 - 사이드바 */}
-                    <Card className="w-[246px] h-fit">
-                        <CardContent className="p-0 h-full relative">
-                            {tabs.map((tab, i) => (
-                                <button
-                                    key={tab.path}
-                                    onClick={() => navigate(tab.path)}
-                                    className={`block w-full px-6 py-3 text-left rounded-md font-normal text-base ${
-                                        location.pathname === tab.path
-                                            ? "bg-black text-white mt-[9px] mx-[9px]"
-                                            : "text-black"
-                                    }`}
-                                >
-                                    {tab.label}
-                                </button>
-                            ))}
+                {/* 하단 레이아웃 */}
+                <div className="w-full max-w-6xl flex gap-8">
+                    {/* 사이드바 */}
+                    <Card className="w-[220px] h-fit rounded-2xl shadow-lg border border-gray-100 bg-white">
+                        <CardContent className="p-0 h-full relative flex flex-col gap-1 py-4">
+                            {tabs.map((tab, i) => {
+                                let label = tab.label;
+                                if (tab.label === "내 계정 정보") {
+                                    label = user?.name ? `내 계정 정보 (${user.name})` : "내 계정 정보";
+                                }
+                                return (
+                                    <button
+                                        key={tab.path}
+                                        onClick={() => navigate(tab.path)}
+                                        className={`block w-full px-6 py-3 text-left rounded-lg font-medium text-base transition-all duration-150
+                                            ${location.pathname === tab.path
+                                                ? "bg-blue-50 text-blue-700 font-bold shadow"
+                                                : "text-gray-700 hover:bg-gray-50"}`}
+                                    >
+                                        {label}
+                                    </button>
+                                );
+                            })}
                         </CardContent>
                     </Card>
-
-                    {/* 오른쪽 - 메인 영역 */}
-                    <div className="flex-1">{children}</div>
+                    {/* 메인 영역 */}
+                    <div className="flex-1">
+                        {children}
+                    </div>
                 </div>
             </div>
         </div>
