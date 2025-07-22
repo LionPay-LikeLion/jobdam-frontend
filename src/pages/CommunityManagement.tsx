@@ -95,17 +95,6 @@ const CommunityManagement = () => {
         }
     };
 
-    // 게시판 삭제
-    const handleDeleteBoard = async (boardId: number) => {
-        if (!window.confirm("정말 이 게시판을 삭제하시겠습니까?")) return;
-        try {
-            await api.delete(`/communities/${communityId}/admin/manage/board/${boardId}`);
-            fetchInfo();
-        } catch (e: any) {
-            alert(e?.response?.data || "게시판 삭제에 실패했습니다.");
-        }
-    };
-
     return (
         <div className="bg-white min-h-screen flex justify-center py-10 px-4">
             <div className="w-full max-w-[960px]">
@@ -190,13 +179,6 @@ const CommunityManagement = () => {
                                     onClick={() => openEditModal(board)}
                                 >
                                     <FaEdit /> 수정
-                                </button>
-                                <button
-                                    className="bg-red-600 text-white px-3 py-1 rounded text-sm flex items-center gap-1 disabled:opacity-50"
-                                    disabled={!isOwner}
-                                    onClick={() => handleDeleteBoard(board.boardId)}
-                                >
-                                    <FaTrashAlt /> 삭제
                                 </button>
                             </div>
                         </div>
