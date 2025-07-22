@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { fetchSnsPosts, searchByKeyword, fetchSnsPostsFiltered } from "@/lib/snsApi";
 import { useAuth } from "@/contexts/AuthContext";
 import clsx from "clsx";
+import { FaCrown } from "react-icons/fa";
 
 const SNSFeedHome = () => {
   const [posts, setPosts] = useState([]);
@@ -40,7 +41,11 @@ const SNSFeedHome = () => {
           {/* 필터 영역 */}
           <div className="flex items-center gap-4 bg-white border rounded-lg shadow p-4 mb-8 flex-nowrap min-w-0">
             <label className="text-sm font-medium">작성자 유형:</label>
-            <select className="h-[42px] w-[100px] border border-gray-300 rounded-md px-3 text-sm">
+            <select
+              className="h-[42px] w-[100px] border border-gray-300 rounded-md px-3 text-sm"
+              value={memberType}
+              onChange={e => setMemberType(e.target.value)}
+            >
               <option value="">전체</option>
               <option value="GENERAL">구직자</option>
               <option value="HUNTER">컨설턴트</option>
@@ -96,65 +101,112 @@ const SNSFeedHome = () => {
 
           {/* 게시글 카드 */}
           <div className="space-y-6">
-            {posts.map((post) => (
-              <div
-                key={post.snsPostId}
-                className={clsx(
-                  "flex border rounded-lg shadow p-6 bg-white transition-all duration-300 relative",
-                  isPremium(post.subscriptionLevelCode) && [
-                    "border-4 border-yellow-500",
-                    "shadow-lg hover:shadow-xl"
-                  ]
-                )}
-              >
-                <Link to={`/${post.snsPostId}`} className="w-full flex">
-                  <div className="w-[300px] h-[216px] bg-gray-300 rounded-md overflow-hidden">
-                    {post.imageUrl && post.imageUrl !== "string" && post.imageUrl !== "" ? (
-                      <img src={post.imageUrl} alt="썸네일" className="w-full h-full object-cover rounded-md" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-500 bg-gray-100">
-                        <div className="text-center">
-                          <div className="text-4xl mb-2">📷</div>
-                          <div className="text-sm">이미지 없음</div>
+            {posts.map((post) => {
+              const isPremiumUser = isPremium(post.subscriptionLevelCode);
+              return (
+                <div
+                  key={post.snsPostId}
+                  className={clsx(
+                    "flex rounded-lg shadow p-6 transition-all duration-300 relative",
+                    isPremiumUser
+                      ? "border-4 border-yellow-400 bg-gradient-to-br from-yellow-50 via-white to-yellow-100 shadow-2xl ring-2 ring-yellow-300"
+                      : "border border-gray-200 bg-white"
+                  )}
+                >
+                  <Link to={`/${post.snsPostId}`} className="w-full flex">
+                    <div className="w-[300px] h-[216px] bg-gray-300 rounded-md overflow-hidden">
+                      {post.imageUrl && post.imageUrl !== "string" && post.imageUrl !== "" ? (
+                        <img src={post.imageUrl} alt="썸네일" className="w-full h-full object-cover rounded-md" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-500 bg-gray-100">
+                          <div className="text-center">
+                            <div className="text-4xl mb-2">📷</div>
+                            <div className="text-sm">이미지 없음</div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    <div className="ml-6 flex flex-col justify-between w-full">
+                      <div className="flex justify-between items-center">
+                        <div className="relative flex items-center gap-3">
+                          <p className={clsx("font-bold text-xl text-black", isPremiumUser && "pr-8")}>{post.title}</p>
+                          {/* PREMIUM 왕관 아이콘 */}
+                          {isPremiumUser && (
+                            <span className="absolute -top-4 right-0 animate-bounce z-10">
+                              <FaCrown className="text-yellow-400 drop-shadow-lg" style={{ fontSize: 32, filter: "drop-shadow(0 0 6px gold)" }} />
+                            </span>
+                          )}
+                          {/* MemberType 뱃지 */}
+                          <span
+                            className={clsx(
+                              "px-3 py-1 rounded-full text-xs font-bold ml-2",
+                              post.memberTypeCode === "GENERAL" && "bg-blue-100 text-blue-800 border border-blue-300",
+                              post.memberTypeCode === "HUNTER" && "bg-green-100 text-green-800 border border-green-300",
+                              post.memberTypeCode === "EMPLOYEE" && "bg-yellow-100 text-yellow-800 border border-yellow-300"
+                            )}
+                          >
+                            {post.memberTypeCode === "GENERAL"
+                              ? "구직자"
+                              : post.memberTypeCode === "HUNTER"
+                              ? "컨설턴트"
+                              : post.memberTypeCode === "EMPLOYEE"
+                              ? "기업"
+                              : post.memberTypeCode}
+                          </span>
+                          {isPremiumUser && (
+                            <span className="ml-2 text-yellow-500 font-extrabold text-base drop-shadow-sm">PREMIUM</span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-4">
+                          {/* 좋아요 아이콘 - 내가 했으면 큼지막하고 진하게 */}
+                          <div className="flex items-center gap-1">
+                            <FaHeart
+                              className={clsx(
+                                post.liked ? "text-red-500" : "text-gray-300",
+                                post.liked ? "w-7 h-7" : "w-5 h-5"
+                              )}
+                            />
+                          </div>
+                          {/* 북마크 아이콘 - 내가 했으면 큼지막하고 진하게 */}
+                          <div className="flex items-center gap-1">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill={post.bookmarked ? "#2563eb" : "none"}
+                              viewBox="0 0 24 24"
+                              strokeWidth={2}
+                              stroke={post.bookmarked ? "#2563eb" : "#d1d5db"}
+                              className={clsx(post.bookmarked ? "w-7 h-7" : "w-5 h-5")}
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M17 5a2 2 0 0 1 2 2v12l-7-4-7 4V7a2 2 0 0 1 2-2h10z" />
+                            </svg>
+                          </div>
+                          {/* PREMIUM 뱃지 강조 */}
+                          {isPremiumUser && (
+                            <span className="ml-2 px-3 py-1 rounded-full bg-gradient-to-r from-yellow-300 via-yellow-100 to-yellow-400 text-yellow-900 font-extrabold border border-yellow-400 shadow animate-pulse">
+                              PREMIUM
+                            </span>
+                          )}
                         </div>
                       </div>
-                    )}
-                  </div>
-                  <div className="ml-6 flex flex-col justify-between w-full">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <p className="font-medium">{post.nickname}</p>
-                        <p className="text-sm text-gray-500">{post.createdAt}</p>
+                      <div className="mt-3">
+                        <h3 className="text-xl font-bold">{post.title}</h3>
+                        <p className="text-base mt-2 text-gray-700">{post.content}</p>
                       </div>
-                      <div className="flex items-center gap-2">
-                        {isPremium(post.subscriptionLevelCode) && (
-                          <span className="bg-yellow-500 text-white px-2 py-1 rounded text-xs font-semibold">
-                            PREMIUM
-                          </span>
-                        )}
-                        <span className="bg-gray-100 px-3 py-1 rounded text-sm">
-                          {post.memberTypeCode}
-                        </span>
+                      <div className="flex items-center gap-4 mt-4 text-sm text-gray-600">
+                        <div className="flex items-center gap-1">
+                          <FaHeart className={post.liked ? "text-red-500" : "text-gray-400"} />
+                          {post.likeCount}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <FaComment className="text-blue-500" />
+                          {post.commentCount}
+                        </div>
                       </div>
                     </div>
-                    <div className="mt-3">
-                      <h3 className="text-xl font-bold">{post.title}</h3>
-                      <p className="text-base mt-2 text-gray-700">{post.content}</p>
-                    </div>
-                    <div className="flex items-center gap-4 mt-4 text-sm text-gray-600">
-                      <div className="flex items-center gap-1">
-                        <FaHeart className={post.liked ? "text-red-500" : "text-gray-400"} />
-                        {post.likeCount}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <FaComment className="text-blue-500" />
-                        {post.commentCount}
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              </div>
-            ))}
+                  </Link>
+                </div>
+              );
+            })}
           </div>
         </main>
       </div>

@@ -9,6 +9,7 @@ const SNS_SideBar = () => {
   const menuItems = [
     { label: "피드 보기", path: "/" },
     { label: "내 피드", path: "/mine" },
+    { label: "내 활동내역", path: "/activity-history" },
   ];
 
   const getIsActive = (path: string) => {
