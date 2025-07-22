@@ -14,11 +14,11 @@ import { useAuth } from "@/contexts/AuthContext";
 export default function SNSMessagePage() {
   const { user, isAuthenticated } = useAuth();
 
-  if (!isAuthenticated || !user?.userId) {
+  if (!isAuthenticated || !user?.id) {
     return <div className="text-center py-10">로그인 후 이용해 주세요.</div>;
   }
 
-  const myUserId = user.userId;
+  const myUserId = user.id;
 
   const [boxes, setBoxes] = useState<any[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
