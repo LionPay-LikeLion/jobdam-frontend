@@ -128,46 +128,58 @@ export const CommunityBoardList = () => {
     }
 
     return (
-        <>
-            <div className="container mx-auto mt-12 mb-8 px-4 text-left flex justify-between items-center">
-                <h1 className="text-3xl md:text-4xl font-bold text-gray-900">게시판</h1>
-                <button
-                    onClick={() => isOwner ? navigate(`/communities/${id}/board/create`) : null}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${isOwner
-                        ? "bg-black text-white hover:bg-gray-800 cursor-pointer"
-                        : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                        }`}
-                >
-                    <FaPlus className="w-4 h-4" />
-                    게시판 생성
-                </button>
-            </div>
-            <div className="grid grid-cols-2 gap-10">
-                {boards.map((board) => (
-                    <div
-                        key={board.communityBoardId}
-                        className="bg-white rounded-xl border border-gray-200 shadow-md p-6 flex flex-col justify-between h-64"
+        <div className="w-full min-h-screen bg-gray-50 pb-10">
+            {/* 상단 타이틀/버튼 영역 */}
+            <div className="w-full py-10 px-4 md:px-0 bg-white shadow-sm border-b border-gray-100 mb-8">
+                <div className="max-w-[900px] mx-auto flex flex-row items-center justify-between text-center">
+                    <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight">게시판</h1>
+                    <button
+                        onClick={() => isOwner ? navigate(`/communities/${id}/board/create`) : null}
+                        className={`flex items-center gap-2 px-5 py-2 rounded-md border text-base font-bold shadow transition-all duration-150
+                ${isOwner ? "bg-blue-500 text-white hover:bg-blue-600 border-blue-400 cursor-pointer" : "bg-gray-200 text-gray-400 border-gray-200 cursor-not-allowed"}`}
                     >
-                        <div className="flex items-center gap-2 mb-2">
-                            {getBoardIcon(board.boardTypeCode)}
-                            <span className="text-lg font-semibold">{board.name}</span>
-                        </div>
-                        <p className="text-sm text-gray-600 mb-2">{board.description}</p>
-                        <div className="flex justify-end mb-4">
-                            <span className={`text-xs px-2 py-1 rounded-full border ${getBoardTypeColor(board.boardTypeCode)}`}>
-                                {board.boardTypeCode}
-                            </span>
-                        </div>
-                        <button
-                            onClick={() => navigate(`/communities/${id}/board/${board.communityBoardId}`)}
-                            className="bg-black text-white py-2 rounded-lg shadow-md"
-                        >
-                            게시판 입장
-                        </button>
-                    </div>
-                ))}
+                        <FaPlus className="w-5 h-5" />
+                        게시판 생성
+                    </button>
+                </div>
             </div>
-        </>
+            {/* 게시판 카드 리스트 */}
+            <div className="max-w-[900px] mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+                {boards.map((board, idx) => {
+                    const pastelColors = [
+                        "bg-blue-50 border-blue-100",
+                        "bg-pink-50 border-pink-100",
+                        "bg-purple-50 border-purple-100",
+                        "bg-yellow-50 border-yellow-100"
+                    ];
+                    return (
+                        <div
+                            key={board.communityBoardId}
+                            className={`rounded-2xl shadow-md border ${pastelColors[idx % pastelColors.length]} p-7 flex flex-col min-h-[220px] transition-all group hover:shadow-lg`}
+                        >
+                            <div className="flex items-center gap-3 mb-3">
+                                <span className="w-9 h-9 flex items-center justify-center rounded-full bg-white/80 border border-gray-100 shadow text-xl">
+                                    {getBoardIcon(board.boardTypeCode)}
+                                </span>
+                                <span className="text-xl font-bold text-gray-900 truncate">{board.name}</span>
+                            </div>
+                            <p className="text-gray-700 text-base mb-4 line-clamp-2 break-words">{board.description}</p>
+                            <div className="flex items-center gap-2 mt-auto">
+                                <span className={`text-xs px-3 py-1 rounded-full border font-bold ${getBoardTypeColor(board.boardTypeCode)}`}>{board.boardTypeCode}</span>
+                                <span className={`ml-auto`}>
+                                    <button
+                                        onClick={() => navigate(`/communities/${id}/board/${board.communityBoardId}`)}
+                                        className="px-4 py-2 rounded-md bg-blue-500 text-white font-bold shadow hover:bg-blue-600 transition-all text-sm"
+                                    >
+                                        게시판 입장
+                                    </button>
+                                </span>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
     );
 };
 
