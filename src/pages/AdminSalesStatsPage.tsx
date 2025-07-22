@@ -8,8 +8,8 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 
 type DailyStat = {
-    date?: string; // 일별
-    month?: string; // 월별
+    date?: string;
+    month?: string;
     cardSales: number;
     cardRefunds: number;
     netSales: number;
@@ -49,13 +49,14 @@ export default function AdminSalesStatsPage() {
     }, [tab]);
 
     const xKey = tab.includes("monthly") ? "month" : "date";
+    const isTotalTab = tab === "dailyTotal" || tab === "monthlyTotal";
 
-    // 안전하게 number 처리
+    // 안전하게 number 처리 + 전체매출 탭이면 환불/순매출 0 처리
     const chartData = stats.map(row => ({
         ...row,
         cardSales: Number(row.cardSales ?? 0),
-        cardRefunds: Number(row.cardRefunds ?? 0),
-        netSales: Number(row.netSales ?? 0),
+        cardRefunds: isTotalTab ? 0 : Number(row.cardRefunds ?? 0),
+        netSales: isTotalTab ? Number(row.cardSales ?? 0) : Number(row.netSales ?? 0),
         totalOrders: Number(row.totalOrders ?? 0),
         avgAmount: Number(row.avgAmount ?? 0),
     }));
@@ -108,9 +109,9 @@ export default function AdminSalesStatsPage() {
                                             <Tooltip
                                                 formatter={(v: any, name: string) =>
                                                     [v?.toLocaleString?.() ?? v, {
-                                                        cardSales: "카드매출",
+                                                        cardSales: isTotalTab ? "전체매출" : "카드매출",
                                                         cardRefunds: "카드환불",
-                                                        netSales: "순매출"
+                                                        netSales: isTotalTab ? "전체매출" : "순매출"
                                                     }[name] || name
                                                     ]}
                                             />
@@ -118,30 +119,34 @@ export default function AdminSalesStatsPage() {
                                             <Line
                                                 type="monotone"
                                                 dataKey="cardSales"
-                                                name="카드매출"
+                                                name={isTotalTab ? "전체매출" : "카드매출"}
                                                 stroke={COLOR_CARD_SALES}
                                                 strokeWidth={3}
                                                 dot={{ r: 2 }}
                                                 activeDot={{ r: 5, strokeWidth: 0, fill: COLOR_CARD_SALES, stroke: COLOR_CARD_SALES }}
                                             />
-                                            <Line
-                                                type="monotone"
-                                                dataKey="cardRefunds"
-                                                name="카드환불"
-                                                stroke={COLOR_CARD_REFUNDS}
-                                                strokeWidth={3}
-                                                dot={{ r: 2 }}
-                                                activeDot={{ r: 5, strokeWidth: 0, fill: COLOR_CARD_REFUNDS, stroke: COLOR_CARD_REFUNDS }}
-                                            />
-                                            <Line
-                                                type="monotone"
-                                                dataKey="netSales"
-                                                name="순매출"
-                                                stroke={COLOR_NET_SALES}
-                                                strokeWidth={3}
-                                                dot={{ r: 2 }}
-                                                activeDot={{ r: 6, strokeWidth: 0, fill: COLOR_NET_SALES, stroke: COLOR_NET_SALES }}
-                                            />
+                                            {!isTotalTab && (
+                                                <Line
+                                                    type="monotone"
+                                                    dataKey="cardRefunds"
+                                                    name="카드환불"
+                                                    stroke={COLOR_CARD_REFUNDS}
+                                                    strokeWidth={3}
+                                                    dot={{ r: 2 }}
+                                                    activeDot={{ r: 5, strokeWidth: 0, fill: COLOR_CARD_REFUNDS, stroke: COLOR_CARD_REFUNDS }}
+                                                />
+                                            )}
+                                            {!isTotalTab && (
+                                                <Line
+                                                    type="monotone"
+                                                    dataKey="netSales"
+                                                    name="순매출"
+                                                    stroke={COLOR_NET_SALES}
+                                                    strokeWidth={3}
+                                                    dot={{ r: 2 }}
+                                                    activeDot={{ r: 6, strokeWidth: 0, fill: COLOR_NET_SALES, stroke: COLOR_NET_SALES }}
+                                                />
+                                            )}
                                         </LineChart>
                                     </ResponsiveContainer>
                                 )}
@@ -162,16 +167,20 @@ export default function AdminSalesStatsPage() {
                                             <Tooltip
                                                 formatter={(v: any, name: string) =>
                                                     [v?.toLocaleString?.() ?? v, {
-                                                        cardSales: "카드매출",
+                                                        cardSales: isTotalTab ? "전체매출" : "카드매출",
                                                         cardRefunds: "카드환불",
-                                                        netSales: "순매출"
+                                                        netSales: isTotalTab ? "전체매출" : "순매출"
                                                     }[name] || name
                                                     ]}
                                             />
                                             <Legend />
-                                            <Bar dataKey="cardSales" name="카드매출" fill={COLOR_CARD_SALES} fillOpacity={0.95} barSize={26} />
-                                            <Bar dataKey="cardRefunds" name="카드환불" fill={COLOR_CARD_REFUNDS} fillOpacity={0.88} barSize={26} />
-                                            <Bar dataKey="netSales" name="순매출" fill={COLOR_NET_SALES} fillOpacity={0.88} barSize={26} />
+                                            <Bar dataKey="cardSales" name={isTotalTab ? "전체매출" : "카드매출"} fill={COLOR_CARD_SALES} fillOpacity={0.95} barSize={26} />
+                                            {!isTotalTab && (
+                                                <Bar dataKey="cardRefunds" name="카드환불" fill={COLOR_CARD_REFUNDS} fillOpacity={0.88} barSize={26} />
+                                            )}
+                                            {!isTotalTab && (
+                                                <Bar dataKey="netSales" name="순매출" fill={COLOR_NET_SALES} fillOpacity={0.88} barSize={26} />
+                                            )}
                                         </BarChart>
                                     </ResponsiveContainer>
                                 )}
@@ -188,9 +197,9 @@ export default function AdminSalesStatsPage() {
                                                 <th className="px-3 py-2 font-bold">
                                                     {tab.includes("monthly") ? "월" : "날짜"}
                                                 </th>
-                                                <th className="px-3 py-2">카드 매출</th>
-                                                <th className="px-3 py-2">카드 환불</th>
-                                                <th className="px-3 py-2">순매출</th>
+                                                <th className="px-3 py-2">{isTotalTab ? "전체매출" : "카드 매출"}</th>
+                                                {!isTotalTab && <th className="px-3 py-2">카드 환불</th>}
+                                                {!isTotalTab && <th className="px-3 py-2">순매출</th>}
                                                 <th className="px-3 py-2">결제 건수</th>
                                                 <th className="px-3 py-2">평균 결제금액</th>
                                             </tr>
@@ -200,8 +209,8 @@ export default function AdminSalesStatsPage() {
                                                 <tr key={i} className="border-b hover:bg-gray-50">
                                                     <td className="px-3 py-2">{s.date || s.month}</td>
                                                     <td className="px-3 py-2 text-blue-700">{s.cardSales.toLocaleString()}</td>
-                                                    <td className="px-3 py-2 text-red-600">{s.cardRefunds.toLocaleString()}</td>
-                                                    <td className="px-3 py-2 font-bold text-teal-700">{s.netSales.toLocaleString()}</td>
+                                                    {!isTotalTab && <td className="px-3 py-2 text-red-600">{s.cardRefunds.toLocaleString()}</td>}
+                                                    {!isTotalTab && <td className="px-3 py-2 font-bold text-teal-700">{s.netSales.toLocaleString()}</td>}
                                                     <td className="px-3 py-2">{s.totalOrders.toLocaleString()}</td>
                                                     <td className="px-3 py-2">{Number(s.avgAmount).toLocaleString()}</td>
                                                 </tr>

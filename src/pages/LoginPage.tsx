@@ -10,7 +10,7 @@ import { login } from "@/lib/authApi";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { useEffect } from "react";
-import { googleLogin } from "@/lib/authApi";
+import { googleLogin, kakaoLogin } from "@/lib/authApi";
 import { useGoogleLogin } from "@react-oauth/google";
 import { setTokens } from '@/lib/auth';
 
@@ -56,6 +56,15 @@ export default function LoginPage() {
     password: "",
   });
   const [isLoading, setIsLoading] = useState(false);
+
+  const handleKakaoLogin = () => {
+    const kakaoClientId = import.meta.env.VITE_KAKAO_CLIENT_ID;
+    const kakaoRedirectUri = import.meta.env.VITE_KAKAO_REDIRECT_URI;
+    
+    const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${kakaoClientId}&redirect_uri=${kakaoRedirectUri}&response_type=code&scope=profile_nickname,profile_image,account_email`;
+    
+    window.location.href = kakaoAuthUrl;
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -207,6 +216,7 @@ export default function LoginPage() {
               <Button
                 className="w-full h-14 mb-6 bg-[#fee500] text-black flex items-center justify-center gap-2"
                 disabled={isLoading}
+                onClick={handleKakaoLogin}
               >
                 <SiKakaotalk className="w-5 h-5" />
                 카카오 로그인
