@@ -60,7 +60,7 @@ const CommunityManagement = () => {
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-2xl font-semibold">그룹 게시판 관리</h2>
                         <button
-                            onClick={() => navigate(`/community/${id}/board/create`)}
+                            onClick={() => navigate(`/communities/${id}/board/create`)}
                             className="bg-purple-600 text-white px-4 py-2 rounded-md flex items-center gap-2"
                         >
                             <FaPlus /> 게시판 생성
@@ -95,7 +95,7 @@ const CommunityManagement = () => {
                             </div>
                             <button
                                 className="bg-purple-600 text-white px-5 py-2 rounded-md hover:bg-purple-700 transition-colors"
-                                onClick={() => navigate(`/community/${id}/upgrade`)}
+                                onClick={() => navigate(`/communities/${id}/upgrade`)}
                             >
                                 플랜 전환
                             </button>

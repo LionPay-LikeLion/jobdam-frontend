@@ -16,7 +16,7 @@ import { setTokens } from '@/lib/auth';
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { login: authLogin } = useAuth();
+  const { login: authLogin, refreshUserInfo } = useAuth();
 
   const googleRedirectLogin = useGoogleLogin({
     flow: "auth-code",
@@ -86,8 +86,9 @@ export default function LoginPage() {
         authLogin(response.user);
       }*/
       if (response.accessToken) {
-        authLogin(response.accessToken); // ✅ Same as Google login
-        setTokens({ accessToken: response.accessToken, refreshToken: response.refreshToken }); // ✅ store to localStorage
+        await authLogin(response.accessToken); // 토큰 저장
+        setTokens({ accessToken: response.accessToken, refreshToken: response.refreshToken });
+        await refreshUserInfo(); // ✅ user 정보 새로고침!
       }
 
       toast.success("로그인되었습니다!");

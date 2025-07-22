@@ -132,7 +132,7 @@ export default function CommunityBoardMain(): JSX.Element {
           </div>
           <button 
             className="bg-teal-400 text-white text-sm px-5 py-2 rounded-md"
-            onClick={() => navigate(`/community/${id}/board/${boardId}/post/write`)}
+            onClick={() => navigate(`/communities/${id}/board/${boardId}/post/write`)}
           >
             + 게시글 작성
           </button>
@@ -173,7 +173,7 @@ export default function CommunityBoardMain(): JSX.Element {
                         공지
                       </span>
                       <div
-                        onClick={() => navigate(`/community/${id}/board/detail/${post.postId}`)}
+                        onClick={() => navigate(`/communities/${id}/board/detail/${post.postId}`)}
                         className="text-black hover:text-blue-600 hover:underline cursor-pointer"
                       >
                         {post.title}
@@ -202,7 +202,7 @@ export default function CommunityBoardMain(): JSX.Element {
                   >
                     <div className="flex items-center gap-2 px-4 py-3">
                       <div
-                        onClick={() => navigate(`/community/${id}/board/detail/${post.postId}`)}
+                        onClick={() => navigate(`/communities/${id}/board/detail/${post.postId}`)}
                         className="text-black hover:text-blue-600 hover:underline cursor-pointer"
                       >
                         {post.title}

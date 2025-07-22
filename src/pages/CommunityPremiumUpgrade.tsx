@@ -42,7 +42,7 @@ const CommunityPremiumUpgrade = (): JSX.Element => {
                 planType
             });
             setResultMsg("🎉 프리미엄 커뮤니티 업그레이드가 완료되었습니다.");
-            setTimeout(() => navigate("/community"), 1200);
+            setTimeout(() => navigate("/communities"), 1200);
         } catch (err: any) {
             setResultMsg(
                 err?.response?.data?.message

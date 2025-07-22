@@ -87,7 +87,7 @@ export default function CommunityPostEdit(): JSX.Element {
         description: "게시글이 수정되었습니다.",
       });
       
-      navigate(`/community/${id}/board/detail/${postId}`);
+      navigate(`/communities/${id}/board/detail/${postId}`);
     } catch (error: any) {
       console.error('게시글 수정 실패:', error);
       
@@ -162,7 +162,7 @@ export default function CommunityPostEdit(): JSX.Element {
 
         {/* 버튼 */}
         <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={() => navigate(`/community/${id}/board/detail/${postId}`)} disabled={loading}>
+          <Button variant="outline" onClick={() => navigate(`/communities/${id}/board/detail/${postId}`)} disabled={loading}>
             취소
           </Button>
           <Button onClick={handleUpdate} disabled={loading}>

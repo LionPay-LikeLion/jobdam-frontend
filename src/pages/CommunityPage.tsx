@@ -72,7 +72,7 @@ const CommunityPage = () => {
   };
 
   const handleCreateCommunity = () => {
-    navigate("/community/create");
+    navigate("/communities/create");
   };
 
   if (loading) {
@@ -179,7 +179,7 @@ const CommunityPage = () => {
                   </div>
                 </div>
                 <button
-                  onClick={() => navigate(`/community/${community.communityId}`)}
+                  onClick={() => navigate(`/communities/${community.communityId}`)}
                   className="absolute bottom-4 right-4 px-4 py-2 bg-black text-white text-sm rounded-md hover:bg-gray-800 transition-colors"
                 >
                   입장
