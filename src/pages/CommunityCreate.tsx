@@ -101,7 +101,7 @@ export default function CommunityCreate(): JSX.Element {
         title: "성공",
         description: "커뮤니티가 성공적으로 생성되었습니다.",
       });
-      navigate("/community");
+      navigate("/communities");
     } catch (error: any) {
       console.error("커뮤니티 생성 실패:", error);
       
