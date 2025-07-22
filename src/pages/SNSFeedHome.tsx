@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { FaHeart, FaComment, FaBookmark, FaPlus, FaCrown } from "react-icons/fa";
+import { FaHeart, FaComment, FaBookmark, FaPlus, FaCrown, FaClock } from "react-icons/fa";
 import { FiSearch } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import clsx from "clsx";
@@ -10,6 +10,10 @@ import {
     fetchSnsPosts,
     createComment,
     deleteSnsPost,
+    likeSnsPost,
+    unlikeSnsPost,
+    addBookmark,
+    removeBookmark,
 } from "@/lib/snsApi";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -45,21 +49,22 @@ export default function SNSFeedHome() {
     const [hasMore, setHasMore] = useState(true);
     const commentInputRefs = useRef<{ [key: number]: HTMLInputElement | null }>({});
     const menuButtonRefs = useRef<{ [key: number]: HTMLButtonElement | null }>({});
+    const navigate = useRef<any>(null);
     const { user } = useAuth();
 
     // 필터/검색/초기 로딩
     useEffect(() => {
-        setLoading(true);
-        setOffset(0);
-        setHasMore(true);
-        fetchSnsPostsFiltered(memberType, sort, 0, 7)
-            .then(data => {
-                setPosts(data);
-                setOffset(7);
-            })
-            .catch(() => setPosts([]))
-            .finally(() => setLoading(false));
-    }, [memberType, sort, keyword]);
+      setLoading(true);
+      setOffset(0);
+      setHasMore(true);
+      fetchSnsPostsFiltered(memberType, sort)
+          .then(data => {
+              setPosts(data);
+              setOffset(7);
+          })
+          .catch(() => setPosts([]))
+          .finally(() => setLoading(false));
+  }, [memberType, sort]); // <-- keyword 빼기
 
     // 무한스크롤
     useEffect(() => {
@@ -67,7 +72,7 @@ export default function SNSFeedHome() {
             if (fetching || loading || !hasMore) return;
             if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 200) {
                 setFetching(true);
-                fetchSnsPostsFiltered(memberType, sort, offset, 7)
+                fetchSnsPostsFiltered(memberType, sort)
                     .then(data => {
                         if (!data || data.length === 0) {
                             setHasMore(false);
@@ -85,23 +90,19 @@ export default function SNSFeedHome() {
 
     // 댓글 2개 미리보기
     useEffect(() => {
-        if (!posts.length) return;
-        setPreviewComments({});
-        posts.forEach(post => {
-            if (!post.snsPostId) return;
-            fetchComments(post.snsPostId)
-                .then(comments => {
-                    const filtered = (comments || [])
-                        .filter(c => c.boardStatusCode !== "DELETED")
-                        .slice(0, 2);
-                    setPreviewComments(prev => ({
-                        ...prev,
-                        [post.snsPostId]: filtered
-                    }));
-                });
-        });
-    }, [posts]);
-
+      if (!posts.length) return;
+      const previews: Record<number, any[]> = {};
+      const fetchAll = async () => {
+          for (const post of posts) {
+              if (!post.snsPostId) continue;
+              const comments = await fetchComments(post.snsPostId);
+              previews[post.snsPostId] = (comments || []).filter(c => c.boardStatusCode !== "DELETED").slice(0, 2);
+          }
+          setPreviewComments(previews);
+      };
+      fetchAll();
+      // eslint-disable-next-line
+  }, []);
     // 바깥 클릭시 더보기 메뉴 닫기
     useEffect(() => {
         function handleClick(e: any) {
@@ -130,6 +131,21 @@ export default function SNSFeedHome() {
         });
     };
 
+    const handleSearch = async (searchKeyword: string) => {
+      if (!searchKeyword.trim()) return; // 한 글자도 없으면 실행X
+      setLoading(true);
+      try {
+          let data = await searchByKeyword(searchKeyword.trim());
+          setPosts(data);
+          setOffset(data.length);
+          setHasMore(true);
+      } catch (e) {
+          setPosts([]);
+      } finally {
+          setLoading(false);
+      }
+  };
+
     const handleDeletePost = async (postId: number) => {
         if (!window.confirm("정말 게시글을 삭제하시겠습니까?")) return;
         await deleteSnsPost(postId);
@@ -139,60 +155,96 @@ export default function SNSFeedHome() {
     const isPremium = (subscriptionLevelCode: string) => subscriptionLevelCode === "PREMIUM";
     const visiblePosts = posts.filter(post => post.boardStatusCode !== "DELETED");
 
-    if (loading) return <div className="text-center py-10 text-lg">로딩중...</div>;
+    // 좋아요 토글
+    const handleToggleLike = async (post: any) => {
+      if (!user) {
+          window.location.href = "/login";
+          return;
+      }
+      let updated;
+      if (post.liked) {
+          await unlikeSnsPost(post.snsPostId);
+          updated = { ...post, liked: false};
+      } else {
+          await likeSnsPost(post.snsPostId);
+          updated = { ...post, liked: true};
+      }
+      setPosts(prev => prev.map(p => p.snsPostId === post.snsPostId ? updated : p));
+      // 여기서만 fetchComments(post.snsPostId) 호출
+      const comments = await fetchComments(post.snsPostId);
+      setPreviewComments(prev => ({
+          ...prev,
+          [post.snsPostId]: (comments || []).filter(c => c.boardStatusCode !== "DELETED").slice(0, 2)
+      }));
+  };
+
+    // 북마크 토글
+    const handleToggleBookmark = async (post: any) => {
+      if (!user) {
+          window.location.href = "/login";
+          return;
+      }
+      let updated;
+      if (post.bookmarked) {
+          await removeBookmark(post.snsPostId);
+          updated = { ...post, bookmarked: false };
+      } else {
+          await addBookmark(post.snsPostId);
+          updated = { ...post, bookmarked: true };
+      }
+      setPosts(prev => prev.map(p => p.snsPostId === post.snsPostId ? updated : p));
+      // 북마크는 댓글 미리보기가 필요 없으면 아래 라인은 생략
+      // 필요하다면 똑같이 fetchComments 호출
+  };
 
     return (
         <div className="bg-[#f6f6f7] min-h-screen pb-10 w-full flex justify-center">
             <div className="w-full max-w-[540px] mx-auto flex flex-col px-1 sm:px-0">
                 {/* 필터 바 */}
                 <div className="flex items-center gap-2 mt-8 mb-5 w-full bg-white rounded-2xl shadow border border-[#ececec] px-4 py-3 justify-between">
-                    <div className="flex gap-2 flex-1">
-                        <select
-                            className="h-10 w-[90px] border border-gray-300 rounded px-3 text-sm bg-white"
-                            value={memberType}
-                            onChange={e => setMemberType(e.target.value)}
-                        >
-                            <option value="">전체</option>
-                            <option value="GENERAL">구직자</option>
-                            <option value="HUNTER">컨설턴트</option>
-                            <option value="EMPLOYEE">기업</option>
-                        </select>
-                        <select value={sort} onChange={e => setSort(e.target.value)}
-                                className="h-10 w-[90px] border border-gray-300 rounded px-3 text-sm bg-white">
-                            <option value="latest">최신순</option>
-                            <option value="likes">인기순</option>
-                        </select>
-                        <input
-                            type="text"
-                            value={keyword}
-                            onChange={e => setKeyword(e.target.value)}
-                            placeholder="검색"
-                            className="border border-gray-300 bg-white px-3 py-2 rounded w-[140px] text-sm"
-                        />
+                    {/* 필터 버튼 그룹 */}
+                    <div className="flex gap-2 items-center flex-nowrap">
                         <button
-                            className={`w-10 h-10 flex items-center justify-center rounded-full ${BTN_GRAY} ml-1`}
-                            onClick={async () => {
-                                if (!keyword.trim()) return; // 아무 글자 없으면 검색 실행 안 함
-                                let data: any[] = await searchByKeyword(keyword);
-                                setPosts(
-                                    data.map(post => ({
-                                        ...post,
-                                        profileImageUrl: post.profileImageUrl ?? ""
-                                    }))
-                                );
-                            }}
+                            className={`h-10 min-w-[60px] px-3 rounded border text-sm font-bold flex items-center justify-center transition ${memberType === "" ? "bg-gray-700 text-white border-gray-800" : "bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200"}`}
+                            onClick={() => setMemberType("")}
+                        >전체</button>
+                        <button
+                            className={`h-10 min-w-[60px] px-3 rounded border text-sm font-bold flex items-center justify-center transition ${memberType === "GENERAL" ? "bg-blue-600 text-white border-blue-700" : "bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100"}`}
+                            onClick={() => setMemberType("GENERAL")}
+                        >구직자</button>
+                        <button
+                            className={`h-10 min-w-[60px] px-3 rounded border text-sm font-bold flex items-center justify-center transition ${memberType === "HUNTER" ? "bg-green-600 text-white border-green-700" : "bg-green-50 text-green-600 border-green-200 hover:bg-green-100"}`}
+                            onClick={() => setMemberType("HUNTER")}
+                        >컨설턴트</button>
+                        <button
+                            className={`h-10 min-w-[60px] px-3 rounded border text-sm font-bold flex items-center justify-center transition ${memberType === "EMPLOYEE" ? "bg-yellow-400 text-white border-yellow-500" : "bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100"}`}
+                            onClick={() => setMemberType("EMPLOYEE")}
+                        >기업</button>
+                        {/* 최신순/인기순 토글 버튼 */}
+                        <button
+                            onClick={() => setSort(sort === "latest" ? "likes" : "latest")}
+                            className={`h-12 w-12 flex items-center justify-center rounded-full border text-2xl font-bold transition ml-2 ${sort === "latest" ? "bg-blue-500 text-white border-blue-500" : "bg-red-500 text-white border-red-500"}`}
+                            title={sort === "latest" ? "최신순" : "인기순"}
+                        >
+                            {sort === "latest" ? <FaClock /> : <FaHeart />}
+                        </button>
+                        {/* 글작성 버튼 */}
+                        <button
+                            onClick={() => window.location.href = '/sns-post-write'}
+                            className="h-12 w-12 flex items-center justify-center rounded-full bg-gray-200 text-gray-700 border border-gray-300 text-2xl ml-2"
+                            title="글 작성"
+                        >
+                            <FaPlus />
+                        </button>
+                        {/* 검색 버튼 */}
+                        <button
+                            className="h-12 w-12 flex items-center justify-center rounded-full bg-gray-200 text-gray-700 border border-gray-300 text-2xl ml-2"
+                            onClick={() => {/* 검색 모달/창 열기 함수 */}}
                             title="검색"
                         >
-                            <FiSearch className="w-5 h-5" />
+                            <FiSearch />
                         </button>
                     </div>
-                    <button
-                        onClick={() => window.location.href = '/sns-post-write'}
-                        className={`w-10 h-10 flex items-center justify-center rounded-full ${BTN_GRAY}`}
-                        title="글 작성"
-                    >
-                        <FaPlus />
-                    </button>
                 </div>
                 {/* 피드 카드 */}
                 <div className="flex flex-col gap-8 w-full">
@@ -306,9 +358,17 @@ export default function SNSFeedHome() {
                                 </Link>
                                 {/* 좋아요/댓글/북마크 */}
                                 <div className="flex items-center px-5 py-2 gap-6">
-                                    <FaHeart className={clsx(post.liked ? "text-red-500" : "text-gray-400", "w-6 h-6 cursor-pointer")} />
+                                    <FaHeart
+                                        className={clsx(post.liked ? "text-red-500" : "text-gray-400", "w-6 h-6 cursor-pointer")}
+                                        onClick={() => handleToggleLike(post)}
+                                        title={post.liked ? "좋아요 취소" : "좋아요"}
+                                    />
                                     <FaComment className="text-[#727cf5] w-6 h-6" />
-                                    <FaBookmark className={clsx(post.bookmarked ? "text-yellow-400" : "text-gray-400", "w-6 h-6 ml-auto cursor-pointer")} />
+                                    <FaBookmark
+                                        className={clsx(post.bookmarked ? "text-yellow-400" : "text-gray-400", "w-6 h-6 ml-auto cursor-pointer")}
+                                        onClick={() => handleToggleBookmark(post)}
+                                        title={post.bookmarked ? "북마크 취소" : "북마크"}
+                                    />
                                 </div>
                                 {/* 좋아요/댓글수/본문/댓글 */}
                                 <div className="px-5 pb-3">

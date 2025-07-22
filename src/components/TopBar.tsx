@@ -4,6 +4,7 @@ import { Search, User, Crown, MessageSquare } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { FaCrown } from "react-icons/fa"; // 더 화려한 왕관 원하면
 
 export default function TopBar() {
   const navigate = useNavigate();
@@ -86,7 +87,7 @@ export default function TopBar() {
                     >
                       <User className="w-4 h-4 text-gray-600" />
                       <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-gray-900">
+                    <span className="text-sm font-medium text-gray-900 flex items-center">
                       {user?.nickname || user?.name || "사용자"}
                     </span>
                         <span className="text-xs text-gray-500">
@@ -94,8 +95,29 @@ export default function TopBar() {
                           user?.memberTypeCode === 'HUNTER' ? '컨설턴트' :
                               user?.memberTypeCode === 'GENERAL' ? '일반회원' : '회원'}
                     </span>
-                        <span className="text-xs text-gray-500">
-                      {user?.subscriptionLevel || "BASIC"}
+                    <span className="text-xs text-gray-500 flex items-center">
+                      {user?.subscriptionLevel === "PREMIUM" ? (
+                        <span className="inline-flex items-center px-3 py-1 rounded-lg shadow border border-yellow-400 bg-gradient-to-r from-yellow-300 via-yellow-400 to-orange-300 text-white text-sm font-bold mr-1 animate-pulse">
+                          PREMIUM
+                        </span>
+                      ) : (
+                        user?.subscriptionLevel
+                      )}
+                      {user?.subscriptionLevel === "PREMIUM" && (
+                        <span className="ml-1 relative flex items-center">
+                          <FaCrown
+                            className="text-yellow-400 animate-bounce"
+                            style={{
+                              filter: "drop-shadow(0 0 6px gold) drop-shadow(0 0 12px #ffe066)",
+                              fontSize: 20,
+                              marginLeft: 2,
+                            }}
+                            title="PREMIUM"
+                          />
+                          {/* 빤짝이 효과: CSS 애니메이션 추가 가능 */}
+                          <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-yellow-200 animate-ping opacity-70"></span>
+                        </span>
+                      )}
                     </span>
                       </div>
                     </div>
@@ -129,13 +151,6 @@ export default function TopBar() {
                   로그인
                 </Button>
             )}
-            <div className="flex items-center w-[200px] border border-[#0000001a] rounded-md">
-              <Input
-                  className="border-0 text-[#00000080] text-sm"
-                  placeholder="Search in site"
-              />
-              <Search className="w-5 h-5 mr-2 text-gray-400" />
-            </div>
           </div>
         </div>
       </header>
