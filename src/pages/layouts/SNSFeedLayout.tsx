@@ -9,9 +9,9 @@ const SNSFeedLayout = () => {
     <div className="min-h-screen flex flex-col bg-white font-korean">
       <TopBar />
       <div className="w-full flex justify-center">
-        <div className="container w-full flex flex-row items-start px-4 md:px-6">
+        <div className="container w-full flex flex-row items-start px-4 md:px-6 pt-0 mt-0">
           <SNS_SideBar />
-          <main className="flex-1 py-10">
+          <main className="flex-1 py-0">
             <Outlet />
           </main>
         </div>
