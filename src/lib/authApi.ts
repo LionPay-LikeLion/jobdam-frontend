@@ -50,6 +50,15 @@ export const googleLogin = async (code: string): Promise<GoogleLoginResponse> =>
   return response.data;
 };
 
+export const kakaoLogin = async (code: string): Promise<GoogleLoginResponse> => {
+  const response = await api.post('/oauth/login', { 
+    code,
+    providerType: 'KAKAO',
+  });
+  return response.data;
+};
+
+
 // 로그인 API
 export const login = async (credentials: LoginRequest): Promise<LoginResponse> => {
   try {

@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
 import GoogleRedirectHandler from "./pages/GoogleRedirectHandler";
+import KakaoRedirectHandler from "./pages/KakaoRedirectHandler";
 import HomePage from "@/pages/HomePage";
 import LoginPage from "@/pages/LoginPage";
 import SignUp from "@/pages/SignUp";
@@ -128,8 +129,9 @@ const AppRoutes = () => {
                 </>
             )}
 
-            {/* 구글 OAuth 콜백 */}
+            {/* OAuth 콜백 */}
             <Route path="/api/oauth/google/callback" element={<GoogleRedirectHandler />} />
+            <Route path="/oauth/kakao/callback" element={<KakaoRedirectHandler />} />
             {/* 404 */}
             <Route path="*" element={<NotFound />} />
         </Routes>
