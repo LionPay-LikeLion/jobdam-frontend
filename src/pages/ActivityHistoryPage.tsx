@@ -3,15 +3,28 @@ import TopBar from "@/components/TopBar";
 import SNS_SideBar from "@/components/SNS_SideBar";
 import { Button } from "@/components/ui/button";
 import clsx from "clsx";
+import { useAuth } from "@/contexts/AuthContext"; 
+import { useNavigate } from "react-router-dom"; 
+import api from "@/lib/api"; 
 
 type TabType = "SNS_POST" | "SNS_COMMENT";
 
 export default function ActivityHistoryPage() {
+
+  const { user, isLoading: isAuthLoading } = useAuth(); 
+  const navigate = useNavigate();
+
   const [tab, setTab] = useState<TabType>("SNS_POST");
   const [list, setList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+
+    if (isAuthLoading) return;        // ✅ 아직 user 불러오는 중이면 기다리기
+  if (!user) {
+    navigate("/login");             // ✅ 로그인 안 되어 있으면 로그인 페이지로 이동
+    return;
+  }
     setLoading(true);
     let fetch;
     if (tab === "SNS_POST") {
@@ -20,7 +33,8 @@ export default function ActivityHistoryPage() {
       fetch = import("@/lib/api").then(api => api.default.get("/sns/comments/my"));
     }
     fetch.then(res => setList(res.data)).finally(() => setLoading(false));
-  }, [tab]);
+  }, [tab, user, isAuthLoading]);
+
 
   function formatDate(iso: string) {
     if (!iso) return "-";

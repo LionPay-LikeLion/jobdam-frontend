@@ -132,18 +132,15 @@ export const CommunityBoardList = () => {
             <div className="flex justify-between items-center mb-10">
                 <h1 className="text-3xl font-bold">게시판</h1>
                 <button
-                    onClick={() => isOwner ? navigate(`/community/${id}/board/create`) : null}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                        isOwner 
-                            ? "bg-black text-white hover:bg-gray-800 cursor-pointer" 
-                            : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                    }`}
-                    disabled={!isOwner}
-                    title={isOwner ? "게시판 생성" : "게시판 생성 권한이 없습니다"}
-                >
-                    <FaPlus className="w-4 h-4" />
-                    게시판 생성
-                </button>
+  onClick={() => navigate(`/communities/${id}/board/create`)
+}
+  className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors bg-black text-white hover:bg-gray-800 cursor-pointer"
+  title="게시판 생성"
+>
+  <FaPlus className="w-4 h-4" />
+  게시판 생성
+</button>
+
             </div>
             <div className="grid grid-cols-2 gap-10">
                 {boards.map((board) => (
@@ -162,7 +159,7 @@ export const CommunityBoardList = () => {
                             </span>
                         </div>
                         <button
-                            onClick={() => navigate(`/community/${id}/board/${board.communityBoardId}`)}
+                            onClick={() => navigate(`/communities/${id}/board/${board.communityBoardId}`)}
                             className="bg-black text-white py-2 rounded-lg shadow-md"
                         >
                             게시판 입장
