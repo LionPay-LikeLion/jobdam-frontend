@@ -73,10 +73,15 @@ export default function CommunityJoinModal({ open, onClose, joinPoint, userPoint
             <Button 
               className="w-full h-12 rounded-full text-lg font-bold bg-gray-800 text-white hover:bg-gray-700" 
               onClick={handleJoin}
-              disabled={loading}
+              disabled={loading || userPoint < joinPoint}
             >
               {loading ? "처리 중..." : "가입하기"}
             </Button>
+            {userPoint < joinPoint && (
+              <div className="text-red-500 text-sm mt-2 text-center">
+                포인트가 부족합니다. 충전 후 다시 시도해 주세요.
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>
