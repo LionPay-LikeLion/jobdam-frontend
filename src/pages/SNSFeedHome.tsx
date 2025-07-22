@@ -36,7 +36,7 @@ const SNSFeedHome = () => {
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900">SNS 피드</h1>
             <p className="text-base text-gray-500 mt-2">사용자들이 공유한 소중한 의견입니다.</p>
           </div>
-
+          
           {/* 필터 영역 */}
           <div className="flex items-center gap-4 bg-white border rounded-lg shadow p-4 mb-8 flex-nowrap min-w-0">
             <label className="text-sm font-medium">작성자 유형:</label>
