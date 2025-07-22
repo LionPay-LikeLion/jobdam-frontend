@@ -20,8 +20,8 @@ export const fetchSnsPostDetail = async (postId: number) => {
   return response.data;
 };
 
-export const fetchFilteredPosts = async (memberType: string, sort: string, userId: number) => {
-  const res = await api.get("/sns/posts/filter", { params: { memberType, sort, userId }, });
+export const fetchFilteredPosts = async (memberType: string, sort: string) => {
+  const res = await api.get("/sns/posts/filter", { params: { memberType, sort }, });
   return res.data;
 };
 
@@ -57,6 +57,11 @@ export const addBookmark = async (postId: number) => {
 
 export const removeBookmark = async (postId: number) => {
   const res = await api.delete("/sns/bookmarks", { params: { postId: postId }});
+  return res.data;
+};
+
+export const fetchBookmarks = async () => {
+  const res = await api.get("/sns/bookmarks");
   return res.data;
 };
 

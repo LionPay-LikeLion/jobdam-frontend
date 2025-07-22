@@ -10,7 +10,7 @@ import api from "@/lib/api";
 export default function CreateBoardPage(): JSX.Element {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [type, setType] = useState("basic");
+  const [type, setType] = useState("GENERAL");
   const [permission, setPermission] = useState("all");
   const [sort, setSort] = useState("latest");
   const [loading, setLoading] = useState(false);
