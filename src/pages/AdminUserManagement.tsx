@@ -18,44 +18,47 @@ const statusColors: Record<string, string> = {
 
 const AdminUserManagement: React.FC = () => {
     const [filters, setFilters] = useState({ nickname: "", email: "", status: "전체" });
-    const [users, setUsers] = useState<UserItem[]>([]);
+    const [allUsers, setAllUsers] = useState<UserItem[]>([]);
     const [loading, setLoading] = useState(false);
 
-    const fetchUsers = async () => {
+    // 1. 최초 전체 유저 받아오기 (서버는 딱 1번 호출)
+    useEffect(() => {
+        fetchAllUsers();
+    }, []);
+
+    const fetchAllUsers = async () => {
         setLoading(true);
         try {
-            const params: any = {};
-            if (filters.nickname) params.nickname = filters.nickname;
-            if (filters.email) params.email = filters.email;
-            if (filters.status !== "전체") params.status = filters.status === "활성" ? 1 : 0;
-            const res = await api.get("/admin/user", { params });
-            setUsers(res.data);
+            const res = await api.get("/admin/user");
+            setAllUsers(res.data);
         } catch (e) {
             alert("회원 목록을 불러오지 못했습니다.");
-            setUsers([]);
+            setAllUsers([]);
         } finally {
             setLoading(false);
         }
     };
 
-    useEffect(() => {
-        fetchUsers();
-    }, []);
+    // 2. 프론트에서 필터링된 값만 노출
+    const filteredUsers = allUsers.filter(user => {
+        const matchesNickname = filters.nickname.trim() === "" || user.nickname.includes(filters.nickname.trim());
+        const matchesEmail = filters.email.trim() === "" || user.email.includes(filters.email.trim());
+        const matchesStatus =
+            filters.status === "전체" ||
+            (filters.status === "활성" && user.isActive) ||
+            (filters.status === "정지" && !user.isActive);
+        return matchesNickname && matchesEmail && matchesStatus;
+    });
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         setFilters({ ...filters, [e.target.name]: e.target.value });
-    };
-
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        fetchUsers();
     };
 
     // 활성화(정지 회원 → 활성)
     const handleActivate = async (user: UserItem) => {
         if (!window.confirm(`${user.nickname} 회원을 활성화하시겠습니까?`)) return;
         await api.patch(`/admin/user/${user.userId}/activate`);
-        setUsers(users.map(u => u.userId === user.userId ? { ...u, isActive: true } : u));
+        setAllUsers(allUsers.map(u => u.userId === user.userId ? { ...u, isActive: true } : u));
         alert("회원이 활성화되었습니다.");
     };
 
@@ -63,7 +66,7 @@ const AdminUserManagement: React.FC = () => {
     const handleDeactivate = async (user: UserItem) => {
         if (!window.confirm(`${user.nickname} 회원을 정지 처리하시겠습니까?`)) return;
         await api.patch(`/admin/user/${user.userId}/deactivate`);
-        setUsers(users.map(u => u.userId === user.userId ? { ...u, isActive: false } : u));
+        setAllUsers(allUsers.map(u => u.userId === user.userId ? { ...u, isActive: false } : u));
         alert("회원이 정지되었습니다.");
     };
 
@@ -82,7 +85,7 @@ const AdminUserManagement: React.FC = () => {
                         </div>
                         <form
                             className="bg-white rounded-2xl shadow p-6 mb-7 border flex items-end gap-5 w-full max-w-[1250px]"
-                            onSubmit={handleSearch}
+                            onSubmit={e => e.preventDefault()}
                         >
                             <div className="flex flex-col w-44">
                                 <label className="text-xs mb-1">닉네임</label>
@@ -121,11 +124,13 @@ const AdminUserManagement: React.FC = () => {
                             </div>
                             <div className="flex-1" />
                             <button
-                                type="submit"
+                                type="button"
                                 className="bg-black text-white px-8 py-2 rounded-xl hover:bg-gray-800 h-11 text-sm font-semibold shadow mt-[22px]"
                                 disabled={loading}
+                                // 필터는 자동, 버튼은 리셋용으로만 둬도 됨
+                                onClick={() => setFilters({ nickname: "", email: "", status: "전체" })}
                             >
-                                검색
+                                초기화
                             </button>
                         </form>
 
@@ -152,12 +157,12 @@ const AdminUserManagement: React.FC = () => {
                                         <tr>
                                             <td colSpan={4} className="text-center py-8 text-gray-400">로딩 중...</td>
                                         </tr>
-                                    ) : users.length === 0 ? (
+                                    ) : filteredUsers.length === 0 ? (
                                         <tr>
                                             <td colSpan={4} className="text-center py-8 text-gray-400">검색 결과가 없습니다.</td>
                                         </tr>
                                     ) : (
-                                        users.map((user) => (
+                                        filteredUsers.map((user) => (
                                             <tr key={user.userId} className="border-b last:border-b-0 hover:bg-gray-50 text-[15px]">
                                                 <td className="py-3 px-4 flex items-center gap-2">
                                                     <span className="inline-block w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
