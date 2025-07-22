@@ -21,6 +21,8 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Input } from "@/components/ui/input";
 import { Bookmark, Flag, Heart, MessageSquare, Download } from "lucide-react";
 import ReportModal from "@/components/ReportModal";
+import { useAuth } from "@/contexts/AuthContext";
+import { FiEdit, FiTrash2, FiFlag } from "react-icons/fi";
 
 // 간단한 커스텀 모달 컴포넌트
 function ConfirmModal({ open, message, onConfirm, onCancel }: { open: boolean, message: string, onConfirm: () => void, onCancel: () => void }) {
@@ -43,6 +45,7 @@ const postTags = ["#면접후기", "#포트폴리오", "#이직준비", "#마케
 const SNSFeedPost = () => {
   const navigate = useNavigate();
   const { postId } = useParams();
+  const { user } = useAuth();
   const [post, setPost] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -50,7 +53,7 @@ const SNSFeedPost = () => {
   const [comments, setComments] = useState<any[]>([]);
   const [commentInput, setCommentInput] = useState("");
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
-  const [editingContent, setEditingContent] = useState("");
+  const [editingContent, setEditingContent] = useState<{ [key: number]: string }>({});
 
   // 신고 모달 state
   const [showReport, setShowReport] = useState(false);
@@ -87,15 +90,19 @@ const SNSFeedPost = () => {
 
   // 댓글 수정
   const handleUpdateComment = async (commentId: number) => {
-    if (!editingContent.trim() || !postId) return;
-    await updateComment(commentId, Number(postId), editingContent);
+    if (!editingContent[commentId]?.trim() || !postId) return;
+    await updateComment(commentId, editingContent[commentId]);
     setEditingCommentId(null);
-    setEditingContent("");
+    setEditingContent(prev => ({ ...prev, [commentId]: "" })); // 수정 후 내용 초기화
     fetchComments(Number(postId)).then(setComments);
   };
 
   // 댓글 삭제
   const handleDeleteComment = async (commentId: number) => {
+    if (!commentId) {
+      alert("댓글 ID가 올바르지 않습니다.");
+      return;
+    }
     await deleteComment(commentId);
     fetchComments(Number(postId)).then(setComments);
   };
@@ -179,11 +186,36 @@ const SNSFeedPost = () => {
           </div>
 
           {/* ===== 게시글 ===== */}
-          <Card className="w-[736px] mx-auto mb-8">
+          <Card className="w-[736px] mx-auto mb-8 relative">
+            {/* 오른쪽 상단 아이콘 */}
+            <div className="absolute top-6 right-8 flex gap-4 z-10">
+              <button onClick={() => setShowLikeConfirm(true)}>
+                <Heart
+                  className={post.liked ? "text-red-500 w-8 h-8" : "text-gray-300 w-8 h-8"}
+                  fill={post.liked ? "red" : "none"}
+                />
+              </button>
+              <button onClick={() => setShowBookmarkConfirm(true)}>
+                <Bookmark
+                  className={post.bookmarked ? "text-blue-500 w-8 h-8" : "text-gray-300 w-8 h-8"}
+                  fill={post.bookmarked ? "#2563eb" : "none"}
+                />
+              </button>
+            </div>
             <CardHeader className="px-8 pt-8 pb-4">
               <CardTitle className="text-[32px] font-bold">{post.title}</CardTitle>
               <div className="flex items-center mt-6">
-                <Avatar className="h-12 w-12 bg-[#0000001a]" />
+                <Avatar className="h-12 w-12 bg-[#0000001a]">
+                  {post.profileImageUrl ? (
+                    <img
+                      src={post.profileImageUrl}
+                      alt={post.nickname}
+                      className="w-full h-full object-cover rounded-full"
+                    />
+                  ) : (
+                    <span className="text-gray-400 text-2xl">👤</span>
+                  )}
+                </Avatar>
                 <div className="ml-4">
                   <div className="flex items-center">
                     <span className="font-medium text-lg">{post.nickname}</span>
@@ -258,39 +290,29 @@ const SNSFeedPost = () => {
               <div className="flex items-center gap-4 w-full">
                 <Button
                     variant="outline"
-                    className="bg-[#f0f0f0] h-[43px] gap-2 rounded-md"
-                    onClick={() => setShowLikeConfirm(true)}
-                >
-                  <Heart className={post.liked ? "text-red-500" : "text-gray-400"} />
-                  <span className="text-sm font-medium">{post.likeCount}</span>
-                </Button>
-                <Button variant="outline" className="bg-[#f0f0f0] h-[43px] gap-2 rounded-md">
+                    className="bg-[#f0f0f0] h-[43px] gap-2 rounded-md">
                   <MessageSquare className="h-5 w-5" />
                   <span className="text-sm font-medium">{post.commentCount}</span>
                 </Button>
-                <Button
-                    variant="outline"
-                    className="bg-[#f0f0f0] h-[43px] gap-2 rounded-md"
-                    onClick={() => setShowBookmarkConfirm(true)}
-                >
-                  <Bookmark className={post.bookmarked ? "text-blue-500" : "text-gray-400"} />
-                  <span className="text-sm font-medium">북마크</span>
-                </Button>
                 <div className="ml-auto flex gap-2">
-                  <Button
-                      variant="outline"
-                      className="bg-[#f0f0f0] h-[37px] rounded-md"
-                      onClick={handleEditPost}
-                  >
-                    수정
-                  </Button>
-                  <Button
-                      variant="destructive"
-                      className="bg-[#ff3b30] h-[37px] rounded-md"
-                      onClick={() => handleDeletePost(post.snsPostId)}
-                  >
-                    삭제
-                  </Button>
+                  {post.userId === user?.id && (
+                    <>
+                      <Button
+                          variant="outline"
+                          className="bg-[#f0f0f0] h-[37px] rounded-md"
+                          onClick={handleEditPost}
+                      >
+                        수정
+                      </Button>
+                      <Button
+                          variant="destructive"
+                          className="bg-[#ff3b30] h-[37px] rounded-md"
+                          onClick={() => handleDeletePost(post.snsPostId)}
+                      >
+                        삭제
+                      </Button>
+                    </>
+                  )}
                   <Button
                       variant="outline"
                       className="bg-[#f0f0f0] h-[37px] gap-1 rounded-md"
@@ -313,78 +335,118 @@ const SNSFeedPost = () => {
           <div className="w-[736px] mx-auto mb-12">
             {/* 댓글 목록 */}
             {comments.map((comment) => {
-              // 댓글 PK명 자동 추론
-              const commentId =
-                  comment.snsCommentId ??
-                  comment.communityCommentId ??
-                  comment.commentId ??
-                  null;
-
-              return (
-                  <Card key={commentId} className="p-6 mb-4">
-                    <div className="flex">
-                      <Avatar className="h-10 w-10 bg-[#0000001a]" />
-                      <div className="ml-4 flex-1">
-                        <div className="flex items-center">
-                          <span className="font-medium text-base">{comment.nickname}</span>
-                          <span className="ml-4 text-sm text-[#00000080]">
-                        {new Date(comment.createdAt).toLocaleString()}
-                      </span>
-                        </div>
-                        {editingCommentId === commentId ? (
-                            <div className="flex gap-2 mt-2">
-                              <Input
-                                  value={editingContent}
-                                  onChange={(e) => setEditingContent(e.target.value)}
-                                  className="flex-1"
-                              />
-                              <Button size="sm" onClick={() => handleUpdateComment(commentId)}>
-                                저장
-                              </Button>
-                              <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => setEditingCommentId(null)}
-                              >
-                                취소
-                              </Button>
-                            </div>
-                        ) : (
-                            <p className="mt-2 text-sm text-black">{comment.content}</p>
-                        )}
-                        <div className="flex gap-2 mt-2">
-                          <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => {
-                                setEditingCommentId(commentId);
-                                setEditingContent(comment.content);
-                              }}
-                          >
-                            수정
-                          </Button>
-                          <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => handleDeleteComment(commentId)}
-                          >
-                            삭제
-                          </Button>
-                          <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => {
-                                setReportTargetId(commentId);
-                                setReportTypeCodeId(2); // 댓글(커뮤니티/SNS 모두 2)
-                                setShowReport(true);
-                              }}
-                          >
-                            <Flag className="h-4 w-4" /> 신고
-                          </Button>
-                        </div>
-                      </div>
+              // 삭제된 댓글 처리
+              if (comment.boardStatusCode === "DELETED") {
+                return (
+                  <Card key={comment.commentId} className="p-6 mb-4 bg-gray-100 text-gray-400">
+                    <div className="text-center py-4 text-base font-semibold">
+                      삭제된 댓글입니다.
                     </div>
                   </Card>
+                );
+              }
+
+              // 댓글의 실제 PK 추출
+              const commentId =
+                comment.snsCommentId ??
+                comment.communityCommentId ??
+                comment.commentId ??
+                null;
+
+              // 정상 댓글 렌더링 (기존 코드)
+              return (
+                <Card key={commentId} className="p-6 mb-4 relative">
+                  {/* 신고 버튼: 오른쪽 위, 빨간색 */}
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="absolute top-2 right-2 text-red-500"
+                    onClick={() => {
+                      setReportTargetId(commentId);
+                      setReportTypeCodeId(2);
+                      setShowReport(true);
+                    }}
+                    title="신고"
+                  >
+                    <FiFlag />
+                  </Button>
+                  <div className="flex">
+                    <Avatar className="h-10 w-10 bg-[#0000001a]">
+                      {comment.profileImageUrl ? (
+                        <img
+                          src={comment.profileImageUrl}
+                          alt={comment.nickname}
+                          className="w-full h-full object-cover rounded-full"
+                        />
+                      ) : (
+                        <span className="text-gray-400 text-xl">👤</span>
+                      )}
+                    </Avatar>
+                    <div className="ml-4 flex-1">
+                      <div className="flex items-center">
+                        <span className="font-medium text-base">{comment.nickname}</span>
+                        <span className="ml-4 text-sm text-[#00000080]">
+                          {new Date(comment.createdAt).toLocaleString()}
+                        </span>
+                      </div>
+                      {String(editingCommentId) === String(commentId) ? (
+                        <div className="flex gap-2 mt-2">
+                          <Input
+                            value={editingContent[commentId] ?? ""}
+                            onChange={e =>
+                              setEditingContent(prev => ({
+                                ...prev,
+                                [commentId]: e.target.value,
+                              }))
+                            }
+                            className="flex-1"
+                          />
+                          <Button size="sm" onClick={() => handleUpdateComment(commentId)}>
+                            저장
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setEditingCommentId(null)}
+                          >
+                            취소
+                          </Button>
+                        </div>
+                      ) : (
+                        <p className="mt-2 text-sm text-black">{comment.content}</p>
+                      )}
+                      {/* 수정/삭제 버튼: 오른쪽 아래 */}
+                      <div className="flex gap-2 mt-2 justify-end">
+                        {String(comment.userId) === String(user?.id) && (
+                          <>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => {
+                                setEditingCommentId(commentId);
+                                setEditingContent(prev => ({
+                                  ...prev,
+                                  [commentId]: comment.content,
+                                }));
+                              }}
+                              title="수정"
+                            >
+                              <FiEdit />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => handleDeleteComment(commentId)}
+                              title="삭제"
+                            >
+                              <FiTrash2 />
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </Card>
               );
             })}
 

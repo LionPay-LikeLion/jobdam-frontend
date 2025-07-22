@@ -210,7 +210,7 @@ export default function SNSMessage(): JSX.Element {
                 </div>
                 <div className="flex-1 p-8 overflow-y-auto space-y-4 scrollbar-thin scrollbar-thumb-gray-200">
                   {conversation.map((msg) => {
-                    const isMine = user && (String(msg.senderUserId ?? msg.senderId) === String(user.userId));
+                    const isMine = user && (String(msg.senderUserId ?? msg.senderId) === String(user.id));
                     return (
                       <div
                         key={msg.messageId}
