@@ -77,13 +77,14 @@ const SNSFeedHome = () => {
                         <button
                             className="w-10 h-10 flex items-center justify-center rounded-full bg-[#1e88e5] text-white ml-1"
                             onClick={async () => {
-                                let data: any[] = [];
-                                if (keyword.trim() !== "") {
-                                    data = await searchByKeyword(keyword);
-                                } else {
-                                    data = await fetchSnsPosts();
-                                }
-                                setPosts(data);
+                                if (!keyword.trim()) return; // 아무 글자 없으면 검색 실행 안 함
+                                let data: any[] = await searchByKeyword(keyword);
+                                setPosts(
+                                    data.map(post => ({
+                                        ...post,
+                                        profileImageUrl: post.profileImageUrl ?? ""
+                                    }))
+                                );
                             }}
                             title="검색"
                         >
