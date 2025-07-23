@@ -11,7 +11,7 @@ const CommunityLayout = () => {
       <div className="w-full flex justify-center">
         <div className="container w-full flex flex-row items-start px-4 md:px-6">
           <Community_SideBar />
-          <main className="flex-1 py-10 ml-8 md:ml-12">
+          <main className="flex-1 py-10 md:ml-8 lg:ml-12">
             <Outlet />
           </main>
         </div>

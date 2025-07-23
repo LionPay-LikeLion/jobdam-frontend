@@ -11,7 +11,7 @@ const SNSFeedLayout = () => {
       <div className="w-full flex justify-center">
         <div className="container w-full flex flex-row items-start px-4 md:px-6 pt-0 mt-0">
           <SNS_SideBar />
-          <main className="flex-1 py-0">
+          <main className="flex-1 py-0 md:ml-4">
             <Outlet />
           </main>
         </div>
