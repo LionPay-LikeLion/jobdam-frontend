@@ -18,7 +18,7 @@ const SNS_SideBar = () => {
   };
 
   return (
-    <aside className="w-[291px] min-h-screen bg-white border border-gray-100 rounded-2xl shadow-sm px-7 pt-8 sticky top-0 flex flex-col">
+    <aside className="hidden md:flex w-[291px] min-h-screen bg-white border border-gray-100 rounded-2xl shadow-sm px-7 pt-8 sticky top-0 flex-col">
       <h2 className="text-2xl font-extrabold mb-8 text-gray-900 tracking-tight text-center">SNS 피드</h2>
       <nav className="space-y-2 flex-1 overflow-y-auto">
         {menuItems.map((item) => (

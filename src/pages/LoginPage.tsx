@@ -131,10 +131,10 @@ export default function LoginPage() {
           backgroundRepeat: 'no-repeat',
         }}
       >
-        <div className="flex w-[95vw] max-w-[1100px] min-h-[500px] max-h-[90vh] shadow-xl border rounded-2xl overflow-hidden bg-white overflow-y-auto mx-auto">
+        <div className="flex flex-col md:flex-row w-[95vw] max-w-[1100px] min-h-[500px] max-h-[90vh] shadow-xl border rounded-2xl overflow-hidden bg-white overflow-y-auto mx-auto">
           {/* 좌측 이미지 및 문구 */}
           <div
-            className="flex-1 flex flex-col items-center justify-start p-10 pt-[8%] bg-white/40 backdrop-blur-md border border-white/30 rounded-2xl shadow-lg m-6"
+            className="flex-1 flex flex-col items-center justify-start p-6 md:p-10 pt-8 md:pt-[8%] bg-white/40 backdrop-blur-md border border-white/30 rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none shadow-lg m-3 md:m-6"
             style={{
               backgroundImage: "url('/images/landing-bg2.png')",
               backgroundSize: 'cover',
@@ -143,25 +143,25 @@ export default function LoginPage() {
             }}
           >
             <img
-              className="w-[160px] h-[160px] object-contain mb-6"
+              className="w-[120px] h-[120px] md:w-[160px] md:h-[160px] object-contain mb-4 md:mb-6"
               alt="JobDam Logo"
               src="/images/logo.png"
             />
-            <h2 className="text-3xl font-bold text-black mb-2 text-center">취업은 더 이상<br />혼자 준비하는 싸움이 아닙니다.</h2>
+            <h2 className="text-xl md:text-3xl font-bold text-black mb-2 text-center leading-tight">취업은 더 이상<br />혼자 준비하는 싸움이 아닙니다.</h2>
           </div>
 
           {/* 우측 로그인 폼 */}
-          <div className="flex-1 flex flex-col items-center justify-center px-10 py-8 overflow-y-auto">
+          <div className="flex-1 flex flex-col items-center justify-center px-6 md:px-10 py-6 md:py-8 overflow-y-auto">
             <div className="w-full max-w-[320px] flex flex-col justify-center my-auto">
-              <h1 className="text-4xl font-bold text-black mb-2 text-center">로그인</h1>
-              <p className="text-base text-black mb-6 text-center">계정에 로그인하세요.</p>
+              <h1 className="text-2xl md:text-4xl font-bold text-black mb-2 text-center">로그인</h1>
+              <p className="text-sm md:text-base text-black mb-4 md:mb-6 text-center">계정에 로그인하세요.</p>
 
               <form onSubmit={handleSubmit}>
                 <label className="text-sm text-black">이메일 주소</label>
                 <Input
                   name="email"
                   type="email"
-                  className="h-[49px] mb-6"
+                  className="h-[40px] md:h-[49px] mb-4 md:mb-6"
                   placeholder="이메일을 입력하세요"
                   value={formData.email}
                   onChange={handleInputChange}
@@ -172,14 +172,14 @@ export default function LoginPage() {
                 <Input
                   name="password"
                   type="password"
-                  className="h-[49px] mb-6"
+                  className="h-[40px] md:h-[49px] mb-4 md:mb-6"
                   placeholder="비밀번호를 입력하세요"
                   value={formData.password}
                   onChange={handleInputChange}
                   disabled={isLoading}
                 />
 
-                <div className="flex justify-end text-sm text-gray-500 -mt-4 mb-6">
+                <div className="flex justify-end text-sm text-gray-500 -mt-2 md:-mt-4 mb-4 md:mb-6">
                   <Link to="/find-password" className="hover:underline">
                     비밀번호 찾기
                   </Link>
@@ -187,14 +187,14 @@ export default function LoginPage() {
 
                 <Button
                   type="submit"
-                  className="w-full h-14 mb-6 bg-black text-white"
+                  className="w-full h-12 md:h-14 mb-4 md:mb-6 bg-black text-white"
                   disabled={isLoading}
                 >
                   {isLoading ? "로그인 중..." : "로그인"}
                 </Button>
               </form>
 
-              <div className="flex items-center my-6">
+              <div className="flex items-center my-4 md:my-6">
                 <div className="flex-grow border-t border-gray-300" />
                 <span className="px-4 text-sm text-gray-500">또는</span>
                 <div className="flex-grow border-t border-gray-300" />
@@ -202,7 +202,7 @@ export default function LoginPage() {
 
               <Button
                 variant="outline"
-                className="w-full h-14 mb-3 flex items-center justify-center gap-2 border-2 border-[#0000001a]"
+                className="w-full h-12 md:h-14 mb-3 flex items-center justify-center gap-2 border-2 border-[#0000001a]"
                 disabled={isLoading}
                 onClick={() => googleRedirectLogin()}
               >
@@ -211,7 +211,7 @@ export default function LoginPage() {
               </Button>
 
               <Button
-                className="w-full h-14 mb-6 bg-[#fee500] text-black flex items-center justify-center gap-2"
+                className="w-full h-12 md:h-14 mb-4 md:mb-6 bg-[#fee500] text-black flex items-center justify-center gap-2"
                 disabled={isLoading}
                 onClick={handleKakaoLogin}
               >
