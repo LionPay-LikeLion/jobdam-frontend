@@ -25,13 +25,6 @@ const coreFeatures = [
       "실시간 소통과 정보 공유가 가능한 SNS 환경에서 취업 준비생들과 네트워킹하세요.",
   },
   {
-    icon: <MessageSquare className="w-6 h-6 text-white" />,
-    bgColor: "bg-[#34a853]",
-    title: "AI 자소서 첨삭 / 실시간 채팅",
-    description:
-      "AI 기반 자기소개서 첨삭 서비스와 실시간 채팅으로 즉시 피드백을 받아보세요.",
-  },
-  {
     icon: <Crown className="w-6 h-6 text-white" />,
     bgColor: "bg-[#fbbc04]",
     title: "프리미엄 구독 혜택",
@@ -53,7 +46,7 @@ const platformFlow = [
     bgColor: "bg-[#4285f4]",
     title: "구직자",
     description:
-      "AI 첨삭, 멘토링을 통해 역량을 강화하고 맞춤형 채용 기회를 제공받습니다.",
+      "멘토링을 통해 역량을 강화하고 맞춤형 채용 기회를 제공받습니다.",
   },
   {
     icon: <Building2 className="w-10 h-10 text-white" />,
@@ -150,7 +143,7 @@ const HomePage = () => {
             <h2 className="text-4xl font-bold text-black text-center mb-12 leading-[44px]">
               핵심 기능
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {coreFeatures.map((feature, index) => (
                 <div
                   key={index}
@@ -192,44 +185,6 @@ const HomePage = () => {
                   </h3>
                   <p className="text-sm text-[#000000b2] leading-[21px]">
                     {flow.description}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Popular Communities */}
-        <section className="w-full py-20 bg-white">
-          <div className="container">
-            <h2 className="text-4xl font-bold text-black text-center mb-12 leading-[44px]">
-              인기 커뮤니티
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {popularCommunities.map((community, index) => (
-                <div
-                  key={index}
-                  className="border border-[#00000014] shadow-[0px_2px_8px_#00000014] rounded-xl p-6"
-                >
-                  <div className="flex items-center gap-4 mb-4">
-                    <div
-                      className={`w-12 h-12 ${community.color} rounded-lg flex items-center justify-center`}
-                    >
-                      <span className="text-white font-semibold">
-                        {community.title.charAt(0)}
-                      </span>
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-semibold text-black">
-                        {community.title}
-                      </h3>
-                      <p className="text-sm text-[#000000b2]">
-                        {community.count}
-                      </p>
-                    </div>
-                  </div>
-                  <p className="text-sm text-[#000000b2] leading-[21px]">
-                    {community.description}
                   </p>
                 </div>
               ))}
