@@ -239,4 +239,55 @@ export const verifyEmailCode = async (email: string, code: string): Promise<bool
   } catch (error) {
     throw error;
   }
+};
+
+// 비밀번호 재설정 인증코드 발송
+export const sendPasswordResetCode = async (email: string): Promise<string> => {
+  try {
+    const response = await api.post('/auth/password-reset/send-code', { email });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// 비밀번호 재설정 인증코드 확인
+export const verifyPasswordResetCode = async (email: string, code: string): Promise<boolean> => {
+  try {
+    const response = await api.post('/auth/password-reset/verify-code', { email, code });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// 새 비밀번호 설정
+export const setNewPassword = async (email: string, code: string, newPassword: string): Promise<string> => {
+  console.log("🔧 ===== setNewPassword API CALL START =====");
+  console.log("🔧 Email:", email);
+  console.log("🔧 Code:", code);
+  console.log("🔧 New password length:", newPassword.length);
+  console.log("🔧 API base URL:", api.defaults.baseURL);
+  console.log("🔧 Full URL:", `${api.defaults.baseURL}/auth/password-reset/set-new-password`);
+  
+  const payload = { email, code, newPassword };
+  console.log("🔧 Payload:", payload);
+  
+  try {
+    console.log("🔧 Making API request...");
+    const response = await api.post('/auth/password-reset/set-new-password', payload);
+    console.log("🔧 ✅ API SUCCESS!");
+    console.log("🔧 Response data:", response.data);
+    console.log("🔧 Response status:", response.status);
+    console.log("🔧 Response headers:", response.headers);
+    console.log("🔧 ===== setNewPassword API CALL END (SUCCESS) =====");
+    return response.data;
+  } catch (error) {
+    console.log("🔧 ❌ API ERROR!");
+    console.error("🔧 Error object:", error);
+    console.error("🔧 Error response:", error.response);
+    console.error("🔧 Error message:", error.message);
+    console.log("🔧 ===== setNewPassword API CALL END (ERROR) =====");
+    throw error;
+  }
 }; 
