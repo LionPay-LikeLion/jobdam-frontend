@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import api from "@/lib/api";
 import { useParams } from "react-router-dom";
 import CommunityJoinModal from "@/components/CommunityJoinModal";
+import { toast } from "sonner"; // 쓰는 토스트 라이브러리에 맞춰 import
 
 interface CommunityDetailResponseDto {
   communityId: number;
@@ -94,6 +95,8 @@ export default function CommunityHome(): JSX.Element {
     },
   ];
 
+  
+
   if (loading) {
     return (
       <div className="w-full max-w-[1440px] mx-auto px-6 py-10">
@@ -115,6 +118,19 @@ export default function CommunityHome(): JSX.Element {
     );
   }
 
+  const handleJoin = async () => {
+    try {
+      await api.post(`/communities/${id}/join`, {}); // body 없으면 {} 또는 생략
+      toast.success("가입 완료!");
+      setIsMember(true);
+      fetchCommunityData(); // 필요하면 다시 불러오기
+    } catch (e: any) {
+      const msg = e?.response?.data?.message ?? "알 수 없는 오류입니다.";
+      toast.error(msg);   // ✅ alert 대신 토스트
+      return;
+    }
+  };
+
   return (
     <div className="w-full max-w-[1440px] mx-auto px-6 py-10 pt-0">
       {/* Page Title */}
@@ -131,7 +147,10 @@ export default function CommunityHome(): JSX.Element {
               {communityData.description}
             </p>
             {!isMember && (
-              <Button className="w-[320px] h-24 bg-white text-black hover:bg-gray-100 rounded-lg shadow-md text-xl font-semibold" onClick={() => setJoinModalOpen(true)}>
+              <Button
+                className="w-[320px] h-24 bg-white text-black hover:bg-gray-100 rounded-lg shadow-md text-xl font-semibold"
+                onClick={handleJoin}
+              >
                 커뮤니티 가입하기
               </Button>
             )}
