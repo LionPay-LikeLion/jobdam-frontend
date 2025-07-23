@@ -180,9 +180,6 @@ export default function LoginPage() {
                 />
 
                 <div className="flex justify-end text-sm text-gray-500 -mt-4 mb-6">
-                  <Link to="/find-email" className="mr-4 hover:underline">
-                    이메일 찾기
-                  </Link>
                   <Link to="/find-password" className="hover:underline">
                     비밀번호 찾기
                   </Link>
