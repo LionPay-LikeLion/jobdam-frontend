@@ -90,10 +90,6 @@ export default function LoginPage() {
         password: formData.password,
       });
 
-      // AuthContext에 사용자 정보 저장
-      /*if (response.user) {
-        authLogin(response.user);
-      }*/
       if (response.accessToken) {
         await authLogin(response.accessToken); // 토큰 저장
         setTokens({ accessToken: response.accessToken, refreshToken: response.refreshToken });
@@ -121,20 +117,115 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white font-korean">
-
       <main
-        className="flex flex-col h-screen justify-center items-center bg-gray-50 md:bg-transparent"
+        className="flex flex-col h-screen justify-center items-center"
         style={{
-          backgroundImage: window.innerWidth >= 768 ? "url('/images/landing-bg.png')" : "none",
+          backgroundImage: "url('/images/landing-bg.png')",
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
         }}
       >
-        <div className="relative w-[98vw] h-[95vh] md:w-[95vw] md:max-w-[1100px] md:min-h-[500px] md:max-h-[90vh] shadow-xl border rounded-2xl overflow-hidden bg-white mx-auto">
-          {/* 배경 이미지 섹션 */}
+        {/* Mobile Layout */}
+        <div className="md:hidden w-[98vw] h-[95vh] flex flex-col justify-center items-center relative">
+          {/* Mobile Glass-morphism Login Overlay */}
+          <div className="absolute inset-0 bg-black/20 backdrop-blur-sm rounded-2xl"></div>
+          <div className="relative z-10 w-full max-w-[350px] mx-auto px-6 py-8 bg-white/20 backdrop-blur-md border border-white/30 rounded-2xl shadow-lg">
+            <div className="text-center mb-8">
+              <img
+                className="w-[120px] h-[120px] object-contain mb-4 mx-auto"
+                alt="JobDam Logo"
+                src="/images/logo.png"
+              />
+              <h2 className="text-xl font-bold text-white mb-2">취업은 더 이상<br />혼자 준비하는 싸움이 아닙니다.</h2>
+            </div>
+
+            <div className="space-y-4">
+              <h1 className="text-3xl font-bold text-white mb-2 text-center">로그인</h1>
+              <p className="text-base text-white/90 mb-6 text-center">계정에 로그인하세요.</p>
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="text-sm text-white/90 block mb-1">이메일 주소</label>
+                  <Input
+                    name="email"
+                    type="email"
+                    className="h-[49px] bg-white/90 border-white/30"
+                    placeholder="이메일을 입력하세요"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    disabled={isLoading}
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm text-white/90 block mb-1">비밀번호</label>
+                  <Input
+                    name="password"
+                    type="password"
+                    className="h-[49px] bg-white/90 border-white/30"
+                    placeholder="비밀번호를 입력하세요"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    disabled={isLoading}
+                  />
+                </div>
+
+                <div className="flex justify-end text-sm text-white/80">
+                  <Link to="/find-password" className="hover:underline">
+                    비밀번호 찾기
+                  </Link>
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full h-14 bg-black/80 text-white hover:bg-black/90"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "로그인 중..." : "로그인"}
+                </Button>
+              </form>
+
+              <div className="flex items-center my-4">
+                <div className="flex-grow border-t border-white/30" />
+                <span className="px-4 text-sm text-white/80">또는</span>
+                <div className="flex-grow border-t border-white/30" />
+              </div>
+
+              <Button
+                variant="outline"
+                className="w-full h-14 mb-3 flex items-center justify-center gap-2 bg-white/90 border-white/30 text-black"
+                disabled={isLoading}
+                onClick={() => googleRedirectLogin()}
+              >
+                <FcGoogle className="w-5 h-5" />
+                Google 로그인
+              </Button>
+
+              <Button
+                className="w-full h-14 mb-4 bg-[#fee500] text-black flex items-center justify-center gap-2"
+                disabled={isLoading}
+                onClick={handleKakaoLogin}
+              >
+                <SiKakaotalk className="w-5 h-5" />
+                카카오 로그인
+              </Button>
+
+              <p className="text-sm text-center text-white/90">
+                아직 회원이 아니신가요?{" "}
+                <Link to="/signup" className="text-white font-medium cursor-pointer hover:underline">
+                  회원가입
+                </Link>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Desktop Layout */}
+        <div className="hidden md:flex w-[95vw] max-w-[1100px] min-h-[500px] shadow-xl border rounded-2xl bg-white mx-auto">
+          {/* 좌측 이미지 및 문구 */}
           <div
-            className="absolute inset-0 flex flex-col items-center justify-start p-6 md:p-10 pt-8 md:pt-[8%] bg-white/40 backdrop-blur-md"
+            className="flex-1 flex flex-col items-center justify-start p-10 pt-[8%] bg-white/40 backdrop-blur-md border border-white/30 rounded-2xl shadow-lg m-6"
             style={{
               backgroundImage: "url('/images/landing-bg2.png')",
               backgroundSize: 'cover',
@@ -143,28 +234,25 @@ export default function LoginPage() {
             }}
           >
             <img
-              className="w-[120px] h-[120px] md:w-[160px] md:h-[160px] object-contain mb-4 md:mb-6"
+              className="w-[160px] h-[160px] object-contain mb-6"
               alt="JobDam Logo"
               src="/images/logo.png"
             />
-            <h2 className="text-xl md:text-3xl font-bold text-black mb-2 text-center leading-tight">취업은 더 이상<br />혼자 준비하는 싸움이 아닙니다.</h2>
+            <h2 className="text-3xl font-bold text-black mb-2 text-center">취업은 더 이상<br />혼자 준비하는 싸움이 아닙니다.</h2>
           </div>
 
-          {/* 데스크톱 레이아웃 */}
-          <div className="hidden md:flex w-full h-full">
-            <div className="flex-1"></div>
-            {/* 우측 로그인 폼 */}
-            <div className="flex-1 flex flex-col items-center justify-center px-10 py-8 bg-white overflow-y-auto">
+          {/* 우측 로그인 폼 */}
+          <div className="flex-1 flex flex-col items-center justify-center px-10 py-8">
             <div className="w-full max-w-[320px] flex flex-col justify-center my-auto">
-              <h1 className="text-2xl md:text-4xl font-bold text-black mb-2 text-center">로그인</h1>
-              <p className="text-sm md:text-base text-black mb-4 md:mb-6 text-center">계정에 로그인하세요.</p>
+              <h1 className="text-4xl font-bold text-black mb-2 text-center">로그인</h1>
+              <p className="text-base text-black mb-6 text-center">계정에 로그인하세요.</p>
 
               <form onSubmit={handleSubmit}>
                 <label className="text-sm text-black">이메일 주소</label>
                 <Input
                   name="email"
                   type="email"
-                  className="h-[40px] md:h-[49px] mb-4 md:mb-6"
+                  className="h-[49px] mb-6"
                   placeholder="이메일을 입력하세요"
                   value={formData.email}
                   onChange={handleInputChange}
@@ -175,14 +263,14 @@ export default function LoginPage() {
                 <Input
                   name="password"
                   type="password"
-                  className="h-[40px] md:h-[49px] mb-4 md:mb-6"
+                  className="h-[49px] mb-6"
                   placeholder="비밀번호를 입력하세요"
                   value={formData.password}
                   onChange={handleInputChange}
                   disabled={isLoading}
                 />
 
-                <div className="flex justify-end text-sm text-gray-500 -mt-2 md:-mt-4 mb-4 md:mb-6">
+                <div className="flex justify-end text-sm text-gray-500 -mt-4 mb-6">
                   <Link to="/find-password" className="hover:underline">
                     비밀번호 찾기
                   </Link>
@@ -190,14 +278,14 @@ export default function LoginPage() {
 
                 <Button
                   type="submit"
-                  className="w-full h-12 md:h-14 mb-4 md:mb-6 bg-black text-white"
+                  className="w-full h-14 mb-6 bg-black text-white"
                   disabled={isLoading}
                 >
                   {isLoading ? "로그인 중..." : "로그인"}
                 </Button>
               </form>
 
-              <div className="flex items-center my-4 md:my-6">
+              <div className="flex items-center my-6">
                 <div className="flex-grow border-t border-gray-300" />
                 <span className="px-4 text-sm text-gray-500">또는</span>
                 <div className="flex-grow border-t border-gray-300" />
@@ -205,7 +293,7 @@ export default function LoginPage() {
 
               <Button
                 variant="outline"
-                className="w-full h-12 md:h-14 mb-3 flex items-center justify-center gap-2 border-2 border-[#0000001a]"
+                className="w-full h-14 mb-3 flex items-center justify-center gap-2 border-2 border-[#0000001a]"
                 disabled={isLoading}
                 onClick={() => googleRedirectLogin()}
               >
@@ -214,7 +302,7 @@ export default function LoginPage() {
               </Button>
 
               <Button
-                className="w-full h-12 md:h-14 mb-4 md:mb-6 bg-[#fee500] text-black flex items-center justify-center gap-2"
+                className="w-full h-14 mb-6 bg-[#fee500] text-black flex items-center justify-center gap-2"
                 disabled={isLoading}
                 onClick={handleKakaoLogin}
               >
@@ -229,87 +317,9 @@ export default function LoginPage() {
                 </Link>
               </p>
             </div>
-            </div>
-          </div>
-
-          {/* 모바일 오버레이 */}
-          <div className="md:hidden absolute inset-0 bg-white/20 backdrop-blur-md flex items-center justify-center p-6">
-            <div className="w-full max-w-[380px] mx-auto bg-white/30 backdrop-blur-lg rounded-2xl p-8 border border-white/40 shadow-xl min-h-[500px] flex flex-col justify-center">
-              <h1 className="text-3xl font-bold text-black mb-4 text-center">로그인</h1>
-              <p className="text-base text-black mb-8 text-center">계정에 로그인하세요.</p>
-
-              <form onSubmit={handleSubmit}>
-                <label className="text-sm text-black">이메일 주소</label>
-                <Input
-                  name="email"
-                  type="email"
-                  className="h-[50px] mb-6"
-                  placeholder="이메일을 입력하세요"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  disabled={isLoading}
-                />
-
-                <label className="text-sm text-black">비밀번호</label>
-                <Input
-                  name="password"
-                  type="password"
-                  className="h-[50px] mb-6"
-                  placeholder="비밀번호를 입력하세요"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  disabled={isLoading}
-                />
-
-                <div className="flex justify-end text-sm text-gray-500 -mt-2 mb-6">
-                  <Link to="/find-password" className="hover:underline">
-                    비밀번호 찾기
-                  </Link>
-                </div>
-
-                <Button
-                  type="submit"
-                  className="w-full h-14 mb-6 bg-black text-white text-base"
-                  disabled={isLoading}
-                >
-                  {isLoading ? "로그인 중..." : "로그인"}
-                </Button>
-              </form>
-
-              <div className="flex items-center my-6">
-                <div className="flex-grow border-t border-gray-400" />
-                <span className="px-4 text-sm text-gray-600">또는</span>
-                <div className="flex-grow border-t border-gray-400" />
-              </div>
-
-              <Button
-                variant="outline"
-                className="w-full h-14 mb-4 flex items-center justify-center gap-2 border-2 border-[#0000001a] text-base"
-                disabled={isLoading}
-                onClick={() => googleRedirectLogin()}
-              >
-                <FcGoogle className="w-5 h-5" />
-                Google 로그인
-              </Button>
-
-              <Button
-                className="w-full h-14 mb-6 bg-[#fee500] text-black flex items-center justify-center gap-2 text-base"
-                disabled={isLoading}
-                onClick={handleKakaoLogin}
-              >
-                <SiKakaotalk className="w-5 h-5" />
-                카카오 로그인
-              </Button>
-
-              <p className="text-base text-center text-gray-700">
-                아직 회원이 아니신가요?{" "}
-                <Link to="/signup" className="text-black font-medium cursor-pointer underline">
-                  회원가입
-                </Link>
-              </p>
-            </div>
           </div>
         </div>
+
         {/* Footer (카드 하단) */}
         <footer className="py-6 text-center text-sm text-white font-bold bg-transparent w-full flex flex-col items-center gap-2">
           <div className="flex gap-4 justify-center">
