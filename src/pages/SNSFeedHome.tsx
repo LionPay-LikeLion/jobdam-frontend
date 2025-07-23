@@ -391,7 +391,6 @@ export default function SNSFeedHome() {
                                         {post.likeCount > 0 && <>{post.likeCount.toLocaleString()}명이 좋아합니다</>}
                                     </div>
                                     <div className="flex items-center mb-1">
-                                        <span className="font-semibold text-black">{post.nickname}</span>
                                         <span className="ml-2 text-gray-800 line-clamp-2">{post.content}</span>
                                     </div>
                                     {/* 댓글 2개 미리보기 */}
