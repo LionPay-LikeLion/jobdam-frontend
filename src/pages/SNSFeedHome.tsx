@@ -234,14 +234,6 @@ export default function SNSFeedHome() {
                         >
                             <FaPlus />
                         </button>
-                        {/* 검색 버튼 */}
-                        <button
-                            className="h-12 w-12 flex items-center justify-center rounded-full bg-gray-200 text-gray-700 border border-gray-300 text-2xl ml-2"
-                            onClick={() => setShowSearchInput(true)}
-                            title="검색"
-                        >
-                            <FiSearch />
-                        </button>
                     </div>
                 </div>
                 {/* 피드 카드 */}
