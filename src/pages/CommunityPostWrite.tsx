@@ -78,7 +78,7 @@ export default function CommunityPostWrite(): JSX.Element {
             <SelectContent>
               <SelectItem value="NORMAL">일반</SelectItem>
               <SelectItem value="NOTICE">공지</SelectItem>
-              <SelectItem value="QNA">문답</SelectItem>
+              <SelectItem value="PINNED">문답</SelectItem>
             </SelectContent>
           </Select>
         </div>

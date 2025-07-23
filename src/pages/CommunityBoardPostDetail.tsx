@@ -158,7 +158,7 @@ export default function CommunityBoardPostDetail(): JSX.Element {
     switch (postTypeCode) {
       case "NOTICE": return "공지";
       case "NORMAL": return "일반";
-      case "QNA": return "문답";
+      case "PINNED": return "문답";
       default: return postTypeCode;
     }
   };
@@ -166,7 +166,7 @@ export default function CommunityBoardPostDetail(): JSX.Element {
   const getPostTypeColor = (postTypeCode: string) => {
     switch (postTypeCode) {
       case "NOTICE": return "bg-red-500 text-white";
-      case "QNA": return "bg-sky-400 text-white";
+      case "PINNED": return "bg-sky-400 text-white";
       case "NORMAL": return "bg-teal-400 text-white";
       default: return "bg-gray-400 text-white";
     }
